@@ -1,0 +1,34 @@
+[information]
+projectname=mr_vm_mini
+filename=mr_vm_mini.mrp
+appname=mr_vm_mini
+appid=1
+version=1
+visible=1
+cpu=3
+vendor=1
+description=1
+include= ${MRPBUILDER_HOME}\..\include,${MRPBUILDER_HOME}\..\include\plugins,..\
+config=mtk240
+output_format=lib
+
+
+[config_mtk240]
+define=TARGET_MOD,MTK_MOD,MR_VERSION=2011,MR_PLAT_DRAWTEXT,MR_PLAT_U2C
+output=mr_vm_mini.lib
+bmp_mode=normal
+plat=mtk
+
+
+[files]
+file06 = ..\mythroad_mini.c
+file07 = ..\mr_gb2312.c
+file08 = ..\mr_unzip.c
+file09 = ..\mr_util.c
+file10 = ..\mr_encode.c
+file11 = ..\mr_inflate.c
+file12 = ..\mr_graphics.c
+file13 = ..\string.c
+
+
+
