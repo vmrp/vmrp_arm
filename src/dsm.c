@@ -26,7 +26,6 @@
 
 #include "main.h"
 
-
 //#include "font/tsffont.h"
 #include "encode.h"
 #include "font_sky16_2.h"
@@ -49,7 +48,7 @@ void dsmRestoreRootDir();
 uint16 *screenBuf;
 
 #define NO_EXRAM 0
-#define DSM_MEM_SIZE (10 * 1024 * 1024)  //DSM内存大小
+#define DSM_MEM_SIZE (5 * 1024 * 1024)  //DSM内存大小
 
 //-- log 缓冲区 -------------------------------
 #define PRINTF_BUF_LEN 1024
@@ -76,12 +75,10 @@ void dsm_init() {
     DsmPathInit();
     DsmSocketInit();
 
-    // todo
-    char *str = "SYSINFO_IMEI";
+    char *str = "864086040622841";
     strcpy(dsmIMEI, str);
 
-    // todo
-    str = "SYSINFO_IMSI";
+    str = "460019707327302";
     strcpy(dsmIMSI, str);
 
     dsmNetWorkID = MR_NET_ID_MOBILE;
@@ -173,22 +170,13 @@ int32 mr_getUserInfo(mr_userinfo *info) {
 
 //#endif
 
-void mr_cacheFlush(int id) {
-#if defined(__arm__)
-    // cacheflush((long)gEmuEnv.vm_mem_base, (long)(gEmuEnv.vm_mem_base + gEmuEnv.vm_mem_len), 0);
-#endif
-}
-
-#if 1  //mr_dsm
 int32 mr_cacheSync(void *addr, int32 len) {
-//	if(showApiLog)
-//		LOGI("mr_cacheSync(%#p, %d)", addr, len);
+    LOGI("mr_cacheSync(%#p, %d)", addr, len);
 #if defined(__arm__)
     // cacheflush((long)addr, (long)(addr + len), 0);
 #endif
     return MR_SUCCESS;
 }
-#endif
 
 #if 0
 static void segv_handler (int signal_number)
@@ -374,10 +362,10 @@ uint32 mr_getTime(void) {
     // int ret = gettimeofday(&t, NULL);
 
     // /**
-	//  * 考虑到 微秒可能会 <0
-	//  *
-	//  * 2013-3-22 20:47:23
-	//  */
+    //  * 考虑到 微秒可能会 <0
+    //  *
+    //  * 2013-3-22 20:47:23
+    //  */
     // if (t.tv_usec < 0) {
     //     t.tv_sec--;
     //     t.tv_usec += 1000000;
@@ -797,9 +785,9 @@ int32 mr_close(MR_FILE_HANDLE f) {
  返  回:
  ****************************************************************************/
 int32 mr_read(MR_FILE_HANDLE f, void *p, uint32 l) {
-    if (gEmuEnv.showFile){
+    if (gEmuEnv.showFile) {
         extern int font_sky16_f;
-        if(f != font_sky16_f){
+        if (f != font_sky16_f) {
             LOGI("mr_read %d,%p,%d", f, p, l);
         }
     }
@@ -1439,8 +1427,6 @@ int32 mr_plat(int32 code, int32 param) {
 
         case 1106:  //获取短信中心
         {
-            const char *args[1];
-            args[0] = "getSmsCenter";
             return MR_WAITING;
         }
 
@@ -1514,17 +1500,26 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
 
         case 1014:  //申请拓展内存
         {
-            *output_len = SCNW * SCNH * 4;
-            *output = malloc(*output_len);
-            LOGI("malloc exRam addr=%p len=%d", output, output_len);
-            return MR_SUCCESS;
+            if (0) {
+                *output_len = SCNW * SCNH * 4;
+                *output = malloc(*output_len);
+                LOGI("malloc exRam addr=%p len=%d", output, output_len);
+                return MR_SUCCESS;
+            } else {
+                *output = NULL;
+                *output_len = 0;
+                return MR_IGNORE;
+            }
         }
 
         case 1015:  //释放拓展内存
         {
-            LOGI("free exRam");
-            free(input);
-            return MR_SUCCESS;
+            if (0) {
+                LOGI("free exRam");
+                free(input);
+                return MR_SUCCESS;
+            }
+            return MR_IGNORE;
         }
 
         case MR_TUROFFBACKLIGHT:  //关闭背光常亮
