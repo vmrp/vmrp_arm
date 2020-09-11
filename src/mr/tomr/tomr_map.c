@@ -16,10 +16,10 @@
 #include "tomr_event.h"
 #include "mr_auxlib.h"
 
-#include <string.h>
+// #include <string.h>
 //#include <stdio.h>
 //#include <stdlib.h>
-#include <math.h>
+// #include <math.h>
 
 
 /* Create metatable

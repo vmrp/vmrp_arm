@@ -1,21 +1,21 @@
 
 #ifndef BREW_MOD
-#include <assert.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
+// #include <assert.h>
+// #include <string.h>
+// #include <stdio.h>
+// #include <stdlib.h>
 #endif
 
 #ifdef BREW_MOD
 //#include <assert.h>
 //#include <string.h>
-#include "AEEStdLib.h" //ouli brew
+// #include "AEEStdLib.h" //ouli brew
 #endif
 
 
 //#define lapi_c
 
-#include "mr.h"
+#include "../include/mr.h"
 
 #include "mr_api.h"
 #include "mr_debug.h"

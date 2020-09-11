@@ -1,10 +1,10 @@
 
 
-#include <string.h>
-#include <stdio.h>
+// #include <string.h>
+// #include <stdio.h>
 
 #ifdef BREW_MOD
-#include "AEEStdLib.h"//ouli brew
+// #include "AEEStdLib.h"//ouli brew
 #endif
 
 #include "mr_auxiliar.h"

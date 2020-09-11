@@ -16,7 +16,7 @@
 *
 * RCS ID: $Id: tcp.h,v 1.5 2004/02/04 14:29:10 diego Exp $
 \*=========================================================================*/
-#include <mr.h>
+#include "mr.h"
 #include "mythroad_brew.h"
 //#include "buffer.h"
 //#include "timeout.h"

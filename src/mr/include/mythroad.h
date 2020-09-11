@@ -1,6 +1,8 @@
 #ifndef mythroad_h
 #define mythroad_h
 
+#include "mr.h"
+
 /*这里是做虚拟机配置的部分*/
 
 /*启动虚拟机Log*/

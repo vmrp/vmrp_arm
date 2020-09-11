@@ -1,5 +1,5 @@
 
-#include <string.h>
+// #include <string.h>
 
 //#define lgc_c
 
@@ -17,7 +17,7 @@
 #include "mr_tm.h"
 
 #ifdef BREW_MOD
-#include "AEEStdLib.h"//ouli brew
+// #include "AEEStdLib.h"//ouli brew
 #endif
 
 typedef struct GCState {

@@ -1,3 +1,7 @@
+#ifndef _MR_FORMAKETO_H_
+#define _MR_FORMAKETO_H_
+
+#include "mr.h"
 extern void MRF_DispUpEx(int16 x, int16 y, uint16 w, uint16 h);
 
 extern void MRF_TimerStart(int n, uint16 thistime, char* pcFunction);
@@ -45,3 +49,5 @@ extern void MRF_Exit(void);
 extern void MRF_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb);
 
 extern int MRF_TestCom(int input0, int input1);
+
+#endif

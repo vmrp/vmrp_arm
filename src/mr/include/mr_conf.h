@@ -2,15 +2,16 @@
 #ifndef mr_config_h
 #define mr_config_h
 
+#include "../src/mr_limits.h"
+
 #ifndef BREW_MOD
-#include <mr_limits.h>
-#include <stddef.h>
+// #include <stddef.h>
 #endif
 
 #ifdef BREW_MOD
-#include <mr_limits.h>
-//#include <stddef.h>//ouli brew
-#include "AEEStdLib.h"//ouli brew
+// #include <mr_limits.h>
+// //#include <stddef.h>//ouli brew
+// #include "AEEStdLib.h"//ouli brew
 #endif
 
 /*
@@ -77,7 +78,7 @@
 
 /* definition of `isatty' */
 #ifdef _POSIX_C_SOURCE
-#include <unistd.h>
+// #include <unistd.h>
 #define stdin_is_tty()		isatty(0)
 #else
 #define stdin_is_tty()		1  /* assume stdin is a tty */
@@ -173,7 +174,7 @@
 #define mrp_number2int(i,d)	__asm__ ("fistpl %0":"=m"(i):"t"(d):"st")
 #elif 0
 /* on machines compliant with C99, you can try `lrint' */
-#include <math.h>
+// #include <math.h>
 #define mrp_number2int(i,d)	((i)=lrint(d))
 #else
 #define mrp_number2int(i,d)	((i)=(int)(d))
@@ -184,7 +185,7 @@
 
 
 /* function to convert a mrp_Number to a string */
-#include <stdio.h>
+// #include <stdio.h>
 #define mrp_number2str(s,n)	sprintf((s), MRP_NUMBER_FMT, (n))
 
 /* function to convert a string to a mrp_Number */
@@ -215,7 +216,7 @@
 /* exception handling */
 #ifndef __cplusplus
 /* default handling with long jumps */
-#include <setjmp.h>
+// #include <setjmp.h>
 #define L_THROW(c)	longjmp((c)->b, 1)
 #define L_TRY(c,a)	if (setjmp((c)->b) == 0) { a }
 #define l_jmpbuf	jmp_buf

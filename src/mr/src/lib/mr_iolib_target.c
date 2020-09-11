@@ -6,12 +6,12 @@
 
 
 #ifndef UNDER_CE
-#include <errno.h>
+// #include <errno.h>
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
 
 
 //#define liolib_c

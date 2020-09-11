@@ -6,6 +6,7 @@ extern "C"
 {
 #endif
 
+#include "mr.h"
 
 #define TOP_Graphics            16
 #define BASELINE_Graphics       64
