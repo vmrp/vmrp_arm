@@ -1,7 +1,6 @@
 #ifndef utils_H__
 #define utils_H__
 
-#include <time.h>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -10,11 +9,8 @@
 #define PIXEL565G(v) ((((uint32_t)v >> 5) << 2) & 0xff)
 #define PIXEL565B(v) (((uint32_t)v << 3) & 0xff)
 
-
 int getFileType(const char *name);
 int getFileSize(const char *path);
-long uptimems();
-const struct timespec *ms2timespec(long ms, struct timespec *in);
 
 #define ANDROID_LOG_INFO "<info>"
 #define ANDROID_LOG_WARN "<warn>"
@@ -22,5 +18,8 @@ const struct timespec *ms2timespec(long ms, struct timespec *in);
 #define ANDROID_LOG_DEBUG "<debug>"
 
 void __android_log_print(char *level, char *tag, ...);
+
+int64 get_uptime_ms(void);
+int64 get_time_ms(void);
 
 #endif  // utils_H__

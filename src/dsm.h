@@ -28,11 +28,9 @@ extern char dsmFactory[8];
 #define TMP_PATH ".tmp"
 
 //------------------------------------------------
-#define DSM_FACTORY "mrpoid"
-#define DSM_TYPE "android"
-
-/*请不要做修改*/
-#define DSM_FACTORY_ID "mrpej" /*厂商标识，最多七个小写字符*/
+#define DSM_FACTORY "vmrp"
+#define DSM_TYPE "vmrp"
+#define DSM_FACTORY_ID "vmrp"
 
 #define MT6235
 

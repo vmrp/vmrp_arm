@@ -29,6 +29,7 @@ void j2n_create() {
     gEmuEnv.showFile = TRUE;
     gEmuEnv.showNet = TRUE;
     gEmuEnv.showMrPlat = TRUE;
+    gEmuEnv.dsmStartTime = get_time_ms();
 
     screenBuf = cacheScreenBuffer = (uint16 *)malloc(SCNW * SCNH * 2);
 
@@ -37,9 +38,6 @@ void j2n_create() {
     mythroad_init();
 #endif
     xl_font_sky16_init();
-
-    //初始化 DSM启动时间
-    // todo z gettimeofday(&gEmuEnv.dsmStartTime, NULL);
 }
 
 void j2n_startMrp(char *path) {

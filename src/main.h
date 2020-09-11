@@ -1,9 +1,6 @@
 #ifndef _EMULATOR_H
 #define _EMULATOR_H
 
-#include <time.h>
-
-
 #include "dsm.h"
 #include "mr_helper.h"
 #include "mr_types.h"
@@ -27,20 +24,19 @@ typedef enum {
 } E_EMU_MSGID;
 
 typedef struct _EmuEnv {
-    int showFile;                 //文件 I/O
-    int showMrPlat;               //mr_plat/mr_platEx
-    int showNet;                  //网络
-    int b_tsfInited;              //tsf 加载结果
-    int font_sky_status;          //sky字体加载结果(风的影子)
-    // struct timeval dsmStartTime;  //虚拟机初始化时间，用来计算系统运行时间
-    char *vm_mem_base;            //虚拟机内存地址
-    int32 vm_mem_len;             //虚拟机内存大小
-    char *vm_mem_end;             //虚拟机内存地址
-    char *exMem;                  //拓展内存地址
-    uint16 *cacheScreenBuffer;    //缓冲屏幕地址
-    uint16 *screenBuffer;         //缓冲屏幕地址
+    int showFile;               //文件 I/O
+    int showMrPlat;             //mr_plat/mr_platEx
+    int showNet;                //网络
+    int b_tsfInited;            //tsf 加载结果
+    int font_sky_status;        //sky字体加载结果(风的影子)
+    int64 dsmStartTime;         //虚拟机初始化时间，用来计算系统运行时间
+    char *vm_mem_base;          //虚拟机内存地址
+    int32 vm_mem_len;           //虚拟机内存大小
+    char *vm_mem_end;           //虚拟机内存地址
+    char *exMem;                //拓展内存地址
+    uint16 *cacheScreenBuffer;  //缓冲屏幕地址
+    uint16 *screenBuffer;       //缓冲屏幕地址
 } T_EMUENV;
-
 
 typedef struct {
     char *title;
@@ -104,7 +100,7 @@ extern char dsmSmsCenter[MAX_SMS_CENTER_LEN + 1];
         ptr = NULL;        \
     }
 
-#define MKDIR(as)  mkdir(as, S_IRWXU | S_IRWXG | S_IRWXO)
+#define MKDIR(as) mkdir(as, S_IRWXU | S_IRWXG | S_IRWXO)
 
 #define CHECK_AND_REMOVE(as)               \
     do {                                   \
@@ -138,7 +134,6 @@ int emu_musicCMD(int cmd, int arg0, int arg1);
 
 void N2J_readTsfFont(uint8 **outbuf, int32 *outlen);
 
-
 void emu_getImageSize(const char *path, int *w, int *h);
 void emu_drawImage(const char *path, int x, int y, int w, int h);
 
@@ -147,6 +142,6 @@ void SetDsmPath(const char *path);
 extern int32 mr_start_dsmC(char *start_file, const char *entry);
 
 #define isAddrValid(p) \
-    ((void*)p >= (void*)gEmuEnv.vm_mem_base && (void*)p < (void*)gEmuEnv.vm_mem_end)
+    ((void *)p >= (void *)gEmuEnv.vm_mem_base && (void *)p < (void *)gEmuEnv.vm_mem_end)
 
 #endif

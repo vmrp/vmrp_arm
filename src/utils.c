@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <time.h>
 
 #include "main.h"
@@ -49,14 +50,14 @@ int getFileSize(const char *path) {
     return s1.st_size;
 }
 
-long uptimems() {
-    struct timespec now;
-    clock_gettime(CLOCK_MONOTONIC, &now);
-    return (now.tv_sec) * 1000 + (now.tv_nsec) / 1000000;
+int64 get_uptime_ms(void) {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64)ts.tv_sec * 1000 + (ts.tv_nsec / 1000000);
 }
 
-const struct timespec *ms2timespec(long ms, struct timespec *in) {
-    in->tv_sec = ms / 1000;
-    in->tv_nsec = (ms % 1000) * 1000000;
-    return in;
+int64 get_time_ms(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (int64)tv.tv_sec * 1000 + (tv.tv_usec / 1000);
 }

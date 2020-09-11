@@ -14,11 +14,9 @@
 #include <unistd.h>
 #include <zlib.h>
 
-#include "main.h"
-
-//#include "font/tsffont.h"
 #include "encode.h"
 #include "font_sky16_2.h"
+#include "main.h"
 #include "utils.h"
 
 static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 *output_len);
@@ -94,42 +92,15 @@ int32 mr_exit(void) {
 #define MAKE_PLAT_VERSION(plat, ver, card, impl, brun) \
     (100000000 + (plat)*1000000 + (ver)*10000 + (card)*1000 + (impl)*10 + (brun))
 
-//#if 1
-
-/*取得手机相关信息。*/
-int32 mr_getUserInfo1(mr_userinfo *info) {
-    if (!info)
-        return MR_FAILED;
-
-    if (showApiLog) LOGI("mr_getUserInfo1");
-
-    memset(info, 0, sizeof(mr_userinfo));
-    strncpy(info->IMEI, (uint8 *)dsmIMEI, 15);
-    strncpy(info->IMSI, (uint8 *)dsmIMSI, 15);
-    strncpy(info->manufactory, "mrpoid", 8);
-    strncpy(info->spare, (char *)"yichouangle", 12);
-    strncpy(info->type, "android ", 8);
-
-    info->ver = MAKE_PLAT_VERSION(1, 8, 0, 18, 0);
-
-    return MR_SUCCESS;
-}
-
-//#else
-
 int32 mr_getUserInfo(mr_userinfo *info) {
     if (info == NULL)
         return MR_FAILED;
 
-    //	if(showApiLog) LOGI("mr_getUserInfo");
+    if (showApiLog) LOGI("mr_getUserInfo");
 
-    memset(info, 0x00, sizeof(mr_userinfo));
+    memset(info, 0, sizeof(mr_userinfo));
     memcpy(info->IMEI, dsmIMEI, 15);
     memcpy(info->IMSI, dsmIMSI, 15);
-
-    //	strncpy(info->manufactory, "aux", 3);
-    //	strncpy(info->type, "m625", 7);
-
     strncpy(info->manufactory, dsmFactory, 7);
     strncpy(info->type, dsmType, 7);
 
@@ -145,20 +116,18 @@ int32 mr_getUserInfo(mr_userinfo *info) {
 
     memset(info->spare, 0, sizeof(info->spare));
 
-#if 0
-	LOGI("imei = %s",info->IMEI);
-	LOGI("imsi = %s",info->IMSI);
-	LOGI("factory = %s",info->manufactory);
-	LOGI("type = %s",info->type);
-	LOGI("ver = %d",info->ver);
+#if 1
+    LOGI("imei = %s", info->IMEI);
+    LOGI("imsi = %s", info->IMSI);
+    LOGI("factory = %s", info->manufactory);
+    LOGI("type = %s", info->type);
+    LOGI("ver = %d", info->ver);
 #endif
 
-    //	LOGI("mr_getUserInfo suc!");
+    LOGI("mr_getUserInfo suc!");
 
     return MR_SUCCESS;
 }
-
-//#endif
 
 int32 mr_cacheSync(void *addr, int32 len) {
     LOGI("mr_cacheSync(%#p, %d)", addr, len);
@@ -334,8 +303,8 @@ void mr_printf(const char *format, ...) {
 }
 
 int32 mr_timerStart(uint16 t) {
+    LOGI("mr_timerStart(%d)", t);
     emu_timerStart(t);
-    LOGI("mr_timerStart(t:%d) suc!", t);
     return MR_SUCCESS;
 }
 
@@ -347,25 +316,9 @@ int32 mr_timerStop(void) {
 
 /*取得时间，单位ms*/
 uint32 mr_getTime(void) {
-    // todo z
-    // struct timeval t;
-    // int ret = gettimeofday(&t, NULL);
-
-    // /**
-    //  * 考虑到 微秒可能会 <0
-    //  *
-    //  * 2013-3-22 20:47:23
-    //  */
-    // if (t.tv_usec < 0) {
-    //     t.tv_sec--;
-    //     t.tv_usec += 1000000;
-    // }
-    // uint32 s = ret == 0 ? ((t.tv_sec - gEmuEnv.dsmStartTime.tv_sec) * 1000 + (t.tv_usec - gEmuEnv.dsmStartTime.tv_usec) / 1000) : 0;
-
-    // //	LOGI("mr_getTime 0x%08x", s);
-
-    // return s;
-    return 0;
+    uint32 s = get_time_ms() - gEmuEnv.dsmStartTime;
+    LOGI("mr_getTime():%d", s);
+    return s;
 }
 
 /*获取系统日期时间。*/
@@ -400,8 +353,7 @@ int32 mr_getDatetime(mr_datetime *datetime) {
     datetime->minute = t->tm_min;
     datetime->second = t->tm_sec;
 
-    //	LOGI("mr_getDatetime [%d/%d/%d %d:%d:%d]",
-    //			t->tm_year+1900, t->tm_mon+1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+    LOGI("mr_getDatetime [%d/%d/%d %d:%d:%d]", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
 
     return MR_SUCCESS;
 }
@@ -1043,7 +995,7 @@ int32 mr_findGetNext(MR_FILE_HANDLE search_handle, char *buffer, uint32 len) {
         return MR_FAILED;
 
     if (gEmuEnv.showFile)
-        LOGI("mr_findGetNext %d", search_handle);
+        LOGI("mr_findGetNext 0x%X", search_handle);
 
     DIR *pDir = (DIR *)search_handle;
     struct dirent *pDt;
