@@ -7,9 +7,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "utils.h"
 #include "encode.h"
 #include "font_sky16_2.h"
+#include "utils.h"
 
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 320
@@ -23,7 +23,6 @@ int SCNH = SCREEN_HEIGHT;
 int showApiLog = TRUE;
 
 static char runMrpPath[DSM_MAX_FILE_LEN + 1];
-
 
 //初始化模拟器  唯一实例
 void j2n_create() {
@@ -81,16 +80,14 @@ void j2n_stop() {
     mr_exit();
 }
 
-
 void j2n_smsRecv(char *numStr, char *contentStr) {
-
     uint8 buf[64];
     UTF8ToGBString((uint8 *)numStr, buf, sizeof(buf));
 
     uint8 buf2[1024];
     UTF8ToGBString((uint8 *)contentStr, buf2, sizeof(buf2));
 
-    mr_smsIndiaction((uint8 *)buf2, strlen((char*)buf2), (uint8 *)buf, MR_ENCODE_ASCII);
+    mr_smsIndiaction((uint8 *)buf2, strlen((char *)buf2), (uint8 *)buf, MR_ENCODE_ASCII);
 }
 
 void j2n_destroy() {
@@ -107,6 +104,11 @@ void j2n_callback_timer_out() {
     mr_timer();
 }
 
+void j2n_callback_gethostbyname() {
+    // LOGI("getHost callback ip:%p", (void*)param);
+    // ((MR_GET_HOST_CB)mr_soc.callBack)(param);
+}
+
 // void j2n_setStringOptions() {
 //     SetDsmSDPath(str2);
 //     //mythroad 路径
@@ -121,7 +123,6 @@ void j2n_getMemoryInfo() {
     mr_getMemoryInfo(&len, &left, &top);
     printf("len:%d, left:%d, top:%d\n", len, left, top);
 }
-
 
 int32 emu_timerStart(uint16 t) {
     // todo
@@ -167,7 +168,6 @@ void emu_getImageSize(const char *path, int *w, int *h) {
     *h = 0;
 }
 
-
 void emu_drawImage(const char *path, int x, int y, int w, int h) {
 }
 
@@ -201,14 +201,13 @@ void printScreen(char *filename, uint16 *buf) {
 
     mr_write(fh, bmpHeader, sizeof(bmpHeader));
 
-    mr_write(fh, buf, 240*320*2);
+    mr_write(fh, buf, 240 * 320 * 2);
 
     uint16 end = 0;
     mr_write(fh, &end, sizeof(end));
 
     mr_close(fh);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -223,25 +222,23 @@ void printScreen(char *filename, uint16 *buf) {
 #define MOUSE_MOVE 12
 // 五笔输入法
 
-
 // http://wiki.libsdl.org/Tutorials
 // http://lazyfoo.net/tutorials/SDL/index.php
 
 static SDL_Renderer *renderer;
 
-
 void emu_bitmapToscreen(uint16 *data, int x, int y, int w, int h) {
-    printf("emu_bitmapToscreen=============x:%d, y:%d, w:%d, h:%d, scnw:%d, scnh%d============\n", x,y,w,h,SCNW, SCNH);
-// printScreen("a.bmp", data);
+    printf("emu_bitmapToscreen=============x:%d, y:%d, w:%d, h:%d, scnw:%d, scnh%d============\n", x, y, w, h, SCNW, SCNH);
+    // printScreen("a.bmp", data);
     for (uint32 i = 0; i < w; i++) {
         for (uint32 j = 0; j < h; j++) {
             int32 xx = x + i;
             int32 yy = y + j;
-            if (xx < 0 || yy < 0 || xx >= SCNW|| yy >= SCNH) {
+            if (xx < 0 || yy < 0 || xx >= SCNW || yy >= SCNH) {
                 continue;
             }
-            if(data == cacheScreenBuffer){
-                uint16 color=*(cacheScreenBuffer + (xx + yy * SCNW));
+            if (data == cacheScreenBuffer) {
+                uint16 color = *(cacheScreenBuffer + (xx + yy * SCNW));
                 SDL_SetRenderDrawColor(renderer, PIXEL565R(color), PIXEL565G(color), PIXEL565B(color), 0xFF);
                 // SDL_SetRenderDrawColor(renderer, 0xff, 0, 0, 0xFF);
                 // SDL_RenderDrawPoint(renderer, 1, 1);
@@ -299,7 +296,7 @@ int main(int argc, char *args[]) {
         return -1;
     }
     // renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE); // windows xp
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);  // windows xp
     if (renderer == NULL) {
         printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
         return -1;
@@ -313,9 +310,9 @@ int main(int argc, char *args[]) {
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
 
-    if(argc == 1){
+    if (argc == 1) {
         j2n_startMrp("asm.mrp");
-    }else{
+    } else {
         j2n_startMrp(args[1]);
     }
 

@@ -1,3 +1,17 @@
+#编译完整虚拟机
+mrpoid2:
+	gcc -o ../mrpoid2 -O2 -g -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-unused-variable -Wno-unused-but-set-variable -Wno-pointer-sign -Wno-stringop-truncation -Wno-implicit-function-declaration\
+		-Wno-unused-function -Wno-uninitialized \
+		-DDSM_FULL \
+		main.c \
+		dsm.c \
+		network.c \
+		utils.c \
+		cport.c \
+		encode.c \
+		font_sky16_2.c \
+		-L./mr -lmr_vm_full -lSDL2 -lm -lz \
+
 
 #编译精简虚拟机
 mrpoid:
@@ -14,20 +28,6 @@ mrpoid:
 		-L./mr -lmr_vm_mini -lSDL2 -lm -lz \
 
 
-
-#编译完整虚拟机
-mrpoid2:
-	gcc -o ../mrpoid2 -O2 -g -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-unused-variable -Wno-unused-but-set-variable -Wno-pointer-sign -Wno-stringop-truncation -Wno-implicit-function-declaration\
-		-Wno-unused-function -Wno-uninitialized \
-		-DDSM_FULL \
-		main.c \
-		dsm.c \
-		network.c \
-		utils.c \
-		cport.c \
-		encode.c \
-		font_sky16_2.c \
-		-L./mr -lmr_vm_full -lSDL2 -lm -lz \
 
 
 .PHONY: clean
