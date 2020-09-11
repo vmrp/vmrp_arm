@@ -719,7 +719,7 @@ typedef int (*mrp_Chunkwriter) (mrp_State *L, const void* p,
 #define USE_INT
 
 #ifndef MR_V2000
-#define MRP_USER_H "./src/mr_user_number.h"
+#define MRP_USER_H "../src/mr_user_number.h"
 #ifdef MRP_USER_H
 #include MRP_USER_H
 #endif

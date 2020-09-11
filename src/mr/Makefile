@@ -54,16 +54,16 @@ LOCAL_SRC_FILES_FULL += mythroad.c \
 #                    src/pluto.c	\
 #                    src/Mylib.c
 
-LOCAL_SRC_FILES_FULL += tomr/src/tomr_event.c \
-                tomr/src/tomr_is.c   \
-                tomr/src/tomr_map.c        \
-                tomr/src/tomr_push.c     \
-                tomr/src/tomr_to.c
+LOCAL_SRC_FILES_FULL += tomr/tomr_event.c \
+                tomr/tomr_is.c   \
+                tomr/tomr_map.c        \
+                tomr/tomr_push.c     \
+                tomr/tomr_to.c
 
 mr_vm_full:
 	gcc -g -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-function -Wno-stringop-truncation\
                 $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL)\
-                -I./src -I./tomr/include -I.
+                -I./src -I./tomr -I./include
 
 	ar crv ./libmr_vm_full.a *.o
 
