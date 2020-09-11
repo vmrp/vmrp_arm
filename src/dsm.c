@@ -584,7 +584,7 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
     if (input == NULL)
         return MR_FAILED;
 
-    input_len = mr_strlen((char *)input);
+    input_len = strlen((char *)input);
     if (input_len > (DSM_MAX_FILE_LEN - 3))
         return MR_FAILED;
 

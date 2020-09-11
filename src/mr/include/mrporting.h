@@ -1104,23 +1104,5 @@ int32 mr_cacheSync(void *addr, int32 len);
 
 int mr_sprintf(char *buf, const char *fmt, ...);
 
-//------------- C接口封装 --------------------------------------
-void* mr_memcpy(void* dst, const void* src, uint32 n);
-void* mr_memmove(void* dst, const void* src, uint32 n);
-void* mr_memset(void* dst, int ch, uint32 n);
-int mr_memcmp(const void* lhs, const void* rhs, uint32 n);
-void* mr_memchr(const void* s, int ch, uint32 n);
-void* mr_strcpy(char* dst, const char* src);
-char* mr_strncpy(char* dst, const char* src, uint32 n);
-char* mr_strcat(char* dst, const char* src);
-char* mr_strncat(char* dst, const char* src, uint32 n);
-int mr_strcmp(const char* lhs, const char* rhs);
-int mr_strncmp(const char* lhs, const char* rhs, uint32 n);
-int mr_strcoll(const char* lhs, const char* rhs);
-int mr_strlen(const char* s);
-char* mr_strstr(const char* haystack, const char* needle);
-int mr_atoi(const char* s);
-unsigned long mr_strtoul(const char* s, char** end_ptr, int base);
-int mr_rand(void);
 
 #endif

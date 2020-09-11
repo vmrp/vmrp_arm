@@ -24,9 +24,8 @@ typedef struct {
 
 } FONT_ANSI;  //所有ansi字符宽高
 
-FONT_ANSI *font_ansi;
+static FONT_ANSI font_ansi;
 
-FONT *font_sky16;
 char font_sky16_bitbuf[32];
 //char *font_sky16_filename = "system/gb16_mrpoid.uc2";
 int font_sky16_f;
@@ -37,8 +36,6 @@ int xl_font_sky16_init()  //字体初始化，打开字体文件
 {
     int id = 0;
 
-    font_sky16 = malloc(sizeof(FONT));
-    font_ansi = malloc(sizeof(FONT_ANSI));
     //font_sky16_filename = "system/gb16_mrpoid.uc2";
 
     font_sky16_f = mr_open("system/gb16_mrpoid.uc2", 0);
@@ -56,8 +53,8 @@ int xl_font_sky16_init()  //字体初始化，打开字体文件
 
     //font_sky16_bitbuf=malloc(32);
     while (id < 128) {
-        font_ansi->width[id] = 8;
-        font_ansi->height[id] = 16;
+        font_ansi.width[id] = 8;
+        font_ansi.height[id] = 16;
         id++;
     }
     font_sky16_font_size = 16;
@@ -199,10 +196,10 @@ int xl_font_sky16_textWidthHeightLines(uint8 *pcText, uint16 showWidth,
 void xl_font_sky16_charWidthHeight(uint16 id, int32 *width, int32 *height) {
     if (id < 128) {
         if (width) {
-            *width = font_ansi->width[id];
+            *width = font_ansi.width[id];
         }
         if (height) {
-            *height = font_ansi->height[id];
+            *height = font_ansi.height[id];
         }
     } else {
         if (width) {

@@ -43,10 +43,6 @@
 */
 
 
-//#ifdef MR_MSTAR_MOD
-//#define strncpy mr_strncpy
-//extern char *mr_strncpy(char * s1, const char * s2, int n);
-//#endif
 
 
 #ifdef MR_SPREADTRUM_MOD

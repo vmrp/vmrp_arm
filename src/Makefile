@@ -7,7 +7,6 @@ mrpoid2:
 		dsm.c \
 		network.c \
 		utils.c \
-		cport.c \
 		encode.c \
 		font_sky16_2.c \
 		-L./mr -lmr_vm_full -lSDL2 -lm -lz \
@@ -22,7 +21,6 @@ mrpoid:
 		dsm.c \
 		network.c \
 		utils.c \
-		cport.c \
 		encode.c \
 		font_sky16_2.c \
 		-L./mr -lmr_vm_mini -lSDL2 -lm -lz \
