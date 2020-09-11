@@ -13,6 +13,11 @@
 // typedef long long int64;
 // typedef unsigned long long uint64;
 
+#define LONG_MAX 0x7FFFFFFF
+#define INT_MAX 0x7FFFFFFF
+#define ULONG_MAX 0xFFFFFFFFUl
+
+typedef int ptrdiff_t;
 
 typedef unsigned int  size_t; // uint32
 typedef unsigned int  uintptr_t; // uint32

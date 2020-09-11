@@ -1,7 +1,7 @@
 #ifndef _DSM_H
 #define _DSM_H
 
-#include "./mr_pre/include/mrporting.h"
+#include "./mr/include/mrporting.h"
 
 extern char dsmType[8];
 extern char dsmFactory[8];
