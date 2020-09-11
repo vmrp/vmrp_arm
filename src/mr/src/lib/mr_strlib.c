@@ -5,26 +5,6 @@
 */
 
 
-//#if (!defined(MR_ANYKA_MOD) && !defined(BREW_MOD))
-#if (defined(MR_ANYKA_MOD)||defined(MR_SPREADTRUM_MOD)||defined(MR_BREW_MOD))
-#else
-// #include <ctype.h>
-// #include <stddef.h>
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
-#endif
-
-#ifdef BREW_MOD
-// #include <ctype.h>
-// #include <stddef.h>//ouli brew
-// #include "AEEStdLib.h"//ouli brew
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
-#endif
-
-
 #include "mr.h"
 
 #include "mr_auxlib.h"

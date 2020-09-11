@@ -5,9 +5,6 @@
 */
 
 
-#include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
 
 //#define llex_c
 

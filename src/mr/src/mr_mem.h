@@ -8,14 +8,6 @@
 #define mr_mem_h
 
 
-#ifndef BREW_MOD
-// #include <stddef.h>
-#endif
-
-#ifdef BREW_MOD
-//#include <stddef.h>//ouli brew
-// #include "AEEStdLib.h"//ouli brew
-#endif
 
 #include "mr_limits.h"
 #include "mr.h"

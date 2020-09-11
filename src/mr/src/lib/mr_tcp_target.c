@@ -1,16 +1,11 @@
 
-//#include <string.h> 
 
 #include "mr.h"
 #include "mr_auxlib.h"
 
-//#include "AEEStdLib.h"//ouli brew
 #include "mr_auxiliar.h"
 #include "mr_tcp_target.h"
 #include "mr_socket_target.h"
-//#include "socket.h"
-//#include "inet.h"
-//#include "options.h"
 #include "mrporting.h"
 
 

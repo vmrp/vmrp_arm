@@ -1,12 +1,4 @@
 
-#ifndef BREW_MOD
-// #include <stddef.h>
-#endif
-
-#ifdef BREW_MOD
-//#include <stddef.h>//ouli brew
-// #include "AEEStdLib.h"//ouli brew
-#endif
 
 //#define ldump_c
 

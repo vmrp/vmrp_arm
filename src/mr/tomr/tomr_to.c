@@ -14,11 +14,6 @@
 
 #include "tomr.h"
 
-// #include <string.h>
-
-#ifndef BREW_MOD
-// #include <stdlib.h>
-#endif
 
 TO_MR_API int to_mr_tonumber (mrp_State* L, int narg, int def)
 {

@@ -7,14 +7,7 @@
 #ifndef mr_limits_h
 #define mr_limits_h
 
-// #include <limits.h>
-#ifndef BREW_MOD
-// #include <stddef.h>
-#endif
 
-#ifdef BREW_MOD
-// #include "AEEStdLib.h"//ouli brew
-#endif
 
 #include "mr.h"
 

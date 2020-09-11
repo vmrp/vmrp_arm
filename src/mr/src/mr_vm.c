@@ -1,12 +1,5 @@
 
-// #include <stdarg.h>
-// #include <string.h>
 
-/* needed only when `mrp_number2str' uses `sprintf' */
-#ifndef BREW_MOD
-// #include <stdio.h>
-// #include <stdlib.h>
-#endif
 
 #define lvm_c
 

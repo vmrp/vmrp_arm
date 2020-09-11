@@ -1,5 +1,4 @@
 
-// #include <string.h>
 
 //#define ltable_c
 

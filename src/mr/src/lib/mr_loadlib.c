@@ -1,5 +1,4 @@
 
-#include<windows.h>
 #include "mr.h"
 #include "mr_auxlib.h"
 #include "mr_lib.h"
@@ -16,7 +15,6 @@
 * as an emulation layer on top of native functions.
 */
 
-#include <dlfcn.h>
 
 static int loadlib(mrp_State *L)
 {
@@ -63,7 +61,6 @@ static int loadlib(mrp_State *L)
 * This is an implementation of loadlib for Windows using native functions.
 */
 
-#include <windows.h>
 
 static void pusherror(mrp_State *L)
 {

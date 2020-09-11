@@ -15,11 +15,6 @@
 #include "tomr.h"
 #include "mr_auxlib.h"
 
-#ifndef BREW_MOD
-// #include <stdlib.h>
-#endif
-
-// #include <string.h>
 
 /* Push and returns the corresponding object typename */
 TO_MR_API const char* to_mr_typename (mrp_State* L, int lo)

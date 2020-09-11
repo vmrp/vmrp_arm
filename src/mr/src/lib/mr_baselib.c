@@ -5,25 +5,6 @@
 */
 
 
-#ifndef BREW_MOD
-#if (defined(MR_ANYKA_MOD)||defined(MR_SPREADTRUM_MOD)||defined(MR_BREW_MOD))
-#else
-//#if (!defined(MR_ANYKA_MOD))
-// #include <ctype.h>
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
-#endif
-#endif
-
-#ifdef BREW_MOD
-//#include <stdio.h>
-//#include <stdlib.h>
-// #include <ctype.h>
-// #include <string.h>
-// #include "AEEStdLib.h"//ouli
-#endif
-
 #define lbaselib_c
 
 #include "mr.h"

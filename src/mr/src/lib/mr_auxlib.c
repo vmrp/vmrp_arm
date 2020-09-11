@@ -1,38 +1,11 @@
 
 
-#ifndef BREW_MOD
 
-#ifndef UNDER_CE
-// #include <errno.h>
-#endif
 
-#if (defined(MR_ANYKA_MOD)||defined(MR_SPREADTRUM_MOD)||defined(MR_BREW_MOD))
-#else
-//#if (!defined(MR_ANYKA_MOD))
-// #include <ctype.h>
-// #include <stdio.h>
-// #include <stdarg.h>
-// #include <string.h>
-#endif
 
 #include "mr_forvm.h"
 #include "mythroad.h"
-#endif
 
-#ifdef BREW_MOD
-//#include <errno.h>
-//#include <stdarg.h>
-//#include <stdio.h>
-// #include <ctype.h>
-// #include <string.h>
-// #include "AEEStdLib.h"
-//#include "forvm.h"
-// #include "LegendGame.h"			// ouli brew
-// #include "mr_forvm.h"
-//ouli
-extern IFile* GetFileStream(const char* filename);
-//ouli
-#endif
 
 
 /* This file uses only the official API of Lua.

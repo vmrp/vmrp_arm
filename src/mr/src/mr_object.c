@@ -4,30 +4,6 @@
 ** See Copyright Notice in lua.h
 */
 
-#ifndef BREW_MOD
-#if (defined(MR_ANYKA_MOD)||defined(MR_SPREADTRUM_MOD)||defined(MR_BREW_MOD))
-//#if (!defined(MR_ANYKA_MOD))
-#else
-// #include <ctype.h>
-// #include <stdarg.h>
-// #include <stdlib.h>   
-// #include <string.h>
-#endif
-#endif
-
-#ifdef BREW_MOD
-// #include <ctype.h>
-// #include <stdarg.h>
-// #include <string.h>
-
-#ifdef DYNAMIC_APP
-#include "Mylib.h"			// ouli use for strtol()
-#else
-// #include <stdlib.h>        //ouli brew for strtol()
-#endif
-
-#endif
-
 //#define lobject_c
 
 #include "mr.h"

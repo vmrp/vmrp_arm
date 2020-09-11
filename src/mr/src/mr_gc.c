@@ -1,5 +1,4 @@
 
-// #include <string.h>
 
 //#define lgc_c
 

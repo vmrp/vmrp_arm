@@ -1,8 +1,4 @@
 
-#include <signal.h>
-//#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #define mrp_c
 
@@ -24,7 +20,6 @@
 ** definition of `isatty'
 */
 #ifdef _POSIX_C_SOURCE
-#include <unistd.h>
 #define stdin_is_tty()	isatty(0)
 #else
 #define stdin_is_tty()	1  /* assume stdin is a tty */

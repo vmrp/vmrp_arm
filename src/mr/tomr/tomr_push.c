@@ -15,7 +15,6 @@
 #include "tomr.h"
 #include "mr_auxlib.h"
 
-//#include <stdlib.h>
 
 TO_MR_API void to_mr_pushvalue (mrp_State* L, int lo)
 {

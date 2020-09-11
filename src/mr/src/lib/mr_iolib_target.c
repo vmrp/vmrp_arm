@@ -5,14 +5,6 @@
 */
 
 
-#ifndef UNDER_CE
-// #include <errno.h>
-#endif
-
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
-
 
 //#define liolib_c
 

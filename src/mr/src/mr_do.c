@@ -1,15 +1,4 @@
 
-//#include <stdlib.h>
-// #include <string.h>
-
-
-
-#ifdef MR_SPREADTRUM_MOD
-#include "mr_setjmp.h"
-#else
-// #include <setjmp.h>
-#endif
-
 //#define ldo_c
 
 #include "mr.h"
