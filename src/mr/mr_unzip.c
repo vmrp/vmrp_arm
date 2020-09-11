@@ -1,15 +1,8 @@
 
-#if (defined(MR_ANYKA_MOD)||defined(MR_SPREADTRUM_MOD)||defined(MR_BREW_MOD))
-#else
-//#if (!defined(MR_ANYKA_MOD))
-// #include <ctype.h>
-#endif
 
 #include "mr.h"
 #include "mythroad.h"
-//#include "tailor.h"
 #include "mr_gzip.h"
-//#include "crypt.h"
 
 /* PKZIP header definitions */
 #define LOCSIG 0x04034b50L      /* four-byte lead-in (lsb first) */

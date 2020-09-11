@@ -1,31 +1,7 @@
-/*===========================================================================
-
-FILE: mythroad.c
-===========================================================================*/
-
-
-/*===============================================================================
-INCLUDES AND VARIABLE DEFINITIONS
-=============================================================================== */
-#ifdef MR_TI_MOD
-#undef _INLINE 
-// #include <string.h>
-#endif
-
-#if (defined(MR_ANYKA_MOD)||defined(MR_SPREADTRUM_MOD)||defined(MR_BREW_MOD))
-#else
-//#if (!defined(MR_ANYKA_MOD))
-// #include <ctype.h>
-#endif
-
-
-//#include "tomr.h"         // 
 #include "mr.h"
 #include "mr_lib.h"
 #include "mr_auxlib.h"
 #include "mr_gb2312.h"
-//#include "mr_store.h"
-//#include "mr_maketo.h"
 #include "mr_forvm.h"
 #include"mr_gzip.h"
 #include "mythroad.h"

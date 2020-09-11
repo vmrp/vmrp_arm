@@ -2,25 +2,11 @@
 #ifndef mr_h
 #define mr_h
 
-#include <stdarg.h>
 #include "type.h"
+#include "other.h"
 #include "string.h"
+#include "printf.h"
 
-#ifndef BREW_MOD
-// #include <stddef.h>
-// #include <string.h>
-#endif
-
-#ifdef PC_MOD
-// #include <stdio.h>
-#endif
-
-
-#ifdef BREW_MOD
-// #include <stdarg.h>
-// // #include <stddef.h>//ouli brew
-// #include "AEEStdLib.h"//ouli brew
-#endif
 
 
 #ifdef MR_START_FILE
@@ -570,7 +556,7 @@ extern int AEEMod_Load(IShell *ps, void * pszRes, IModule ** pm);
 #define SNPRINTF                    snprintf
 
 #if !defined(MR_BREW_MOD)
-#define SPRINTF                     sprintf
+#define SPRINTF                     sprintf_
 #define VSPRINTF                    vsprintf
 
 #else //if !defined(MR_BREW_MOD)
@@ -595,7 +581,7 @@ extern int           mrp_sprintf(char * pszDest,const char * pszFormat, ...);
 
 #endif// #if !defined(MR_BREW_MOD)
 
-#define STRTOUL(s1,s2,n)            strtoul((s1),(s2),(n))
+#define STRTOUL(s1,s2,n)            strtoul2((s1),(s2),(n))
 #define STRTOD(s,ps)                strtod((s),(ps))
 #define STRLCPY(d,s,n)              strlcpy((d),(s),(n))
 #define STRLCAT(d,s,n)              strlcat((d),(s),(n))
@@ -634,7 +620,7 @@ extern int           mrp_sprintf(char * pszDest,const char * pszFormat, ...);
 //#define GETAPPINSTANCE()            GetAppInstance()
 
 
-#define STRTOL		strtol
+#define STRTOL		strtol2
 
 
 

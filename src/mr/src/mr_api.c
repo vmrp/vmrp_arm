@@ -1,16 +1,4 @@
 
-#ifndef BREW_MOD
-// #include <assert.h>
-// #include <string.h>
-// #include <stdio.h>
-// #include <stdlib.h>
-#endif
-
-#ifdef BREW_MOD
-//#include <assert.h>
-//#include <string.h>
-// #include "AEEStdLib.h" //ouli brew
-#endif
 
 
 //#define lapi_c

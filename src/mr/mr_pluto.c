@@ -21,9 +21,6 @@
 
 
 
-#ifdef PLUTO_DEBUG
-// #include <stdio.h>
-#endif
 
 #define PLUTO_TPERMANENT 101
 

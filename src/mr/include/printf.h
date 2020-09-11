@@ -36,7 +36,6 @@
 #define _PRINTF_H_
 
 #include <stdarg.h>
-// #include <stddef.h>
 #include "type.h"
 
 

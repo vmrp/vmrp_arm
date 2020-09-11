@@ -1,17 +1,4 @@
-
-
-#if (defined(MR_ANYKA_MOD)||defined(MR_SPREADTRUM_MOD)||defined(MR_BREW_MOD))
-#else
-//#if (!defined(MR_ANYKA_MOD))
-// #include <ctype.h>
-#endif
-//#include <errno.h>
-//#include <sys/types.h>
-
-//#include "tailor.h"
-
 #include "mr_gzip.h"
-//#include "crypt.h"
 
 
 /* ========================================================================

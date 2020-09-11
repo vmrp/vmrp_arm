@@ -1,25 +1,15 @@
-// #include <arpa/inet.h>
-// #include <asm-generic/fcntl.h>
-// #include <asm-generic/mman.h>
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
-// #include <linux/in.h>
-// #include <linux/time.h>
 #include <malloc.h>
-// #include <netdb.h>
-// #include <netinet/in.h>
-// #include <netinet/tcp.h>
 #include <signal.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
-// #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-// #include <sys/vfs.h>
 #include <time.h>
 #include <unistd.h>
 #include <zlib.h>

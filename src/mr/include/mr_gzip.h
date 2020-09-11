@@ -1,15 +1,6 @@
 #ifndef _MR_GZIP_H_
 #define _MR_GZIP_H_
 
-#if (defined(MR_ANYKA_MOD)||defined(MR_SPREADTRUM_MOD)||defined(MR_BREW_MOD))
-//#if (!defined(MR_ANYKA_MOD))
-#else
-// #include <ctype.h>
-// #include <string.h>
-// #include <assert.h>
-// #include <stdio.h>
-// #include <stdlib.h>
-#endif
 #include "mr_forvm.h"
 #include "string.h"
 

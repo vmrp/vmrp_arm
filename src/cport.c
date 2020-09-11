@@ -1,8 +1,6 @@
 //
 // Created by Jianbin on 2018/6/15.
 //
-#include <stdlib.h>
-#include <string.h>
 
 #include "main.h"
 

@@ -3,13 +3,11 @@
 
 #include <time.h>
 
-//#include <mr/mrporting.h>
 
 #include "dsm.h"
 #include "mr_helper.h"
 #include "mr_types.h"
 #include "utils.h"
-//#include "vm.h"
 
 #define LOG_TAG "mrpoid_jni"
 

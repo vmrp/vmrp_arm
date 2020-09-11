@@ -4,14 +4,6 @@
 ** See Copyright Notice in lua.h
 */
 
-#ifndef BREW_MOD
-#include <stdlib.h>
-#endif
-
-#ifdef BREW_MOD
-//#include <stdlib.h>
-#include "AEEStdLib.h"
-#endif
 
 //#define lcode_c
 

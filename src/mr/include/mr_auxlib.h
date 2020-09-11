@@ -2,16 +2,6 @@
 #ifndef mr_auxlib_h
 #define mr_auxlib_h
 
-#ifndef BREW_MOD
-// #include <stddef.h>
-// #include <stdio.h>
-#endif
-
-#ifdef BREW_MOD
-// //#include <stddef.h>//ouli brew
-// #include "AEEStdLib.h"//ouli brew
-// //#include <stdio.h>
-#endif //BREW_MOD
 
 
 #include "mr.h"

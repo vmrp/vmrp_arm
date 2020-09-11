@@ -1,11 +1,5 @@
 
 
-//#include <sys/types.h>
-
-//#include "tailor.h"
-
-// #include <stdlib.h>
-
 #include "mr_gzip.h"
 #include "string.h"
 #define slide mr_gzOutBuf

@@ -1,6 +1,5 @@
 #include "encode.h"
 
-#include <string.h>
 #include "tables.h"
 
 ///////////////////////

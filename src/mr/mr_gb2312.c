@@ -1,6 +1,5 @@
 
 #include "mr_gb2312.h"
-//#include <stdio.h>
 
 
 #include "mr.h"
