@@ -9,6 +9,7 @@
 
 #include "encode.h"
 #include "font_sky16_2.h"
+#include "timer.h"
 #include "utils.h"
 
 #define SCREEN_WIDTH 240
@@ -98,10 +99,6 @@ void j2n_callback_play_music() {
     // dsmMediaPlay.cb(param);
 }
 
-void j2n_callback_timer_out() {
-    mr_timer();
-}
-
 void j2n_callback_gethostbyname() {
     // LOGI("getHost callback ip:%p", (void*)param);
     // ((MR_GET_HOST_CB)mr_soc.callBack)(param);
@@ -122,15 +119,25 @@ void j2n_getMemoryInfo() {
     printf("len:%d, left:%d, top:%d\n", len, left, top);
 }
 
+int timerRunning = 0;
+
+void timer_handler(void) {
+    if (!timerRunning) return;
+    timerRunning = 0;
+    mr_timer();
+}
+
 int32 emu_timerStart(uint16 t) {
-    // todo
     LOGI("emu_timerStart %d", t);
+    timerRunning = 1;
+    start_timer(t, timer_handler);
     return MR_SUCCESS;
 }
 
 int32 emu_timerStop() {
-    // todo
     LOGI("emu_timerStop");
+    timerRunning = 0;
+    stop_timer();
     return MR_SUCCESS;
 }
 
@@ -226,7 +233,7 @@ void printScreen(char *filename, uint16 *buf) {
 static SDL_Renderer *renderer;
 
 void emu_bitmapToscreen(uint16 *data, int x, int y, int w, int h) {
-    printf("emu_bitmapToscreen=============x:%d, y:%d, w:%d, h:%d, scnw:%d, scnh%d============\n", x, y, w, h, SCNW, SCNH);
+    printf("emu_bitmapToscreen=====x:%d, y:%d, w:%d, h:%d, scnw:%d, scnh:%d===\n", x, y, w, h, SCNW, SCNH);
     // printScreen("a.bmp", data);
     for (uint32 i = 0; i < w; i++) {
         for (uint32 j = 0; j < h; j++) {
@@ -309,7 +316,7 @@ int main(int argc, char *args[]) {
     SDL_RenderPresent(renderer);
 
     if (argc == 1) {
-        j2n_startMrp("asm.mrp");
+        j2n_startMrp("dsm_gm.mrp");
     } else {
         j2n_startMrp(args[1]);
     }

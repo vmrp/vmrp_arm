@@ -303,13 +303,11 @@ void mr_printf(const char *format, ...) {
 }
 
 int32 mr_timerStart(uint16 t) {
-    LOGI("mr_timerStart(%d)", t);
     emu_timerStart(t);
     return MR_SUCCESS;
 }
 
 int32 mr_timerStop(void) {
-    LOGI("mr_timerStop");
     emu_timerStop();
     return MR_SUCCESS;
 }
