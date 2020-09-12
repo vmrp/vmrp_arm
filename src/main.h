@@ -28,7 +28,6 @@ typedef struct _EmuEnv {
     int showMrPlat;             //mr_plat/mr_platEx
     int showNet;                //网络
     int b_tsfInited;            //tsf 加载结果
-    int font_sky_status;        //sky字体加载结果(风的影子)
     int64 dsmStartTime;         //虚拟机初始化时间，用来计算系统运行时间
     char *vm_mem_base;          //虚拟机内存地址
     int32 vm_mem_len;           //虚拟机内存大小
