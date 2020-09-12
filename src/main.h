@@ -32,7 +32,6 @@ typedef struct _EmuEnv {
     char *vm_mem_base;          //虚拟机内存地址
     int32 vm_mem_len;           //虚拟机内存大小
     char *vm_mem_end;           //虚拟机内存地址
-    char *exMem;                //拓展内存地址
     uint16 *cacheScreenBuffer;  //缓冲屏幕地址
     uint16 *screenBuffer;       //缓冲屏幕地址
 } T_EMUENV;

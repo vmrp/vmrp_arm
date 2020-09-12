@@ -35,7 +35,6 @@ void dsmRestoreRootDir();
 
 uint16 *screenBuf;
 
-#define NO_EXRAM 0
 #define DSM_MEM_SIZE (5 * 1024 * 1024)  //DSM内存大小
 
 //-- log 缓冲区 -------------------------------
@@ -49,7 +48,6 @@ static char dsmIMEI[MAX_IMEI_LEN + 1];
 static char dsmIMSI[MAX_IMSI_LEN + 1];
 static int dsmNetWorkID;
 static T_MEDIA_TIME dsmCommonRsp;  //播放器回调变量
-static int mr_getUserInfo_times = 0;
 
 char dsmSmsCenter[MAX_SMS_CENTER_LEN + 1];
 int dsmNetType;
@@ -73,18 +71,10 @@ void dsm_init() {
     dsmNetType = NETTYPE_CMWAP;
 }
 
-void dsm_reset() {
-    DsmSocketClose();
-    FREE_SET_NULL(gEmuEnv.exMem);
-    mr_getUserInfo_times = 0;
-}
-
-//----------------------------------------------------------------
-
 int32 mr_exit(void) {
     LOGD("mr_exit() called by mythroad!");
 
-    dsm_reset();
+    DsmSocketClose();
     emu_finish();
     return MR_SUCCESS;
 }
@@ -104,12 +94,6 @@ int32 mr_getUserInfo(mr_userinfo *info) {
     strncpy(info->manufactory, dsmFactory, 7);
     strncpy(info->type, dsmType, 7);
 
-    //	if(++mr_getUserInfo_times > 8)
-    //	{
-    //		info->ver = MAKE_PLAT_VERSION(1, 3, 0, 18, 0);
-    ////		info->ver = 101000000 + 3 * 10000 + DSM_FAE_VERSION;
-    //		LOGI("\tnow is MT6225");
-    //	}else
     info->ver = 101000000 + DSM_PLAT_VERSION * 10000 + DSM_FAE_VERSION;
     //	info->ver = 116000000 + DSM_PLAT_VERSION * 10000 + DSM_FAE_VERSION; //SPLE
     //	info->ver = MAKE_PLAT_VERSION(1, 3, 0, 18, 0);
@@ -136,62 +120,6 @@ int32 mr_cacheSync(void *addr, int32 len) {
 #endif
     return MR_SUCCESS;
 }
-
-#if 0
-static void segv_handler (int signal_number)
-{
-	printf ("memory accessed!\n");
-}
-
-static int mem_fd = 0;
-int32 mr_mem_get(char** mem_base, uint32* mem_len)
-{
-	int alloc_size;
-	char* memory;
-	int pagesize, pagecount;
-
-	pagesize = getpagesize();
-	pagecount = DSM_MEM_SIZE/pagesize;
-	alloc_size = pagesize * pagecount;
-
-	/* 使用映射 /dev/zero 分配内存页 */
-	mem_fd = open ("/dev/zero", O_RDONLY );
-	if(mem_fd < 0){
-		LOGE("open /dev/zero fail!");
-		exit(1);
-	}
-
-	memory = mmap (NULL, alloc_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE, mem_fd, 0);
-	if(memory == MAP_FAILED){
-		LOGE("mmap fail!");
-		close (mem_fd);
-		exit(1);
-	}
-
-	*mem_base = memory;
-	*mem_len = alloc_size;
-	gEmuEnv.vm_mem_base = memory;
-	gEmuEnv.vm_mem_len = alloc_size;
-
-	LOGI("mr_mem_get addr: 0x%08x, len: %d", memory, alloc_size);
-
-	return MR_SUCCESS;
-}
-
-int32 mr_mem_free(char* memory, uint32 alloc_size)
-{
-	LOGI("mr_mem_free addr: 0x%08x, len: %d", memory, alloc_size);
-
-	munmap (memory, alloc_size);
-	close(mem_fd);
-	mem_fd = -1;
-	gEmuEnv.vm_mem_base = NULL;
-	gEmuEnv.vm_mem_len = 0;
-
-	return MR_SUCCESS;
-}
-
-#else
 
 int32 mr_mem_get(char **mem_base, uint32 *mem_len) {
     char *buffer;
@@ -237,8 +165,6 @@ int32 mr_mem_free(char *mem, uint32 mem_len) {
 
     return MR_SUCCESS;
 }
-
-#endif
 
 int32 pageMalloc(void **out, int32 *outLen, uint32 needLen) {
     char *buf;
@@ -329,19 +255,6 @@ int32 mr_getDatetime(mr_datetime *datetime) {
 
     time(&now);
     t = localtime(&now);
-
-    /*struct   tm
-	　　{
-　　		  int   tm_sec;//seconds   0-61
-　　		  int   tm_min;//minutes   1-59
-　　		  int   tm_hour;//hours   0-23
-　　		  int   tm_mday;//day   of   the   month   1-31
-　　		  int   tm_mon;//months   since   jan   0-11
-　　		  int   tm_year;//years   from   1900
-　　		  int   tm_wday;//days   since   Sunday,   0-6
-　　		  int   tm_yday;//days   since   Jan   1,   0-365
-　　		  int   tm_isdst;//Daylight   Saving   time   indicator
-	　　};*/
 
     //2013-3-22 13:08:50 修正需要加上时间 1900
     datetime->year = t->tm_year + 1900;
@@ -512,16 +425,6 @@ const char *GetDsmSDPath() {
 }
 
 /****************************************************************************
- 函数名:static void dsmToLaunchDir(void)
- 描  述:将操作路径返回到刚启动时候的路径
- 参  数:无
- 返  回:无
- ****************************************************************************/
-static void dsmToLaunchDir(void) {
-    strcpy(dsmWorkPath, dsmPath);
-}
-
-/****************************************************************************
 函数名:static int32 dsmSwitchPath(uint8* input, int32 input_len, uint8** output, int32* output_len)
 描  述:VM 对路径操作的接口
 参  数:
@@ -543,7 +446,7 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
     switch (input[0]) {
         case 'Z':  //返回刚启动时路径
         case 'z':
-            dsmToLaunchDir();
+            strcpy(dsmWorkPath, dsmPath);
             break;
 
         case 'Y':  //获取当前工作绝对路径
@@ -1062,6 +965,7 @@ int32 mr_getLen(const char *filename) {
 }
 
 static int32 dsmGetFreeSpace(uint8 *input, int32 input_len, T_DSM_DISK_INFO *spaceInfo) {
+    handle_error("dsmGetFreeSpace()");
     /* todo z
     U64 disk_free_space, disk_total_space;
     int32 fs_ret;
@@ -1145,8 +1049,7 @@ int32 mr_stopShake() {
     return MR_SUCCESS;
 }
 
-const static char exts[][5] = {
-    ".mid", ".wav", ".mp3", ".amr"};
+const static char exts[][5] = {".mid", ".wav", ".mp3", ".amr"};
 
 int32 mr_playSound(int type, const void *data, uint32 dataLen, int32 loop) {
     if (type >= 4) {
@@ -1198,7 +1101,8 @@ void mr_connectWAP(char *wap) {
     LOGI("mr_connectWAP(%s)", wap);
 }
 
-char *unibe_unile(const char *s) {
+#if 0
+static char *unibe_unile(const char *s) {
     if (s == NULL)
         return NULL;
 
@@ -1211,6 +1115,7 @@ char *unibe_unile(const char *s) {
 
     return buf;
 }
+#endif
 
 int32 mr_menuCreate(const char *title, int16 num) {
 #if 0
@@ -1565,8 +1470,7 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
 
         case 1017:  //获得信号强度。
         {
-            static T_RX rx = {
-                3, 5, 5, 1};
+            static T_RX rx = {3, 5, 5, 1};
 
             *output = (uint8 *)&rx;
             *output_len = sizeof(T_RX);
@@ -1593,7 +1497,7 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
         }
 
         default: {
-            //			LOGW("mr_platEx(code=%d, input=%#p, il=%d) not impl!", code, input, input_len);
+            LOGW("mr_platEx(code=%d, input=%#p, il=%d) not impl!", code, input, input_len);
 
             //			if(input_len>0 && input){
             //				int fd;

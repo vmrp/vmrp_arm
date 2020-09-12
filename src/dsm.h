@@ -73,16 +73,13 @@ extern char dsmFactory[8];
 
 //---------------------------------
 void dsm_init(void);
-void dsm_reset(void);
 
 int32 mr_exit(void);
 int mr_getSocketState(int s);
-void mr_cacheFlush(int id);
 
 /** 设置 SD卡路径，参数底层不做错误检查 */
 void SetDsmSDPath(const char *path);
 void SetDsmWorkPath(const char *path);
 
-//extern "C" int cacheflush(long __addr, long __nbytes, long __cache);
 
 #endif
