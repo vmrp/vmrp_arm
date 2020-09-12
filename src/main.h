@@ -45,31 +45,8 @@ typedef struct {
 
 typedef int32 (*MR_CALLBACK)(int32 result);
 
-//--- 万能函数 标示 ----------------------------
-#define EMU_FUNC_menuCreate "menuCreate"
-#define EMU_FUNC_menuSetItem "menuSetItem"
-#define EMU_FUNC_menuShow "menuShow"
-#define EMU_FUNC_menuSetFocus "menuSetFocus"
-#define EMU_FUNC_menuRelease "menuRelease"
-#define EMU_FUNC_menuRefresh "menuRefresh"
-
-#define EMU_FUNC_dialogCreate "dialogCreate"
-#define EMU_FUNC_dialogRelease "dialogRelease"
-#define EMU_FUNC_dialogRefresh "dialogRefresh"
-
-#define EMU_FUNC_textCreate "textCreate"
-#define EMU_FUNC_textRelease "textRelease"
-#define EMU_FUNC_textRefresh "textRefresh"
-
-//#define EMU_FUNC_ ""
-
-//--- 获取系统信息的 key ----------------------------
-#define SYSINFO_NETTYPE "netType"
-#define SYSINFO_IMSI "imsi"
-#define SYSINFO_IMEI "imei"
 
 //--- DSM 配置参数 ----------------------------
-#define SCNBIT 16
 #define DSM_MAX_FILE_LEN 256
 #define DSM_MAX_NAME_LEN 128
 #define MAX_IMEI_LEN 15
@@ -77,10 +54,8 @@ typedef int32 (*MR_CALLBACK)(int32 result);
 #define MAX_SMS_CENTER_LEN 15
 
 //------- 全局变量 -----------------------------------------
-extern int SCNW;
-extern int SCNH;
-#define screenW SCNW
-#define screenH SCNH
+extern int SCRW;
+extern int SCRH;
 
 extern T_EMUENV gEmuEnv;  //API LOG 控制
 

@@ -1114,9 +1114,9 @@ static int32 dsmGetFreeSpace(uint8 *input, int32 input_len, T_DSM_DISK_INFO *spa
 int32 mr_getScreenInfo(mr_screeninfo *s) {
     //if(showApiLog) LOGI("mr_getScreenInfo");
     if (s) {
-        s->width = SCNW;
-        s->height = SCNH;
-        s->bit = SCNBIT;
+        s->width = SCRW;
+        s->height = SCRH;
+        s->bit = 16;
     }
     return MR_SUCCESS;
 }
@@ -1418,7 +1418,7 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
         {
             *output = (uint8 *)cacheScreenBuffer;
             //			screenBuf = cacheScreenBuffer;
-            *output_len = SCNW * SCNH * 2;
+            *output_len = SCRW * SCRH * 2;
             LOGD("mocall ram2 addr=%p l=%d", output, *output_len);
             return MR_SUCCESS;
         }
@@ -1441,7 +1441,7 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
         case 1014:  //申请拓展内存
         {
             if (0) {
-                *output_len = SCNW * SCNH * 4;
+                *output_len = SCRW * SCRH * 4;
                 *output = malloc(*output_len);
                 LOGI("malloc exRam addr=%p len=%d", output, output_len);
                 return MR_SUCCESS;

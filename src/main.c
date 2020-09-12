@@ -19,8 +19,8 @@
 T_EMUENV gEmuEnv;  //API LOG 控制
 
 uint16 *cacheScreenBuffer;  //缓冲屏幕地址
-int SCNW = SCREEN_WIDTH;
-int SCNH = SCREEN_HEIGHT;
+int SCRW = SCREEN_WIDTH;
+int SCRH = SCREEN_HEIGHT;
 int showApiLog = TRUE;
 
 static char runMrpPath[DSM_MAX_FILE_LEN + 1];
@@ -32,7 +32,7 @@ void j2n_create() {
     gEmuEnv.showMrPlat = TRUE;
     gEmuEnv.dsmStartTime = get_time_ms();
 
-    screenBuf = cacheScreenBuffer = (uint16 *)malloc(SCNW * SCNH * 2);
+    screenBuf = cacheScreenBuffer = (uint16 *)malloc(SCRW * SCRH * 2);
 
     mr_tm_init();
     mr_baselib_init();
@@ -72,7 +72,7 @@ void j2n_resume() {
     LOGD("native resume!");
     LOGI("mr_resumeApp");
     mr_resumeApp();
-    emu_bitmapToscreen(cacheScreenBuffer, 0, 0, screenW, screenH);
+    emu_bitmapToscreen(cacheScreenBuffer, 0, 0, SCRW, SCRH);
 }
 
 void j2n_stop() {
@@ -238,17 +238,17 @@ void printScreen(char *filename, uint16 *buf) {
 static SDL_Renderer *renderer;
 
 void emu_bitmapToscreen(uint16 *data, int x, int y, int w, int h) {
-    printf("emu_bitmapToscreen=====x:%d, y:%d, w:%d, h:%d, scnw:%d, scnh:%d===\n", x, y, w, h, SCNW, SCNH);
+    printf("emu_bitmapToscreen=====x:%d, y:%d, w:%d, h:%d, scrw:%d, scrh:%d===\n", x, y, w, h, SCRW, SCRH);
     // printScreen("a.bmp", data);
     for (uint32 i = 0; i < w; i++) {
         for (uint32 j = 0; j < h; j++) {
             int32 xx = x + i;
             int32 yy = y + j;
-            if (xx < 0 || yy < 0 || xx >= SCNW || yy >= SCNH) {
+            if (xx < 0 || yy < 0 || xx >= SCRW || yy >= SCRH) {
                 continue;
             }
             if (data == cacheScreenBuffer) {
-                uint16 color = *(cacheScreenBuffer + (xx + yy * SCNW));
+                uint16 color = *(cacheScreenBuffer + (xx + yy * SCRW));
                 SDL_SetRenderDrawColor(renderer, PIXEL565R(color), PIXEL565G(color), PIXEL565B(color), 0xFF);
                 // SDL_SetRenderDrawColor(renderer, 0xff, 0, 0, 0xFF);
                 // SDL_RenderDrawPoint(renderer, 1, 1);

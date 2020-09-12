@@ -1,29 +1,14 @@
 #include "font_sky16_2.h"
 
-#include "dsm.h"
-#include "main.h"
+// todo "上有名不"这四个字必定显示为错别字
 
-/*
- sky字体绘制
- 风的影子
- */
-
-typedef struct {
-    char *bitbuf;
-    char *filename;  //字体文件名
-    long f;          //文件指针
-    long font_size;  //字号
-    long ansi_size;  //ansi字符宽度
-    int width;
-    int height;
-} FONT;
 
 static char font_sky16_bitbuf[32];
 
 int font_sky16_f;
 
 int xl_font_sky16_init() {  //字体初始化，打开字体文件
-    font_sky16_f = mr_open("system/gb16_mrpoid.uc2", 0);
+    font_sky16_f = mr_open("system/gb16.uc2", 0);
     if (font_sky16_f <= 0) {
         LOGW("字体加载失败");
         return -1;

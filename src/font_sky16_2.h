@@ -1,8 +1,8 @@
 #ifndef FONT_SKY16_H
 #define FONT_SKY16_H
 
-#define SCRW SCNW
-#define SCRH SCNH
+#include "dsm.h"
+#include "main.h"
 
 extern uint16 *screenBuf;  //屏幕缓冲区地址
 
