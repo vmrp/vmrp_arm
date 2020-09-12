@@ -4,7 +4,7 @@
 
 ///////////////////////
 //编码转换，从GB2312转成unicode
-const unsigned char *GBCodeToUnicode(unsigned char *gbCode) {
+static const unsigned char *GBCodeToUnicode(unsigned char *gbCode) {
     const unsigned char *p_map = 0;
     int i;
 

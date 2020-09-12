@@ -15,9 +15,6 @@
 #include "mr_table.h"
 #include "mr_tm.h"
 
-#ifdef BREW_MOD
-// #include "AEEStdLib.h"//ouli brew
-#endif
 
 typedef struct GCState {
   GCObject *tmark;  /* list of marked objects to be traversed */

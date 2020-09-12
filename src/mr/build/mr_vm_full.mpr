@@ -14,7 +14,7 @@ output_format=lib
 
 
 [config_mtk240]
-define=TARGET_MOD,MTK_MOD,MR_VERSION=1968,MR_PLAT_DRAWTEXT,MR_PLAT_U2C
+define=TARGET_MOD,MTK_MOD,MR_VERSION=1968,MR_PLAT_DRAWTEXT
 output=mr_vm_full.lib
 bmp_mode=normal
 plat=mtk

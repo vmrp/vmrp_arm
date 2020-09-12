@@ -81,7 +81,6 @@ enum {
 #define MR_FILE_HANDLE int32
 #endif
 
-#ifndef BREW_MOD
 
 typedef struct SaveF {
   MR_FILE_HANDLE f;
@@ -91,24 +90,6 @@ typedef struct LoadF {
   MR_FILE_HANDLE f;
   char buff[MRP_L_BUFFERSIZE];
 } LoadF;
-
-#endif
-
-#ifdef BREW_MOD
-
-typedef struct SaveF {
-  IFile *f;
-} SaveF;
-
-typedef struct LoadF {
-  IFile *f;
-#ifdef MR_BREW_USE_ZIP
-  IUnzipAStream* pUnzip;
-#endif
-  char buff[MRP_L_BUFFERSIZE];
-} LoadF;
-
-#endif
 
 
 

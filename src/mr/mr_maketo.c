@@ -15,19 +15,6 @@ TO_MR_API int to_mr_mythroad_open (mrp_State* to_mr_S);
 
 #include "mr_forvm.h"
 #include "mr_formaketo.h"
-#ifndef BREW_MOD
-#endif
-#ifdef BREW_MOD
-#include "AEE.h"
-#include "AEEAppGen.h"
-#include "AEEDate.h"
-#include "AEEDB.h"
-#include "AEEFile.h"
-#include "AEEMenu.h"
-#include "AEEShell.h"
-#include "AEEText.h"
-#include "AEESprite.h"
-#endif
 
 /* function to register type */
 static void to_mr_reg_types (mrp_State* to_mr_S)

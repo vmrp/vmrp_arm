@@ -3,7 +3,7 @@ MINI_VM_VERSION := 2011
 VM_VERSION := 1968
 MINI_TARGETDIR :=
 
-LOCAL_CFLAGS_FULL := -c -littleend -O2 -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(VM_VERSION) -DMR_PLAT_DRAWTEXT -DMR_PLAT_U2C
+LOCAL_CFLAGS_FULL := -c -littleend -O2 -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(VM_VERSION) -DMR_PLAT_DRAWTEXT
 
 LOCAL_SRC_FILES_FULL := src/mr_api.c \
                   src/mr_debug.c  \
@@ -69,7 +69,7 @@ mr_vm_full:
 
 #####################################################################
 
-LOCAL_CFLAGS := -c -littleend -O2 -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(MINI_VM_VERSION) -DMR_PLAT_DRAWTEXT -DMR_PLAT_U2C
+LOCAL_CFLAGS := -c -littleend -O2 -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(MINI_VM_VERSION) -DMR_PLAT_DRAWTEXT
 LOCAL_SRC_FILES := mythroad_mini.c \
                     mr_gb2312.c     \
                     mr_unzip.c	\
