@@ -25,7 +25,7 @@
 #define PLUTO_TPERMANENT 101
 
 #if 1
-#define verify(x) { int v = (int)((x)); mrp_assert(v); }
+#define verify(x) mrp_assert((int)((x)))
 #else
 #define verify(x) { \
       int v = (int)((x)); \
@@ -750,7 +750,7 @@ static void registerobject(int ref, UnpersistInfo *upi)
 static void unpersistboolean(UnpersistInfo *upi)
 {
                /* perms reftbl ... */
-   int b;
+   int b=0;
    verify(mr_Z_read(&upi->zio, &b, sizeof(int)) == 0);
    mrp_pushboolean(upi->L, b);
                /* perms reftbl ... bool */
@@ -759,7 +759,7 @@ static void unpersistboolean(UnpersistInfo *upi)
 static void unpersistlightuserdata(UnpersistInfo *upi)
 {
                /* perms reftbl ... */
-   void *p;
+   void *p=NULL;
    verify(mr_Z_read(&upi->zio, &p, sizeof(void *)) == 0);
    mrp_pushlightuserdata(upi->L, p);
                /* perms reftbl ... ludata */
@@ -768,7 +768,7 @@ static void unpersistlightuserdata(UnpersistInfo *upi)
 static void unpersistnumber(UnpersistInfo *upi)
 {
                /* perms reftbl ... */
-   mrp_Number n;
+   mrp_Number n=0;
    verify(mr_Z_read(&upi->zio, &n, sizeof(mrp_Number)) == 0);
    mrp_pushnumber(upi->L, n);
                /* perms reftbl ... num */
@@ -777,7 +777,7 @@ static void unpersistnumber(UnpersistInfo *upi)
 static void unpersiststring(UnpersistInfo *upi)
 {
                /* perms reftbl sptbl ref */
-   int length;
+   int length=0;
    char* string;
    verify(mr_Z_read(&upi->zio, &length, sizeof(int)) == 0);
    string = mr_M_malloc(upi->L, length);
@@ -851,7 +851,7 @@ static void unpersisttable(int ref, UnpersistInfo *upi)
 {
                /* perms reftbl ... */
    {
-      int isspecial;
+      int isspecial=0;
       verify(mr_Z_read(&upi->zio, &isspecial, sizeof(int)) == 0);
       if(isspecial) {
          unpersistspecialtable(ref, upi);
@@ -933,7 +933,7 @@ static void unpersistfunction(int ref, UnpersistInfo *upi)
                /* perms reftbl ... */
    LClosure *lcl;
    int i;
-   lu_byte nupvalues;
+   lu_byte nupvalues=0;
 
    verify(mr_Z_read(&upi->zio, &nupvalues, sizeof(lu_byte)) == 0);
 
@@ -1017,7 +1017,7 @@ static void unpersistproto(int ref, UnpersistInfo *upi)
                /* perms reftbl ... */
    Proto *p;
    int i;
-   int sizep, sizek;
+   int sizep=0, sizek=0;
 
    /* We have to be careful. The GC expects a lot out of protos. In
     * particular, we need to give the function a valid string for its
@@ -1121,7 +1121,7 @@ static void unpersistthread(int ref, UnpersistInfo *upi)
 
    /* First, deserialize the object stack. */
    {
-      int i, stacksize;
+      int i, stacksize=0;
       verify(mr_Z_read(&upi->zio, &stacksize, sizeof(int)) == 0);
       mr_D_growstack(L2, stacksize);
       /* Make sure that the first stack element (a nil, representing
@@ -1139,12 +1139,12 @@ static void unpersistthread(int ref, UnpersistInfo *upi)
 
    /* Now, deserialize the CallInfo stack. */
    {
-      int i, numframes;
+      int i, numframes=0;
       verify(mr_Z_read(&upi->zio, &numframes, sizeof(int)) == 0);
       mr_D_reallocCI(L2,numframes*2);
       for(i=0; i<numframes; i++) {
          CallInfo *ci = L2->base_ci + i;
-         int stackbase, stacktop, pc;
+         int stackbase=0, stacktop=0, pc=0;
          verify(mr_Z_read(&upi->zio, &stackbase, sizeof(int)) == 0);
          verify(mr_Z_read(&upi->zio, &stacktop, sizeof(int)) == 0);
          verify(mr_Z_read(&upi->zio, &pc, sizeof(int)) == 0);
@@ -1163,7 +1163,7 @@ static void unpersistthread(int ref, UnpersistInfo *upi)
    }
                /* L1: perms reftbl ... thr */
    {
-      int stackbase, stacktop;
+      int stackbase=0, stacktop=0;
       verify(mr_Z_read(&upi->zio, &stackbase, sizeof(int)) == 0);
       verify(mr_Z_read(&upi->zio, &stacktop, sizeof(int)) == 0);
       L2->base = L2->stack + stackbase;
@@ -1174,7 +1174,7 @@ static void unpersistthread(int ref, UnpersistInfo *upi)
       UpVal* uv;
       GCObject **nextslot = &L2->openupval;
       while(1) {
-         int stackpos;
+         int stackpos=0;
          unpersist(upi);
                /* perms reftbl ... thr uv/nil */
          if(mrp_isnil(upi->L, -1)) {
@@ -1204,7 +1204,7 @@ static void unpersistthread(int ref, UnpersistInfo *upi)
 static void unpersistuserdata(int ref, UnpersistInfo *upi)
 {
                /* perms reftbl ... */
-   int isspecial;
+   int isspecial=0;
    verify(mr_Z_read(&upi->zio, &isspecial, sizeof(int)) == 0);
    if(isspecial) {
       unpersist(upi);
@@ -1259,7 +1259,7 @@ static void unpersistpermanent(int ref, UnpersistInfo *upi)
 }
 
 /* For debugging only; not called when mrp_assert is empty */
-static int inreftable(mrp_State *L, int ref)
+int inreftable(mrp_State *L, int ref)
 {
    int res;
                /* perms reftbl ... */
@@ -1276,13 +1276,13 @@ static int inreftable(mrp_State *L, int ref)
 static void unpersist(UnpersistInfo *upi)
 {
                /* perms reftbl ... */
-   int firstTime;
+   int firstTime=0;
    int stacksize = mrp_gettop(upi->L); /* DEBUG */
    verify(mr_Z_read(&upi->zio, &firstTime, sizeof(int)) == 0);
    
    if(firstTime) {
-      int ref;
-      int type;
+      int ref=0;
+      int type=0;
       verify(mr_Z_read(&upi->zio, &ref, sizeof(int)) == 0);
       mrp_assert(!inreftable(upi->L, ref));
       verify(mr_Z_read(&upi->zio, &type, sizeof(int)) == 0);
@@ -1343,7 +1343,7 @@ static void unpersist(UnpersistInfo *upi)
       upi->level--;
 #endif
    } else {
-      int ref;
+      int ref=0;
       verify(mr_Z_read(&upi->zio, &ref, sizeof(int)) == 0);
 #ifdef PLUTO_DEBUG
       printindent(upi->level);
@@ -1365,6 +1365,7 @@ static void unpersist(UnpersistInfo *upi)
    mrp_assert(mrp_gettop(upi->L) == stacksize + 1);
    //mrp_setgcthreshold(upi->L, 0);
    //mrp_setgcthreshold(upi->L, 0);
+   stacksize = 0;
 }
 
 void mr_store_unpersist(mrp_State *L, mrp_Chunkreader reader, void *ud)
@@ -1424,11 +1425,13 @@ int unpersist_l(mrp_State *L)
    return 1;
 }
 
-static const mr_L_reg pluto_reg[] = {
-   { "store", persist_l },
-   { "load", unpersist_l },
-   { NULL, NULL }
-};
+static mr_L_reg pluto_reg[3];
+
+void mr_pluto_init() {
+    pluto_reg[0].name = "store", pluto_reg[0].func = persist_l;
+    pluto_reg[1].name = "load", pluto_reg[1].func = unpersist_l;
+    pluto_reg[2].name = NULL, pluto_reg[2].func = NULL;
+}
 
 int mr_store_open(mrp_State *L) {
    mr_L_openlib(L, "_store", pluto_reg, 0);

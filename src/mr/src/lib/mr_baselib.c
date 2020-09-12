@@ -13,6 +13,8 @@
 #include "mr_lib.h"
 
 
+static mr_L_reg base_funcs[29];
+static mr_L_reg co_funcs[6];
 
 
 /*
@@ -188,12 +190,13 @@ int mr_B_rawset (mrp_State *L) {
   return 1;
 }
 
-
+#if 0
 static int mr_B_gcinfo (mrp_State *L) {
   mrp_pushnumber(L, (mrp_Number)mrp_getgccount(L));
   mrp_pushnumber(L, (mrp_Number)mrp_getgcthreshold(L));
   return 2;
 }
+#endif
 
 
 static int mr_B_collectgarbage (mrp_State *L) {
@@ -366,7 +369,7 @@ static int mr_B_tostring (mrp_State *L) {
   return 1;
 }
 
-
+#if 0
 static int mr_B_newproxy (mrp_State *L) {
   mrp_settop(L, 1);
   mrp_newuserdata(L, 0);  /* create proxy */
@@ -391,6 +394,7 @@ static int mr_B_newproxy (mrp_State *L) {
   mrp_setmetatable(L, 2);
   return 1;
 }
+#endif
 
 
 /*
@@ -419,6 +423,7 @@ static int mr_B_newproxy (mrp_State *L) {
 #endif
 
 
+#if 0
 static const char *getpath (mrp_State *L) {
   const char *path;
   mrp_getglobal(L, MRP_PATH);  /* try global variable */
@@ -457,7 +462,6 @@ static void pushcomposename (mrp_State *L) {
   mrp_pushstring(L, path);  /* push last sufix (`n' already includes this) */
   mrp_concat(L, n);
 }
-
 
 static int mr_B_require (mrp_State *L) {
   const char *path;
@@ -507,49 +511,11 @@ static int mr_B_require (mrp_State *L) {
     }
   }
 }
+#endif
 
 /* }====================================================== */
 
 
-static const mr_L_reg base_funcs[] = {
-   {"_error", mr_B_error},
-   {"_getTab", mr_B_getmetatable},
-   {"_setTab", mr_B_setmetatable},
-   {"_getEnv", mr_B_getfenv},
-   {"_setEnv", mr_B_setfenv},
-   //{"_next", mr_B_next},
-   {"_iPairs", mr_B_ipairs},
-   //{"_pairs", mr_B_pairs},
-   {"print", mr_B_print},
-   {"_num", mr_B_tonumber},
-   {"_str", mr_B_tostring},
-   {"_next", mr_B_next},
-#ifdef COMPATIBILITY01
-   {"tonumber", mr_B_tonumber},
-   {"tostring", mr_B_tostring},
-   {"type", mr_B_type},
-   {"next", mr_B_next},
-   {"print", mr_B_print},
-   {"pcall", mr_B_pcall},
-   {"loadfile", mr_B_loadfile},
-   {"dofile", mr_B_dofile},
-   {"_loads", mr_B_loadstring},
-#endif
-   {"_t", mr_B_short_type},
-   {"_assert", mr_B_assert},
-   {"_rawEq", mr_B_rawequal},
-   {"_pCall", mr_B_pcall},
-   {"_pCallEx", mr_B_xpcall},
-   {"_gc", mr_B_collectgarbage},
-   //{"_gcInfo", mr_B_gcinfo},
-   {"_loadFile", mr_B_loadfile},
-   {"_execFile", mr_B_dofile},
-   {"_loadBuf", mr_B_loadstring},
-   //{"_require", mr_B_require},
-
-
-   {NULL, NULL}
-};
 
 
 /*
@@ -651,17 +617,93 @@ static int mr_B_costatus (mrp_State *L) {
 }
 
 
-static const mr_L_reg co_funcs[] = {
-  {"create", mr_B_cocreate},
-  {"wrap", mr_B_cowrap},
-  {"resume", mr_B_coresume},
-  {"yield", mr_B_yield},
-  {"status", mr_B_costatus},
-  {NULL, NULL}
-};
 
 /* }====================================================== */
 
+void mr_baselib_init (void) {
+    co_funcs[0].name = "create";
+    co_funcs[0].func = mr_B_cocreate;
+    co_funcs[1].name = "wrap";
+    co_funcs[1].func = mr_B_cowrap;
+    co_funcs[2].name = "resume";
+    co_funcs[2].func = mr_B_coresume;
+    co_funcs[3].name = "yield";
+    co_funcs[3].func = mr_B_yield;
+    co_funcs[4].name = "status";
+    co_funcs[4].func = mr_B_costatus;
+    co_funcs[5].name = NULL;
+    co_funcs[5].func = NULL;
+
+    base_funcs[0].name ="_error";
+    base_funcs[0].func =  mr_B_error;
+    base_funcs[1].name ="_getTab";
+    base_funcs[1].func = mr_B_getmetatable;
+    base_funcs[2].name ="_setTab";
+    base_funcs[2].func = mr_B_setmetatable;
+    base_funcs[3].name ="_getEnv";
+    base_funcs[3].func = mr_B_getfenv;
+    base_funcs[4].name ="_setEnv";
+    base_funcs[4].func = mr_B_setfenv;
+    // base_funcs[].name ="_next";
+    // base_funcs[].func = mr_B_next;
+    base_funcs[5].name ="_iPairs";
+    base_funcs[5].func = mr_B_ipairs;
+    // base_funcs[].name ="_pairs";
+    // base_funcs[].func = mr_B_pairs;
+    base_funcs[6].name ="print";
+    base_funcs[6].func = mr_B_print;
+    base_funcs[7].name ="_num";
+    base_funcs[7].func = mr_B_tonumber;
+    base_funcs[8].name ="_str";
+    base_funcs[8].func = mr_B_tostring;
+    base_funcs[9].name ="_next";
+    base_funcs[9].func = mr_B_next;
+#ifdef COMPATIBILITY01
+    base_funcs[10].name ="tonumber";
+    base_funcs[10].func = mr_B_tonumber;
+    base_funcs[11].name ="tostring";
+    base_funcs[11].func = mr_B_tostring;
+    base_funcs[12].name ="type";
+    base_funcs[12].func = mr_B_type;
+    base_funcs[13].name ="next";
+    base_funcs[13].func = mr_B_next;
+    base_funcs[14].name ="print";
+    base_funcs[14].func = mr_B_print;
+    base_funcs[15].name ="pcall";
+    base_funcs[15].func = mr_B_pcall;
+    base_funcs[16].name ="loadfile";
+    base_funcs[16].func = mr_B_loadfile;
+    base_funcs[17].name ="dofile";
+    base_funcs[17].func = mr_B_dofile;
+    base_funcs[18].name ="_loads";
+    base_funcs[18].func = mr_B_loadstring;
+#endif
+    base_funcs[19].name ="_t";
+    base_funcs[19].func = mr_B_short_type;
+    base_funcs[20].name ="_assert";
+    base_funcs[20].func = mr_B_assert;
+    base_funcs[21].name ="_rawEq";
+    base_funcs[21].func = mr_B_rawequal;
+    base_funcs[22].name ="_pCall";
+    base_funcs[22].func = mr_B_pcall;
+    base_funcs[23].name ="_pCallEx";
+    base_funcs[23].func = mr_B_xpcall;
+    base_funcs[24].name ="_gc";
+    base_funcs[24].func = mr_B_collectgarbage;
+    // base_funcs[].name ="_gcInfo";
+    // base_funcs[].func = mr_B_gcinfo;
+    base_funcs[25].name ="_loadFile";
+    base_funcs[25].func = mr_B_loadfile;
+    base_funcs[26].name ="_execFile";
+    base_funcs[26].func = mr_B_dofile;
+    base_funcs[27].name ="_loadBuf";
+    base_funcs[27].func = mr_B_loadstring;
+    // base_funcs[].name ="_require";
+    // base_funcs[].func = mr_B_require;
+    base_funcs[28].name =NULL;
+    base_funcs[28].func = NULL;
+
+}
 
 
 static void base_lib_open (mrp_State *L) {

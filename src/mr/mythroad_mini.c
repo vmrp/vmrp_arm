@@ -402,7 +402,7 @@ int mr_rand(void) {
     return rand();
 }
 
-void mythroad_init(){
+void mythroad_init(void){
 
 	///////////////////////////////////////////////////////////////////////
 	_mr_c_internal_table[0]=(void*)mr_m0_files;

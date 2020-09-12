@@ -33,6 +33,8 @@
 ** =======================================================
 */
 
+static mr_L_reg filelib[5];
+static mr_L_reg flib[7];
 
 
 #define FILEHANDLE		"file*"
@@ -158,7 +160,6 @@ static FILE getiofile (mrp_State *L, const char *name) {
 }
 */
 
-static int io_readline (mrp_State *L);
 
 /*
 ** {======================================================
@@ -483,34 +484,6 @@ static int f_seek (mrp_State *L) {
     return 1;
   }
 }
-
-static const mr_L_reg filelib[] = {
-  {"close", io_close},
-  {"open", io_open},
-  //{"read", io_read},
-  {"state", io_type},
-  //{"write", io_write},
-  {"readAll", io_readAll},
-  {NULL, NULL}
-};
-
-
-static const mr_L_reg flib[] = {
-  {"read", f_read},
-  {"seek", f_seek},
-  {"write", f_write},
-  {"close", io_close},
-
-#ifdef MR_FS_ASYN
-  {"asyn_read", f_asyn_read},
-  {"asyn_write", f_asyn_write},
-#endif
-
-  {"__gc", io_gc},
-  {"__str", io_tostring},
-  {NULL, NULL}
-};
-
 
 static void createfilemeta (mrp_State *L) {
   mr_L_newmetatable(L, FILEHANDLE);  /* create new metatable for file handles */
@@ -944,73 +917,10 @@ static int WinRelease(mrp_State *L)
    return 1;
 }
 
-
-
-
-
-static const mr_L_reg syslib[] = {
-   {"getUptime",    io_getuptime},
-   {"rm",    io_remove},
-   {"mkDir",    io_mkdir},
-   {"rmDir",    io_rmdir},
-   {"getFileInfo",    io_getfileinfo},
-   {"getFileLen",    io_getfilelen},
-   {"findStart",    io_findstart},
-   {"findNext",    io_findnext},
-   {"findStop",    io_findstop},
-   {"getInfo", _mr_GetSysInfo},
-   {"datetime", _mr_GetDatetime},
-#ifdef COMPATIBILITY01
-   {"getuptime",    io_getuptime},
-   {"remove",    io_remove},
-   {"rename",    io_rename},
-   {"mkdir",    io_mkdir},
-   {"rmdir",    io_rmdir},
-   {"getfileinfo",    io_getfileinfo},
-   {"getfilelen",    io_getfilelen},
-   {"findstart",    io_findstart},
-   {"findnext",    io_findnext},
-   {"findstop",    io_findstop},
-#endif
-  {NULL, NULL}
-};
-
-static const mr_L_reg guilib[] = {
-   {"m_create",    MenuCreate},
-   {"m_setItem",    MenuAddItem},
-   {"m_show",    MenuShow},
-   {"m_release",    MenuRelease},
-   {"m_focus", MenuSetFocus},
-
-   {"d_create",    DialogCreate},
-   {"d_release",    DialogRelease},
-   
-   {"t_create",    TextCreate},
-   {"t_release",    TextRelease},
-   
-#ifndef GUI_NONE_REFRESH
-   {"m_update", MenuRefresh},
-   {"d_update",    DialogRefresh},
-   {"t_update",    TextRefresh},
-#endif
-   
-   {"e_create",    EditCreate},
-   {"e_release",    EditRelease},
-   {"e_getText",    EditGetText},
-
-  {"w_create",    WinCreate},
-  {"w_release",    WinRelease},
-  
-#ifdef COMPATIBILITY01
-  {"m_setitem",    MenuAddItem},
-  {"e_gettext",    EditGetText},
-#endif
-
-  {NULL, NULL}
-};
-
 /* }====================================================== */
 
+static  mr_L_reg syslib[22];
+static  mr_L_reg guilib[20];
 
 
 MRPLIB_API int mrp_open_file (mrp_State *L) {
@@ -1022,3 +932,80 @@ MRPLIB_API int mrp_open_file (mrp_State *L) {
   return 1;
 }
 
+void mr_iolib_target_init(void) {
+    filelib[0].name = "close", filelib[0].func = io_close;
+    filelib[1].name = "open", filelib[1].func = io_open;
+    //{"read", io_read},
+    filelib[2].name = "state", filelib[2].func = io_type;
+    //{"write", io_write},
+    filelib[3].name = "readAll", filelib[3].func = io_readAll;
+    filelib[4].name = NULL, filelib[4].func = NULL;
+
+    /////////////////////////////////////////////////////////////
+
+    flib[0].name = "read", flib[0].func = f_read;
+    flib[1].name = "seek", flib[1].func = f_seek;
+    flib[2].name = "write", flib[2].func = f_write;
+    flib[3].name = "close", flib[3].func = io_close;
+#ifdef MR_FS_ASYN
+    flib[].name = "asyn_read", flib[].func = f_asyn_read;
+    flib[].name = "asyn_write", flib[].func = f_asyn_write;
+#endif
+    flib[4].name = "__gc", flib[4].func = io_gc;
+    flib[5].name = "__str", flib[5].func = io_tostring;
+    flib[6].name = NULL, flib[6].func = NULL;
+
+    /////////////////////////////////////////////////////////////
+
+    syslib[0].name = "getUptime", syslib[0].func = io_getuptime;
+    syslib[1].name = "rm", syslib[1].func = io_remove;
+    syslib[2].name = "mkDir", syslib[2].func = io_mkdir;
+    syslib[3].name = "rmDir", syslib[3].func = io_rmdir;
+    syslib[4].name = "getFileInfo", syslib[4].func = io_getfileinfo;
+    syslib[5].name = "getFileLen", syslib[5].func = io_getfilelen;
+    syslib[6].name = "findStart", syslib[6].func = io_findstart;
+    syslib[7].name = "findNext", syslib[7].func = io_findnext;
+    syslib[8].name = "findStop", syslib[8].func = io_findstop;
+    syslib[9].name = "getInfo", syslib[9].func = _mr_GetSysInfo;
+    syslib[10].name = "datetime", syslib[10].func = _mr_GetDatetime;
+#ifdef COMPATIBILITY01
+    syslib[11].name = "getuptime", syslib[11].func = io_getuptime;
+    syslib[12].name = "remove", syslib[12].func = io_remove;
+    syslib[13].name = "rename", syslib[13].func = io_rename;
+    syslib[14].name = "mkdir", syslib[14].func = io_mkdir;
+    syslib[15].name = "rmdir", syslib[15].func = io_rmdir;
+    syslib[16].name = "getfileinfo", syslib[16].func = io_getfileinfo;
+    syslib[17].name = "getfilelen", syslib[17].func = io_getfilelen;
+    syslib[18].name = "findstart", syslib[18].func = io_findstart;
+    syslib[19].name = "findnext", syslib[19].func = io_findnext;
+    syslib[20].name = "findstop", syslib[20].func = io_findstop;
+#endif
+    syslib[21].name = NULL, syslib[21].func = NULL;
+
+    /////////////////////////////////////////////////////////////
+
+    guilib[0].name = "m_create", guilib[0].func = MenuCreate;
+    guilib[1].name = "m_setItem", guilib[1].func = MenuAddItem;
+    guilib[2].name = "m_show", guilib[2].func = MenuShow;
+    guilib[3].name = "m_release", guilib[3].func = MenuRelease;
+    guilib[4].name = "m_focus", guilib[4].func = MenuSetFocus;
+    guilib[5].name = "d_create", guilib[5].func = DialogCreate;
+    guilib[6].name = "d_release", guilib[6].func = DialogRelease;
+    guilib[7].name = "t_create", guilib[7].func = TextCreate;
+    guilib[8].name = "t_release", guilib[8].func = TextRelease;
+#ifndef GUI_NONE_REFRESH
+    guilib[9].name = "m_update", guilib[9].func = MenuRefresh;
+    guilib[10].name = "d_update", guilib[10].func = DialogRefresh;
+    guilib[11].name = "t_update", guilib[11].func = TextRefresh;
+#endif
+    guilib[12].name = "e_create", guilib[12].func = EditCreate;
+    guilib[13].name = "e_release", guilib[13].func = EditRelease;
+    guilib[14].name = "e_getText", guilib[14].func = EditGetText;
+    guilib[15].name = "w_create", guilib[15].func = WinCreate;
+    guilib[16].name = "w_release", guilib[16].func = WinRelease;
+#ifdef COMPATIBILITY01
+    guilib[17].name = "m_setitem", guilib[17].func = MenuAddItem;
+    guilib[18].name = "e_gettext", guilib[18].func = EditGetText;
+#endif
+    guilib[19].name = NULL, guilib[19].func = NULL;
+}

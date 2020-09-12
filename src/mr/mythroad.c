@@ -46,13 +46,7 @@ static const unsigned char mr_m0_file1[]=
 #define EXTHDR 16               /* size of extended local header, inc sig */
 
 
-const unsigned char *mr_m0_files[] =
-{NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
-NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
-NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
-NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
-NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL
-};
+const unsigned char *mr_m0_files[50];
 //#endif
 
 
@@ -63,6 +57,7 @@ NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL
 
 #define MRDBGPRINTF mr_printf
 
+extern int mr_sprintf(char * s, const char * format, ...);
 
 mrp_State    *vm_state;
 
@@ -175,8 +170,7 @@ static uint32 LG_mem_left;
 #define CFG_USE_URL_UPDATE_OFFSET 6//是否使用SMS更新的URL
 
 
-static const char* dsm_cfg_data_file_name = "dsm.cfg";
-#define   DSM_CFG_FILE_NAME  dsm_cfg_data_file_name                     //短信文件名称
+#define  DSM_CFG_FILE_NAME  "dsm.cfg"     //短信文件名称
 
 static uint8 mr_sms_cfg_buf[MR_SMS_CFG_BUF_LEN];
 static int32 mr_sms_cfg_need_save = FALSE;
@@ -291,118 +285,106 @@ static int32 _mr_mod(int32 a, int32 b);
 
 static int32 _mr_getMetaMemLimit(void);
 
+static const void* _mr_c_internal_table[78];
 
-static const void* _mr_c_internal_table[] = {
-   (void*)mr_m0_files,
-   (void*)&vm_state,
-   (void*)&mr_state,
-   (void*)&bi,
-   
-   (void*)&mr_timer_p,
-   (void*)&mr_timer_state,
-   (void*)&mr_timer_run_without_pause,
-   
-   (void*)&mr_gzInBuf,
-   (void*)&mr_gzOutBuf,
-   (void*)&LG_gzinptr,
-   (void*)&LG_gzoutcnt,
-   
-   (void*)&mr_sms_cfg_need_save,
-   (void*)_mr_smsSetBytes,
-   (void*)_mr_smsAddNum,
-   (void*)_mr_newSIMInd,
-   
-   (void*)_mr_isMr,
+static void _mr_c_internal_table_init() {
+    _mr_c_internal_table[0] = (void*)mr_m0_files;
+    _mr_c_internal_table[1] = (void*)&vm_state;
+    _mr_c_internal_table[2] = (void*)&mr_state;
+    _mr_c_internal_table[3] = (void*)&bi;
 
+    _mr_c_internal_table[4] = (void*)&mr_timer_p;
+    _mr_c_internal_table[5] = (void*)&mr_timer_state;
+    _mr_c_internal_table[6] = (void*)&mr_timer_run_without_pause;
 
+    _mr_c_internal_table[7] = (void*)&mr_gzInBuf;
+    _mr_c_internal_table[8] = (void*)&mr_gzOutBuf;
+    _mr_c_internal_table[9] = (void*)&LG_gzinptr;
+    _mr_c_internal_table[10] = (void*)&LG_gzoutcnt;
 
-   (void*)mrp_gettop,  //1937
-   (void*)mrp_settop,
-   (void*)mrp_pushvalue,
-   (void*)mrp_remove,
-   (void*)mrp_insert,
-   (void*)mrp_replace,
-   
-   (void*)mrp_isnumber,
-   (void*)mrp_isstring,
-   (void*)mrp_iscfunction,
-   (void*)mrp_isuserdata,
-   (void*)mrp_type,
-   (void*)mrp_typename,
-   (void*)mrp_shorttypename,
-   
-   
-   (void*)mrp_equal,
-   (void*)mrp_rawequal,
-   (void*)mrp_lessthan,
-   
-   (void*)mrp_tonumber,
-   (void*)mrp_toboolean,
-   (void*)mrp_tostring,
-   (void*)mrp_strlen,
-   (void*)mrp_tostring_t,
-   (void*)mrp_strlen_t,
-   (void*)mrp_tocfunction,
-   (void*)mrp_touserdata,
-   (void*)mrp_tothread,
-   (void*)mrp_topointer,
-   
-   (void*)mrp_pushnil,
-   (void*)mrp_pushnumber,
-   (void*)mrp_pushlstring,
-   (void*)mrp_pushstring,
-   (void*)mrp_pushvfstring,
-   (void*)mrp_pushfstring,
-   (void*)mrp_pushboolean,
-   (void*)mrp_pushcclosure,
-   
-   
-   (void*)mrp_gettable,
-   (void*)mrp_rawget,
-   (void*)mrp_rawgeti,
-   (void*)mrp_newtable,
-   (void*)mrp_getmetatable,
-   
-   
-   (void*)mrp_settable,
-   (void*)mrp_rawset,
-   (void*)mrp_rawseti,
-   
-   
-   (void*)mrp_call,
-   (void*)mrp_pcall,
-   (void*)mrp_load,
-   
-   (void*)mrp_getgcthreshold,
-   (void*)mrp_setgcthreshold,
-   
-   
-   (void*)mrp_error,
+    _mr_c_internal_table[11] = (void*)&mr_sms_cfg_need_save;
+    _mr_c_internal_table[12] = (void*)_mr_smsSetBytes;
+    _mr_c_internal_table[13] = (void*)_mr_smsAddNum;
+    _mr_c_internal_table[14] = (void*)_mr_newSIMInd;
 
-   (void*)mrp_checkstack,
-   (void*)mrp_newuserdata,
-   (void*)mrp_getfenv,
-   (void*)mrp_setfenv,
-   (void*)mrp_setmetatable,
-   (void*)mrp_cpcall,
-   (void*)mrp_next,
-   (void*)mrp_concat,
-   (void*)mrp_pushlightuserdata,
-   (void*)mrp_getgccount,
-   (void*)mrp_dump,
-   (void*)mrp_yield,
-   (void*)mrp_resume,
+    _mr_c_internal_table[15] = (void*)_mr_isMr;
 
+    _mr_c_internal_table[16] = (void*)mrp_gettop;  //1937
+    _mr_c_internal_table[17] = (void*)mrp_settop;
+    _mr_c_internal_table[18] = (void*)mrp_pushvalue;
+    _mr_c_internal_table[19] = (void*)mrp_remove;
+    _mr_c_internal_table[20] = (void*)mrp_insert;
+    _mr_c_internal_table[21] = (void*)mrp_replace;
 
-   NULL
-};
+    _mr_c_internal_table[22] = (void*)mrp_isnumber;
+    _mr_c_internal_table[23] = (void*)mrp_isstring;
+    _mr_c_internal_table[24] = (void*)mrp_iscfunction;
+    _mr_c_internal_table[25] = (void*)mrp_isuserdata;
+    _mr_c_internal_table[26] = (void*)mrp_type;
+    _mr_c_internal_table[27] = (void*)mrp_typename;
+    _mr_c_internal_table[28] = (void*)mrp_shorttypename;
 
-static void* _mr_c_port_table[] = {
-NULL,NULL,NULL,NULL
-};
+    _mr_c_internal_table[29] = (void*)mrp_equal;
+    _mr_c_internal_table[30] = (void*)mrp_rawequal;
+    _mr_c_internal_table[31] = (void*)mrp_lessthan;
 
+    _mr_c_internal_table[32] = (void*)mrp_tonumber;
+    _mr_c_internal_table[33] = (void*)mrp_toboolean;
+    _mr_c_internal_table[34] = (void*)mrp_tostring;
+    _mr_c_internal_table[35] = (void*)mrp_strlen;
+    _mr_c_internal_table[36] = (void*)mrp_tostring_t;
+    _mr_c_internal_table[37] = (void*)mrp_strlen_t;
+    _mr_c_internal_table[38] = (void*)mrp_tocfunction;
+    _mr_c_internal_table[39] = (void*)mrp_touserdata;
+    _mr_c_internal_table[40] = (void*)mrp_tothread;
+    _mr_c_internal_table[41] = (void*)mrp_topointer;
 
-extern int mr_sprintf(char * s, const char * format, ...);
+    _mr_c_internal_table[42] = (void*)mrp_pushnil;
+    _mr_c_internal_table[43] = (void*)mrp_pushnumber;
+    _mr_c_internal_table[44] = (void*)mrp_pushlstring;
+    _mr_c_internal_table[45] = (void*)mrp_pushstring;
+    _mr_c_internal_table[46] = (void*)mrp_pushvfstring;
+    _mr_c_internal_table[47] = (void*)mrp_pushfstring;
+    _mr_c_internal_table[48] = (void*)mrp_pushboolean;
+    _mr_c_internal_table[49] = (void*)mrp_pushcclosure;
+  
+    _mr_c_internal_table[50] = (void*)mrp_gettable;
+    _mr_c_internal_table[51] = (void*)mrp_rawget;
+    _mr_c_internal_table[52] = (void*)mrp_rawgeti;
+    _mr_c_internal_table[53] = (void*)mrp_newtable;
+    _mr_c_internal_table[54] = (void*)mrp_getmetatable;
+
+    _mr_c_internal_table[55] = (void*)mrp_settable;
+    _mr_c_internal_table[56] = (void*)mrp_rawset;
+    _mr_c_internal_table[57] = (void*)mrp_rawseti;
+
+    _mr_c_internal_table[58] = (void*)mrp_call;
+    _mr_c_internal_table[59] = (void*)mrp_pcall;
+    _mr_c_internal_table[60] = (void*)mrp_load;
+
+    _mr_c_internal_table[61] = (void*)mrp_getgcthreshold;
+    _mr_c_internal_table[62] = (void*)mrp_setgcthreshold;
+
+    _mr_c_internal_table[63] = (void*)mrp_error;
+
+    _mr_c_internal_table[64] = (void*)mrp_checkstack;
+    _mr_c_internal_table[65] = (void*)mrp_newuserdata;
+    _mr_c_internal_table[66] = (void*)mrp_getfenv;
+    _mr_c_internal_table[67] = (void*)mrp_setfenv;
+    _mr_c_internal_table[68] = (void*)mrp_setmetatable;
+    _mr_c_internal_table[69] = (void*)mrp_cpcall;
+    _mr_c_internal_table[70] = (void*)mrp_next;
+    _mr_c_internal_table[71] = (void*)mrp_concat;
+    _mr_c_internal_table[72] = (void*)mrp_pushlightuserdata;
+    _mr_c_internal_table[73] = (void*)mrp_getgccount;
+    _mr_c_internal_table[74] = (void*)mrp_dump;
+    _mr_c_internal_table[75] = (void*)mrp_yield;
+    _mr_c_internal_table[76] = (void*)mrp_resume;
+    _mr_c_internal_table[77] = NULL;
+}
+
+static void* _mr_c_port_table[4];
+
 
 
 
@@ -411,185 +393,186 @@ void* sdk_mr_c_function_table;
 
 const void* _mr_c_function_table[] = {
 #else
-static const void* _mr_c_function_table[] = {
+static const void* _mr_c_function_table[150];
 #endif
-   (void*)mr_malloc,
-   (void*)mr_free,
-   (void*)mr_realloc,   // 3
-   
-   (void*)memcpy2,
-   (void*)memmove2,
-   (void*)strcpy2,
-   (void*)strncpy2,
-   (void*)strcat2,
-   (void*)strncat2,
-   (void*)memcmp2,
-   (void*)strcmp2,
-   (void*)strncmp2,
-   (void*)STRCOLL,
-   (void*)memchr2,
-   (void*)memset2,
-   (void*)strlen2,
-   (void*)strstr2,
-#ifndef SYMBIAN_MOD
-   (void*)sprintf_,
-#else
-   (void*)mr_sprintf,
-#endif
-   (void*)atoi2,      
-   (void*)strtoul2,       // 20
-   (void*)rand2,
 
-   (void*)NULL,
-   (void*)mr_stop_ex,    //V1939
-   (void*)_mr_c_internal_table,
+static void _mr_c_function_table_init() {
+   _mr_c_function_table[0] = (void*)mr_malloc;
+   _mr_c_function_table[1] = (void*)mr_free;
+   _mr_c_function_table[2] = (void*)mr_realloc;  // 3
 
-   (void*)_mr_c_port_table,
-   (void*)_mr_c_function_new,  //26
-   
-   (void*)mr_printf,
-   (void*)mr_mem_get ,
-   (void*)mr_mem_free ,
-   (void*)mr_drawBitmap,
-   (void*)mr_getCharBitmap,
-   (void*)mr_timerStart,
-   (void*)mr_timerStop,
-   (void*)mr_getTime,
-   (void*)mr_getDatetime,
-   (void*)mr_getUserInfo,
-   (void*)mr_sleep,           //37
-   
-   (void*)mr_plat,
-   (void*)mr_platEx,          //39
-   
-   (void*)mr_ferrno,
-   (void*)mr_open,
-   (void*)mr_close,
-   (void*)mr_info,
-   (void*)mr_write,
-   (void*)mr_read,
-   (void*)mr_seek,
-   (void*)mr_getLen,
-   (void*)mr_remove,
-   (void*)mr_rename,
-   (void*)mr_mkDir,
-   (void*)mr_rmDir,
-   (void*)mr_findStart,
-   (void*)mr_findGetNext,
-   (void*)mr_findStop,              //54
-   
-   (void*)mr_exit,
-   (void*)mr_startShake,
-   (void*)mr_stopShake,
-   (void*)mr_playSound,
-   (void*)mr_stopSound ,         //59
-   
-   (void*)mr_sendSms,
-   (void*)mr_call,
-   (void*)mr_getNetworkID,
-   (void*)mr_connectWAP,
-   
-   (void*)mr_menuCreate,
-   (void*)mr_menuSetItem,
-   (void*)mr_menuShow,
-   (void*)NULL,//mr_menuSetFocus,
-   (void*)mr_menuRelease,
-   (void*)mr_menuRefresh,
-   (void*)mr_dialogCreate,
-   (void*)mr_dialogRelease,
-   (void*)mr_dialogRefresh,
-   (void*)mr_textCreate,
-   (void*)mr_textRelease,
-   (void*)mr_textRefresh,
-   (void*)mr_editCreate,
-   (void*)mr_editRelease,
-   (void*)mr_editGetText,
-   (void*)mr_winCreate,
-   (void*)mr_winRelease,
-   
-   (void*)mr_getScreenInfo,
-   
-   (void*)mr_initNetwork,
-   (void*)mr_closeNetwork,
-   (void*)mr_getHostByName,
-   (void*)mr_socket,
-   (void*)mr_connect,
-   (void*)mr_closeSocket,
-   (void*)mr_recv,
-   (void*)mr_recvfrom,
-   (void*)mr_send,
-   (void*)mr_sendto,
+   _mr_c_function_table[3] = (void*)memcpy2;
+   _mr_c_function_table[4] = (void*)memmove2;
+   _mr_c_function_table[5] = (void*)strcpy2;
+   _mr_c_function_table[6] = (void*)strncpy2;
+   _mr_c_function_table[7] = (void*)strcat2;
+   _mr_c_function_table[8] = (void*)strncat2;
+   _mr_c_function_table[9] = (void*)memcmp2;
+   _mr_c_function_table[10] = (void*)strcmp2;
+   _mr_c_function_table[11] = (void*)strncmp2;
+   _mr_c_function_table[12] = (void*)STRCOLL;
+   _mr_c_function_table[13] = (void*)memchr2;
+   _mr_c_function_table[14] = (void*)memset2;
+   _mr_c_function_table[15] = (void*)strlen2;
+   _mr_c_function_table[16] = (void*)strstr2;
+   #ifndef SYMBIAN_MOD
+   _mr_c_function_table[17] = (void*)sprintf_;
+   #else
+   _mr_c_function_table[17] = (void*)mr_sprintf;
+   #endif
+   _mr_c_function_table[18] = (void*)atoi2;
+   _mr_c_function_table[19] = (void*)strtoul2;  // 20
+   _mr_c_function_table[20] = (void*)rand2;
 
-   
-   (void*)&mr_screenBuf,
-   (void*)&mr_screen_w,
-   (void*)&mr_screen_h,
-   (void*)&mr_screen_bit,
-   (void*)mr_bitmap,
-   (void*)mr_tile,
-   (void*)mr_map,
-   (void*)mr_sound,
-   (void*)mr_sprite,
-   
-   (void*)pack_filename,
-   (void*)start_filename,
-   (void*)old_pack_filename,
-   (void*)old_start_filename,
-   
-   (void*)&mr_ram_file,
-   (void*)&mr_ram_file_len,
-   
-   (void*)&mr_soundOn,
-   (void*)&mr_shakeOn,
+   _mr_c_function_table[21] = (void*)NULL;
+   _mr_c_function_table[22] = (void*)mr_stop_ex;  //V1939
+   _mr_c_function_table[23] = (void*)_mr_c_internal_table;
 
-   (void*)&LG_mem_base,
-   (void*)&LG_mem_len,
-   (void*)&LG_mem_end,
-   (void*)&LG_mem_left,
-   
-   (void*)&mr_sms_cfg_buf,
-   (void*)mr_md5_init,
-   (void*)mr_md5_append,
-   (void*)mr_md5_finish,
-   (void*)_mr_load_sms_cfg,
-   (void*)_mr_save_sms_cfg,
-   (void*)_DispUpEx,
-   
-   (void*)_DrawPoint,
-   (void*)_DrawBitmap,
-   (void*)_DrawBitmapEx,
-   (void*)DrawRect,
-   (void*)_DrawText,
-   (void*)_BitmapCheck,
-   (void*)_mr_readFile,
-   (void*)mr_wstrlen,
-   (void*)mr_registerAPP,
-   (void*)_DrawTextEx,  //1936
-   (void*)_mr_EffSetCon,
-   (void*)_mr_TestCom,
-   (void*)_mr_TestCom1,   //1938
-   (void*)c2u,            //1939
-   (void*)_mr_div,            //1941
-   (void*)_mr_mod,          
-   
-   (void*)&LG_mem_min,
-   (void*)&LG_mem_top,
-   (void*)mr_updcrc,       //1943
-   (void*)start_fileparameter, //1945
-   (void*)&mr_sms_return_flag,//1949
-   (void*)&mr_sms_return_val,
-   (void*)mr_unzip,   //1950
-   (void*)&mr_exit_cb,//1951
-   (void*)&mr_exit_cb_data,//1951
-   (void*)mr_entry,//1952
-   (void*)mr_platDrawChar,//1961
-   (void*)&LG_mem_free,//1967,2009
+   _mr_c_function_table[24] = (void*)_mr_c_port_table;
+   _mr_c_function_table[25] = (void*)_mr_c_function_new;  //26
 
-   (void*)mr_transbitmapDraw,
-   (void*)mr_drawRegion,
-   
-   NULL
- };
+   _mr_c_function_table[26] = (void*)mr_printf;
+   _mr_c_function_table[27] = (void*)mr_mem_get;
+   _mr_c_function_table[28] = (void*)mr_mem_free;
+   _mr_c_function_table[29] = (void*)mr_drawBitmap;
+   _mr_c_function_table[30] = (void*)mr_getCharBitmap;
+   _mr_c_function_table[31] = (void*)mr_timerStart;
+   _mr_c_function_table[32] = (void*)mr_timerStop;
+   _mr_c_function_table[33] = (void*)mr_getTime;
+   _mr_c_function_table[34] = (void*)mr_getDatetime;
+   _mr_c_function_table[35] = (void*)mr_getUserInfo;
+   _mr_c_function_table[36] = (void*)mr_sleep;  //37
+
+   _mr_c_function_table[37] = (void*)mr_plat;
+   _mr_c_function_table[38] = (void*)mr_platEx;  //39
+
+   _mr_c_function_table[39] = (void*)mr_ferrno;
+   _mr_c_function_table[40] = (void*)mr_open;
+   _mr_c_function_table[41] = (void*)mr_close;
+   _mr_c_function_table[42] = (void*)mr_info;
+   _mr_c_function_table[43] = (void*)mr_write;
+   _mr_c_function_table[44] = (void*)mr_read;
+   _mr_c_function_table[45] = (void*)mr_seek;
+   _mr_c_function_table[46] = (void*)mr_getLen;
+   _mr_c_function_table[47] = (void*)mr_remove;
+   _mr_c_function_table[48] = (void*)mr_rename;
+   _mr_c_function_table[49] = (void*)mr_mkDir;
+   _mr_c_function_table[50] = (void*)mr_rmDir;
+   _mr_c_function_table[51] = (void*)mr_findStart;
+   _mr_c_function_table[52] = (void*)mr_findGetNext;
+   _mr_c_function_table[53] = (void*)mr_findStop;  //54
+
+   _mr_c_function_table[54] = (void*)mr_exit;
+   _mr_c_function_table[55] = (void*)mr_startShake;
+   _mr_c_function_table[56] = (void*)mr_stopShake;
+   _mr_c_function_table[57] = (void*)mr_playSound;
+   _mr_c_function_table[58] = (void*)mr_stopSound;  //59
+
+   _mr_c_function_table[59] = (void*)mr_sendSms;
+   _mr_c_function_table[60] = (void*)mr_call;
+   _mr_c_function_table[61] = (void*)mr_getNetworkID;
+   _mr_c_function_table[62] = (void*)mr_connectWAP;
+
+   _mr_c_function_table[63] = (void*)mr_menuCreate;
+   _mr_c_function_table[64] = (void*)mr_menuSetItem;
+   _mr_c_function_table[65] = (void*)mr_menuShow;
+   _mr_c_function_table[66] = (void*)NULL;  //mr_menuSetFocus,
+   _mr_c_function_table[67] = (void*)mr_menuRelease;
+   _mr_c_function_table[68] = (void*)mr_menuRefresh;
+   _mr_c_function_table[69] = (void*)mr_dialogCreate;
+   _mr_c_function_table[70] = (void*)mr_dialogRelease;
+   _mr_c_function_table[71] = (void*)mr_dialogRefresh;
+   _mr_c_function_table[72] = (void*)mr_textCreate;
+   _mr_c_function_table[73] = (void*)mr_textRelease;
+   _mr_c_function_table[74] = (void*)mr_textRefresh;
+   _mr_c_function_table[75] = (void*)mr_editCreate;
+   _mr_c_function_table[76] = (void*)mr_editRelease;
+   _mr_c_function_table[77] = (void*)mr_editGetText;
+   _mr_c_function_table[78] = (void*)mr_winCreate;
+   _mr_c_function_table[79] = (void*)mr_winRelease;
+
+   _mr_c_function_table[80] = (void*)mr_getScreenInfo;
+
+   _mr_c_function_table[81] = (void*)mr_initNetwork;
+   _mr_c_function_table[82] = (void*)mr_closeNetwork;
+   _mr_c_function_table[83] = (void*)mr_getHostByName;
+   _mr_c_function_table[84] = (void*)mr_socket;
+   _mr_c_function_table[85] = (void*)mr_connect;
+   _mr_c_function_table[86] = (void*)mr_closeSocket;
+   _mr_c_function_table[87] = (void*)mr_recv;
+   _mr_c_function_table[88] = (void*)mr_recvfrom;
+   _mr_c_function_table[89] = (void*)mr_send;
+   _mr_c_function_table[90] = (void*)mr_sendto;
+
+   _mr_c_function_table[91] = (void*)&mr_screenBuf;
+   _mr_c_function_table[92] = (void*)&mr_screen_w;
+   _mr_c_function_table[93] = (void*)&mr_screen_h;
+   _mr_c_function_table[94] = (void*)&mr_screen_bit;
+   _mr_c_function_table[95] = (void*)mr_bitmap;
+   _mr_c_function_table[96] = (void*)mr_tile;
+   _mr_c_function_table[97] = (void*)mr_map;
+   _mr_c_function_table[98] = (void*)mr_sound;
+   _mr_c_function_table[99] = (void*)mr_sprite;
+
+   _mr_c_function_table[100] = (void*)pack_filename;
+   _mr_c_function_table[101] = (void*)start_filename;
+   _mr_c_function_table[102] = (void*)old_pack_filename;
+   _mr_c_function_table[103] = (void*)old_start_filename;
+
+   _mr_c_function_table[104] = (void*)&mr_ram_file;
+   _mr_c_function_table[105] = (void*)&mr_ram_file_len;
+
+   _mr_c_function_table[106] = (void*)&mr_soundOn;
+   _mr_c_function_table[107] = (void*)&mr_shakeOn;
+
+   _mr_c_function_table[108] = (void*)&LG_mem_base;
+   _mr_c_function_table[109] = (void*)&LG_mem_len;
+   _mr_c_function_table[110] = (void*)&LG_mem_end;
+   _mr_c_function_table[111] = (void*)&LG_mem_left;
+
+   _mr_c_function_table[112] = (void*)&mr_sms_cfg_buf;
+   _mr_c_function_table[113] = (void*)mr_md5_init;
+   _mr_c_function_table[114] = (void*)mr_md5_append;
+   _mr_c_function_table[115] = (void*)mr_md5_finish;
+   _mr_c_function_table[116] = (void*)_mr_load_sms_cfg;
+   _mr_c_function_table[117] = (void*)_mr_save_sms_cfg;
+   _mr_c_function_table[118] = (void*)_DispUpEx;
+
+   _mr_c_function_table[119] = (void*)_DrawPoint;
+   _mr_c_function_table[120] = (void*)_DrawBitmap;
+   _mr_c_function_table[121] = (void*)_DrawBitmapEx;
+   _mr_c_function_table[122] = (void*)DrawRect;
+   _mr_c_function_table[123] = (void*)_DrawText;
+   _mr_c_function_table[124] = (void*)_BitmapCheck;
+   _mr_c_function_table[125] = (void*)_mr_readFile;
+   _mr_c_function_table[126] = (void*)mr_wstrlen;
+   _mr_c_function_table[127] = (void*)mr_registerAPP;
+   _mr_c_function_table[128] = (void*)_DrawTextEx;  //1936
+   _mr_c_function_table[129] = (void*)_mr_EffSetCon;
+   _mr_c_function_table[130] = (void*)_mr_TestCom;
+   _mr_c_function_table[131] = (void*)_mr_TestCom1;  //1938
+   _mr_c_function_table[132] = (void*)c2u;           //1939
+   _mr_c_function_table[133] = (void*)_mr_div;       //1941
+   _mr_c_function_table[134] = (void*)_mr_mod;
+
+   _mr_c_function_table[135] = (void*)&LG_mem_min;
+   _mr_c_function_table[136] = (void*)&LG_mem_top;
+   _mr_c_function_table[137] = (void*)mr_updcrc;            //1943
+   _mr_c_function_table[138] = (void*)start_fileparameter;  //1945
+   _mr_c_function_table[139] = (void*)&mr_sms_return_flag;  //1949
+   _mr_c_function_table[140] = (void*)&mr_sms_return_val;
+   _mr_c_function_table[141] = (void*)mr_unzip;          //1950
+   _mr_c_function_table[142] = (void*)&mr_exit_cb;       //1951
+   _mr_c_function_table[143] = (void*)&mr_exit_cb_data;  //1951
+   _mr_c_function_table[144] = (void*)mr_entry;          //1952
+   _mr_c_function_table[145] = (void*)mr_platDrawChar;   //1961
+   _mr_c_function_table[146] = (void*)&LG_mem_free;      //1967,2009
+
+   _mr_c_function_table[147] = (void*)mr_transbitmapDraw;
+   _mr_c_function_table[148] = (void*)mr_drawRegion;
+   _mr_c_function_table[149] = NULL;
+}
+
 static int32 _mr_div(int32 a, int32 b)
 {
    return a/b;
@@ -1263,7 +1246,7 @@ static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b
       int TextSize;
    //#endif
       uint16 *tempBuf;
-      int tempret=0;
+      // int tempret=0;
    
 #ifdef MYTHROAD_DEBUG
       if (!pcText)
@@ -1294,9 +1277,10 @@ static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b
          int width, height;
          const char *current_bitmap;
          uint8  *p=(uint8*)tempBuf;
-         int32 X1,Y1;
-         uint16 a_,b_;
-         uint16 chx=x,chy=y,color=MAKERGB(r, g, b);
+         // int32 X1,Y1;
+         // uint16 a_,b_;
+         uint16 chx=x,chy=y;
+         // uint16 color=MAKERGB(r, g, b);
          ch = (uint16) ((*p<<8)+*(p+1));
           while(ch)
           {
@@ -1426,7 +1410,7 @@ static int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, m
 {
       int TextSize,endchar_index;
       uint16 *tempBuf;
-      int tempret=0;
+      // int tempret=0;
       uint16 ch;
       endchar_index = 0;
    
@@ -1452,7 +1436,7 @@ static int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, m
          const char *current_bitmap;
          uint8  *p=(uint8*)tempBuf;
          int32 X1,Y1;
-         uint16 a_,b_;
+         // uint16 a_,b_;
          uint16 chx=x,chy=y,color=MAKERGB(colorst.r, colorst.g, colorst.b);
          ch = (uint16) ((*p<<8)+*(p+1));
          mh = 0;
@@ -1465,8 +1449,8 @@ static int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, m
             }
             if(current_bitmap)
             {
-               int32 font_data_size = ((width * height) + 7) >> 3;
-               int32 X2=0,Y2;
+               // int32 font_data_size = ((width * height) + 7) >> 3;
+               // int32 X2=0,Y2;
                if(flag & DRAW_TEXT_EX_IS_AUTO_NEWLINE)
                {
                   if(((chx + width) > (x + rect.w)) || (ch == 0x0a)){
@@ -2908,7 +2892,7 @@ void * _mr_readFile_for_spreadtrum(const char* filename, int *filelen, int lookf
 
 void * _mr_readFile(const char* filename, int *filelen, int lookfor)
 {
-   int ret;
+   // int ret;
    int method;
    uint32 reallen,found=0;
    int32 oldlen,nTmp;
@@ -3899,7 +3883,7 @@ static int MRF_TimerStart(mrp_State* L)
    MR_TIME_START(thistime);
    //mr_timer_state = MR_TIMER_STATE_RUNNING;
 
-  
+   n=0;
    return 0;
 }
 
@@ -3908,6 +3892,7 @@ static int MRF_TimerStop(mrp_State* L)
    int n = ((int)  to_mr_tonumber(L,1,0));
    MR_TIME_STOP();
    //mr_timer_state = MR_TIMER_STATE_IDLE;
+   n=0;
    return 0;
 }
 //timer
@@ -5529,7 +5514,7 @@ int mr_Gb2312toUnicode(mrp_State* L)
 
    int TextSize;
    uint16 *tempBuf;
-   int tempret=0;
+   // int tempret=0;
    //tempBuf = c2u((const char*)text, &tempret, &TextSize);
    tempBuf = c2u((const char*)text, NULL, &TextSize); 
    if (!tempBuf)
@@ -6494,7 +6479,8 @@ extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
 #else
       case 800:
          {
-            int32 input_len,output_len, ret;
+            // int32 input_len,output_len;
+            int32 ret;
             int code = ((int)  mr_L_optint(L,3,0));
             mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1+8);
             *((void**)(input1)) = (void*)_mr_c_function_table;
@@ -6573,7 +6559,8 @@ extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
          break;
       case 801:
          {
-            int32 input_len,output_len, ret;
+            // int32 input_len;
+            int32 output_len, ret;
             int code = ((int)  to_mr_tonumber(L,3,0));
             //uint8* input = (uint8*)mr_L_checklstring(L,4,(size_t*)&input_len);
             uint8* output = NULL;
@@ -6593,7 +6580,8 @@ extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
          break;
       case 802:
          {
-            int32 input_len,output_len, ret;
+            int32 ret;
+            // int32 input_len, output_len;
             int code = ((int)  mr_L_optint(L,3,0));
             mr_c_function_fix_p = ((int32*)  mr_L_optint(L,4,0));
             mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1+8);
@@ -6682,15 +6670,7 @@ int32 mr_checkCode(void){
 
 //main
 
-static const mr_L_reg phonelib[] = {
-   {"call", Call},
-   {"sendSms", SendSms},
-   {"getNetID", GetNetworkID},
-   {"wap", ConnectWAP},
-   {NULL, NULL}
-};
-
-
+static mr_L_reg phonelib[5];
 
 static int32 _mr_intra_start(char* appExName, const char* entry)
 {
@@ -7249,7 +7229,7 @@ int32 mr_start_dsmC(char* start_file, const char* entry)
 
 int32 mr_stop_ex(int16 freemem)
 {
-      int i;
+      // int i;
       if (mr_state == MR_STATE_IDLE){
          return MR_IGNORE;
       }
@@ -8519,7 +8499,8 @@ int32 _mr_smsReplyServer(char *pNum, uint8* old_IMSI)
    uint8 sms[MR_SECTION_LEN];
    uint8 smsstring[MR_MAX_SM_LEN];
    mr_userinfo info;
-   uint32 offset = 0, i;
+   uint32 offset = 0;
+   // uint32 i;
    //MR_FILE_HANDLE f;
 
    if(mr_getUserInfo(&info) != MR_SUCCESS)
@@ -8635,7 +8616,7 @@ static int32 _mr_smsIndiaction(uint8 *pContent, int32 nLen, uint8 *pNum, int32 t
    int32   memlen;
 
    if((mr_state == MR_STATE_RUN) || ((mr_timer_run_without_pause) && (mr_state == MR_STATE_PAUSE))){
-      int status;
+      // int status;
       mrp_getglobal(vm_state, "dealevent");
       if (mrp_isfunction(vm_state, -1)) {
          mrp_pushnumber(vm_state, MR_SMS_INDICATION);
@@ -9422,12 +9403,12 @@ int32 _mr_getMetaMemLimit()
 {
    int32 nTmp;
    int32 len = 0,file_len = 0;
-   void* workbuffer = NULL;
+   // void* workbuffer = NULL;
 
    int32 f;
 
    char TempName[MR_MAX_FILENAME_SIZE];
-   int is_rom_file = FALSE;
+   // int is_rom_file = FALSE;
    uint32 headbuf[4];
    char* this_packname;
    char* mr_m0_file;
@@ -9640,4 +9621,16 @@ extern void mr_getMemoryInfo(uint32 *total, uint32 *free, uint32 *top)
 	if(top) *top = LG_mem_top;
 }
 
+void mythroad_init(void) {
+    memset2(_mr_c_port_table, 0, sizeof(_mr_c_port_table));
+    memset2(mr_m0_files, 0, sizeof(mr_m0_files));
 
+    phonelib[0].name = "call", phonelib[0].func = Call;
+    phonelib[1].name = "sendSms", phonelib[1].func = SendSms;
+    phonelib[2].name = "getNetID", phonelib[2].func = GetNetworkID;
+    phonelib[3].name = "wap", phonelib[3].func = ConnectWAP;
+    phonelib[4].name = NULL, phonelib[4].func = NULL;
+
+    _mr_c_internal_table_init();
+    _mr_c_function_table_init();
+}

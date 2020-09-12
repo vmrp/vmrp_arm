@@ -14,10 +14,7 @@ const char *mr_T_typenames[9];
 
 const char *mr_T_short_typenames[9];
 
-void mr_T_init(mrp_State *L) {
-    char *mr_T_eventname[15];
-    int i;
-
+void mr_tm_init(void) {
     mr_T_typenames[0] = "nil";
     mr_T_typenames[1] = "boolean";
     mr_T_typenames[2] = "object";
@@ -37,7 +34,11 @@ void mr_T_init(mrp_State *L) {
     mr_T_short_typenames[6] = "func";
     mr_T_short_typenames[7] = "obj";
     mr_T_short_typenames[8] = "co";
+}
 
+void mr_T_init(mrp_State *L) {
+    char *mr_T_eventname[15];
+    int i;
 #if 0
   static const char *const mr_T_eventname[] = {  /* ORDER TM */ 
     "__index", "__newindex",

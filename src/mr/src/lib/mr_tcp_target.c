@@ -12,100 +12,17 @@
 #define TCPHANDLE		"tcp"
 #define UDPHANDLE		"udp"
 
-
-/*=========================================================================*\
-* Internal function prototypes
-\*=========================================================================*/
-static int global_create(mrp_State *L);
-static int global_udp_create(mrp_State *L);
-static int meth_connect(mrp_State *L);
-static int meth_listen(mrp_State *L);
-static int meth_bind(mrp_State *L);
-static int meth_send(mrp_State *L);
-static int meth_sendto(mrp_State *L);
-static int meth_getstats(mrp_State *L);
-static int meth_setstats(mrp_State *L);
-static int meth_getsockname(mrp_State *L);
-static int meth_getpeername(mrp_State *L);
-static int meth_shutdown(mrp_State *L);
-static int meth_receive(mrp_State *L);
-static int meth_receivefrom(mrp_State *L);
-static int meth_accept(mrp_State *L);
-static int meth_close(mrp_State *L);
-static int meth_setoption(mrp_State *L);
-static int meth_settimeout(mrp_State *L);
-static int meth_getinfo(mrp_State *L);
-static int meth_getstate(mrp_State *L);
-static int meth_dirty(mrp_State *L);
-static int meth_getsock(mrp_State *L);
-
 /* tcp object methods */
-static mr_L_reg tcp[] = {
-    {"__gc",        meth_close},
-    {"__str",  mr_aux_tostring},
-//    {"accept",      meth_accept},
-//    {"bind",        meth_bind},
-    {"close",       meth_close},
-    {"connect",     meth_connect},
-//    {"dirty",       meth_dirty},
-    {"getinfo",       meth_getinfo},
-    {"getstate",       meth_getstate},
-    {"getsock",       meth_getsock},
-    {"bind", meth_bind},
-//    {"getpeername", meth_getpeername},
-//    {"getsockname", meth_getsockname},
-//    {"getstats",    meth_getstats},
-//    {"setstats",    meth_setstats},
-//    {"listen",      meth_listen},
-    {"receive",     meth_receive},
-    {"send",        meth_send},
-//    {"setfd",       meth_setfd},
-//    {"setoption",   meth_setoption},
-//    {"setpeername", meth_connect},
-//    {"setsockname", meth_bind},
-//    {"settimeout",  meth_settimeout},
-//    {"shutdown",    meth_shutdown},
-    {NULL,          NULL}
-};
+static mr_L_reg tcp[11];
 
 /* functions in library namespace */
-static mr_L_reg tcp_func[] = {
-    {"tcp", global_create},
-    {NULL, NULL}
-};
-
-
+static mr_L_reg tcp_func[2];
 
 /* udp object methods */
-static mr_L_reg udp[] = {
-    {"__gc",        meth_close},
-    {"__str",  mr_aux_tostring},
-    {"close",       meth_close},
-//    {"dirty",       meth_dirty},
-    {"getsock",       meth_getsock},
-//    {"getpeername", meth_getpeername},
-    {"bind", meth_bind},
-    {"receive",     meth_receive},
-    {"receivefrom", meth_receivefrom},
-    {"send",        meth_send},
-    {"sendto",      meth_sendto},
-    {"getinfo",       meth_getinfo},
-    {"getstate",       meth_getstate},
-    {"connect",     meth_connect},
-//    {"setfd",       meth_setfd},
-//    {"setoption",   meth_setoption},
-//    {"setpeername", meth_setpeername},
-//    {"setsockname", meth_setsockname},
-//    {"settimeout",  meth_settimeout},
-    {NULL,          NULL}
-};
+static mr_L_reg udp[13];
 
 /* functions in library namespace */
-static mr_L_reg udp_func[] = {
-    {"udp", global_udp_create},
-    {NULL, NULL}
-};
-
+static mr_L_reg udp_func[2];
 
 
 static p_tcp toptcp (mrp_State *L, int findex) {
@@ -544,4 +461,43 @@ static int global_udp_create(mrp_State *L)
    }
 }
 
+void mr_tcp_target_init(void) {
+    tcp[0].name = "__gc", tcp[0].func = meth_close;
+    tcp[1].name = "__str", tcp[1].func = mr_aux_tostring;
+    //    {"bind",        meth_bind},
+    tcp[2].name = "close", tcp[2].func = meth_close;
+    tcp[3].name = "connect", tcp[3].func = meth_connect;
+    tcp[4].name = "getinfo", tcp[4].func = meth_getinfo;
+    tcp[5].name = "getstate", tcp[5].func = meth_getstate;
+    tcp[6].name = "getsock", tcp[6].func = meth_getsock;
+    tcp[7].name = "bind", tcp[7].func = meth_bind;
+    tcp[8].name = "receive", tcp[8].func = meth_receive;
+    tcp[9].name = "send", tcp[9].func = meth_send;
+    //    {"setfd",       meth_setfd},
+    //    {"setpeername", meth_connect},
+    //    {"setsockname", meth_bind},
+    tcp[10].name = NULL, tcp[10].func = NULL;
 
+    tcp_func[0].name = "tcp", tcp_func[0].func = global_create;
+    tcp_func[1].name = NULL, tcp_func[1].func = NULL;
+
+    udp[0].name = "__gc", udp[0].func = meth_close;
+    udp[1].name = "__str", udp[1].func = mr_aux_tostring;
+    udp[2].name = "close", udp[2].func = meth_close;
+    udp[3].name = "getsock", udp[3].func = meth_getsock;
+    udp[4].name = "bind", udp[4].func = meth_bind;
+    udp[5].name = "receive", udp[5].func = meth_receive;
+    udp[6].name = "receivefrom", udp[6].func = meth_receivefrom;
+    udp[7].name = "send", udp[7].func = meth_send;
+    udp[8].name = "sendto", udp[8].func = meth_sendto;
+    udp[9].name = "getinfo", udp[9].func = meth_getinfo;
+    udp[10].name = "getstate", udp[10].func = meth_getstate;
+    udp[11].name = "connect", udp[11].func = meth_connect;
+    //    {"setfd",       meth_setfd},
+    //    {"setpeername", meth_setpeername},
+    //    {"setsockname", meth_setsockname},
+    udp[12].name = NULL, udp[12].func = NULL;
+
+    udp_func[0].name = "udp", udp_func[0].func = global_udp_create;
+    udp_func[1].name = NULL, udp_func[1].func = NULL;
+}

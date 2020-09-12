@@ -34,10 +34,15 @@ void j2n_create() {
 
     screenBuf = cacheScreenBuffer = (uint16 *)malloc(SCNW * SCNH * 2);
 
-    //	tsf_init();
-#ifndef DSM_FULL
+    mr_tm_init();
+    mr_baselib_init();
+    mr_tablib_init();
+    mr_socket_target_init();
+    mr_tcp_target_init();
+    mr_iolib_target_init();
+    mr_strlib_init();
     mythroad_init();
-#endif
+    mr_pluto_init();
     xl_font_sky16_init();
 }
 

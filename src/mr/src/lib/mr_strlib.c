@@ -238,7 +238,7 @@ static void putinteger (mrp_State *L, mr_L_Buffer *b, int arg, int endian,
   mr_L_addlstring(b, (char *)buff, size);
 }
 
-
+#if 0
 static void invertbytes (char *b, int size) {
   int i = 0;
   while (i < --size) {
@@ -247,6 +247,7 @@ static void invertbytes (char *b, int size) {
     b[size] = temp;
   }
 }
+#endif
 
 
 static void invalidformat (mrp_State *L, char c) {
@@ -1211,8 +1212,6 @@ static int str_u2c (mrp_State *L) {
    size_t l;
    uint8 * p = (uint8 *)mr_L_checklstring(L, 1, &l);
    char* ascii = MR_MALLOC(l/2);
-   int32 pos=0;
-   int32 upos=0;
    if (l < 2){
       mrp_pushstring(L, "");
       return 1;
@@ -1224,6 +1223,8 @@ static int str_u2c (mrp_State *L) {
    }
    _mr_u2c((char*)p, l, ascii, (l/2) + 1);
 #if 0
+   int32 pos=0;
+   int32 upos=0;
    MEMSET(ascii, 0, (l/2) + 1);
    while((upos<(l-1))&&((*(p+upos)+*(p+upos+1))!=0)){
       if(*(p+upos) == 0){
@@ -1350,40 +1351,41 @@ static int str_set (mrp_State *L) {
 }
 
 
-static const mr_L_reg strlib[] = {
-  {"len", str_len},
-  {"clen", str_clen},
-  {"wlen", str_wlen},
-  {"cstr", str_cstr},
-  {"wstr", str_wstr},
-  {"sub", str_sub},
-  {"lower", str_lower},
-  {"upper", str_upper},
-  {"char", str_char},
-  {"rep", str_rep},
-  {"byte", str_byte},
-  {"format", str_format},
-  {"dump", str_dump},
-  {"find", str_find},
-  {"findEx", gfind},
-  {"subEx", str_gsub},
-  {"subV", str_subV},
-  {"c2u", mr_Gb2312toUnicode},
-  {"u2c", str_u2c},
-  {"pack", b_pack},
-  {"unpack", b_unpack},
-  {"packLen", b_size},
-  {"update", str_update},
-  {"pupdate", str_pupdate},
-  {"new", str_new},
-  {"set", str_set},
-#ifdef COMPATIBILITY01
-  {"findex", gfind},
-  {"subex", str_gsub},
-#endif
-  {NULL, NULL}
-};
+static mr_L_reg strlib[29];
 
+void mr_strlib_init(void){
+ strlib[0].name = "len"; strlib[0].func =  str_len;
+ strlib[1].name = "clen"; strlib[1].func =  str_clen;
+ strlib[2].name = "wlen"; strlib[2].func =  str_wlen;
+ strlib[3].name = "cstr"; strlib[3].func =  str_cstr;
+ strlib[4].name = "wstr"; strlib[4].func =  str_wstr;
+ strlib[5].name = "sub"; strlib[5].func =  str_sub;
+ strlib[6].name = "lower"; strlib[6].func =  str_lower;
+ strlib[7].name = "upper"; strlib[7].func =  str_upper;
+ strlib[8].name = "char"; strlib[8].func =  str_char;
+ strlib[9].name = "rep"; strlib[9].func =  str_rep;
+ strlib[10].name = "byte"; strlib[10].func =  str_byte;
+ strlib[11].name = "format"; strlib[11].func =  str_format;
+ strlib[12].name = "dump"; strlib[12].func =  str_dump;
+ strlib[13].name = "find"; strlib[13].func =  str_find;
+ strlib[14].name = "findEx"; strlib[14].func =  gfind;
+ strlib[15].name = "subEx"; strlib[15].func =  str_gsub;
+ strlib[16].name = "subV"; strlib[16].func =  str_subV;
+ strlib[17].name = "c2u"; strlib[17].func =  mr_Gb2312toUnicode;
+ strlib[18].name = "u2c"; strlib[18].func =  str_u2c;
+ strlib[19].name = "pack"; strlib[19].func =  b_pack;
+ strlib[20].name = "unpack"; strlib[20].func =  b_unpack;
+ strlib[21].name = "packLen"; strlib[21].func =  b_size;
+ strlib[22].name = "update"; strlib[22].func =  str_update;
+ strlib[23].name = "pupdate"; strlib[23].func =  str_pupdate;
+ strlib[24].name = "new"; strlib[24].func =  str_new;
+ strlib[25].name = "set"; strlib[25].func =  str_set;
+#ifdef COMPATIBILITY01
+ strlib[26].name = "findex"; strlib[26].func =  gfind;
+ strlib[27].name = "subex"; strlib[27].func =  str_gsub;
+#endif
+ strlib[28].name = NULL; strlib[28].func =  NULL;
+}
 
 /*
 ** Open string library

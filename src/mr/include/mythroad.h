@@ -268,6 +268,6 @@ typedef void (*mrc_timerCB)(int32 data);
 extern int32 mr_c_function_load(int32 code);
 #endif
 
-void mythroad_init();
+void mythroad_init(void);
 
 #endif

@@ -273,36 +273,56 @@ static int mr_B_load (mrp_State *L) {
    return 1;
 }
 
+static mr_L_reg tab_funcs[21];
 
-static const mr_L_reg tab_funcs[] = {
-   {"concat", str_concat},
-   {"getArrSize", mr_B_getn},
-   {"setArrSize", mr_B_setn},
-   {"sort", mr_B_sort},
-   {"insert", mr_B_tinsert},
-   {"remove", mr_B_tremove},
-   {"forEach", mr_B_foreach},
-   {"iforEach", mr_B_foreachi},
-   {"save", mr_B_save},
-   {"load", mr_B_load},
-   {"next", mr_B_next},
-   {"items", mr_B_unpack},
-   {"rawGet", mr_B_rawget},
-   {"rawSet", mr_B_rawset},
-   {"iPairs", mr_B_ipairs},
-   {"pairs", mr_B_pairs},
+void mr_tablib_init(void) {
+    tab_funcs[0].name = "concat";
+    tab_funcs[0].func =  str_concat;
+    tab_funcs[1].name = "getArrSize";
+    tab_funcs[1].func = mr_B_getn;
+    tab_funcs[2].name = "setArrSize";
+    tab_funcs[2].func = mr_B_setn;
+    tab_funcs[3].name = "sort";
+    tab_funcs[3].func = mr_B_sort;
+    tab_funcs[4].name = "insert";
+    tab_funcs[4].func = mr_B_tinsert;
+    tab_funcs[5].name = "remove";
+    tab_funcs[5].func = mr_B_tremove;
+    tab_funcs[6].name = "forEach";
+    tab_funcs[6].func = mr_B_foreach;
+    tab_funcs[7].name = "iforEach";
+    tab_funcs[7].func = mr_B_foreachi;
+    tab_funcs[8].name = "save";
+    tab_funcs[8].func = mr_B_save;
+    tab_funcs[9].name = "load";
+    tab_funcs[9].func = mr_B_load;
+    tab_funcs[10].name = "next";
+    tab_funcs[10].func = mr_B_next;
+    tab_funcs[11].name = "items";
+    tab_funcs[11].func = mr_B_unpack;
+    tab_funcs[12].name = "rawGet";
+    tab_funcs[12].func = mr_B_rawget;
+    tab_funcs[13].name = "rawSet";
+    tab_funcs[13].func = mr_B_rawset;
+    tab_funcs[14].name = "iPairs";
+    tab_funcs[14].func = mr_B_ipairs;
+    tab_funcs[15].name = "pairs";
+    tab_funcs[15].func = mr_B_pairs;
 #ifdef COMPATIBILITY01
-   {"foreach", mr_B_foreach},
-   {"foreachi", mr_B_foreachi},
-   {"getn", mr_B_getn},
-   {"setn", mr_B_setn},
+    tab_funcs[16].name = "foreach";
+    tab_funcs[16].func = mr_B_foreach;
+    tab_funcs[17].name = "foreachi";
+    tab_funcs[17].func = mr_B_foreachi;
+    tab_funcs[18].name = "getn";
+    tab_funcs[18].func = mr_B_getn;
+    tab_funcs[19].name = "setn";
+    tab_funcs[19].func = mr_B_setn;
 #endif
-   {NULL, NULL}
-};
-
-
-MRPLIB_API int mrp_open_table (mrp_State *L) {
-  mr_L_openlib(L, MRP_TABLIBNAME, tab_funcs, 0);
-  return 1;
+    tab_funcs[20].name = NULL;
+    tab_funcs[20].func = NULL;
 }
 
+MRPLIB_API int mrp_open_table(mrp_State *L) {
+    mr_L_openlib(L, MRP_TABLIBNAME, tab_funcs, 0);
+    return 1;
+}

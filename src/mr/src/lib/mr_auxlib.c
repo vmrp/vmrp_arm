@@ -474,7 +474,7 @@ static const char *getS (mrp_State *L, void *ud, size_t *size) {
   return ls->s;
 }
 
-
+#if 0
 static const char *getF (mrp_State *L, void *ud, size_t *size) {
 #ifdef PC_MOD
    LoadF *lf = (LoadF *)ud;
@@ -523,7 +523,7 @@ static const char *getF (mrp_State *L, void *ud, size_t *size) {
   return (*size > 0) ? lf->buff : NULL;
 #endif
 }
-
+#endif
 
 static int errfile (mrp_State *L, int fnameindex) {
   const char *filename = mrp_tostring(L, fnameindex) + 1;
@@ -780,7 +780,7 @@ MRPLIB_API int mr_L_loadbuffer (mrp_State *L, const char *buff, size_t size,
 ** =======================================================
 */
 
-
+#if 0
 static void callalert (mrp_State *L, int status) {
   if (status != 0) {
     mrp_getglobal(L, "_ALERT");
@@ -795,6 +795,7 @@ static void callalert (mrp_State *L, int status) {
     }
   }
 }
+#endif
 
 
 static int mr_aux_do (mrp_State *L, int status) {
