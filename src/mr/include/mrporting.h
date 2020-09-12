@@ -113,7 +113,7 @@ enum {
 
 enum {
     MR_DATA_ACCOUNT_OP_GET,
-    MR_DATA_ACCOUNT_OP_SET,
+    MR_DATA_ACCOUNT_OP_SET
 };
 
 enum {

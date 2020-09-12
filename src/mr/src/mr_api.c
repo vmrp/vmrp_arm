@@ -951,7 +951,7 @@ static const char *mr_aux_upvalue (mrp_State *L, int funcindex, int n,
 
 MRP_API const char *mrp_getupvalue (mrp_State *L, int funcindex, int n) {
   const char *name;
-  TObject *val;
+  TObject *val=NULL;
   mrp_lock(L);
   name = mr_aux_upvalue(L, funcindex, n, &val);
   if (name) {
@@ -965,7 +965,7 @@ MRP_API const char *mrp_getupvalue (mrp_State *L, int funcindex, int n) {
 
 MRP_API const char *mrp_setupvalue (mrp_State *L, int funcindex, int n) {
   const char *name;
-  TObject *val;
+  TObject *val=NULL;
   mrp_lock(L);
   api_checknelems(L, 1);
   name = mr_aux_upvalue(L, funcindex, n, &val);

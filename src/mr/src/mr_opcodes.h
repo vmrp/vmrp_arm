@@ -71,24 +71,36 @@ enum OpMode {iABC, iABx, iAsBx};  /* basic instruction format */
 ** the following macros help to manipulate instructions
 */
 
-#define GET_OPCODE(i)	(cast(OpCode, (i)&MASK1(SIZE_OP,0)))
-#define SET_OPCODE(i,o)	((i) = (((i)&MASK0(SIZE_OP,0)) | cast(Instruction, o)))
+// 因为MASK1会在编译阶段出现警告，所以采用预先计算出来的值
+
+// #define GET_OPCODE(i)	(cast(OpCode, (i)&MASK1(SIZE_OP,0)))
+#define GET_OPCODE(i)	(cast(OpCode, (i)&0x3F)) // MASK1(SIZE_OP,0):0x3F
+
+// #define SET_OPCODE(i,o)	((i) = (((i)&MASK0(SIZE_OP,0)) | cast(Instruction, o)))
+#define SET_OPCODE(i,o)	((i) = (((i)&0xFFFFFFC0) | cast(Instruction, o))) // MASK0(SIZE_OP,0):0xFFFFFFC0
 
 #define GETARG_A(i)	(cast(int, (i)>>POS_A))
-#define SETARG_A(i,u)	((i) = (((i)&MASK0(SIZE_A,POS_A)) | \
-		((cast(Instruction, u)<<POS_A)&MASK1(SIZE_A,POS_A))))
 
-#define GETARG_B(i)	(cast(int, ((i)>>POS_B) & MASK1(SIZE_B,0)))
-#define SETARG_B(i,b)	((i) = (((i)&MASK0(SIZE_B,POS_B)) | \
-		((cast(Instruction, b)<<POS_B)&MASK1(SIZE_B,POS_B))))
+// #define SETARG_A(i,u)	((i) = (((i)&MASK0(SIZE_A,POS_A)) | ((cast(Instruction, u)<<POS_A)&MASK1(SIZE_A,POS_A))))
+#define SETARG_A(i,u)	((i) = (((i)&0xFFFFFF) | ((cast(Instruction, u)<<POS_A)&0xFF000000))) // MASK0(SIZE_A,POS_A):0xFFFFFF  MASK1(SIZE_A,POS_A):0xFF000000
 
-#define GETARG_C(i)	(cast(int, ((i)>>POS_C) & MASK1(SIZE_C,0)))
-#define SETARG_C(i,b)	((i) = (((i)&MASK0(SIZE_C,POS_C)) | \
-		((cast(Instruction, b)<<POS_C)&MASK1(SIZE_C,POS_C))))
+// #define GETARG_B(i)	(cast(int, ((i)>>POS_B) & MASK1(SIZE_B,0)))
+#define GETARG_B(i)	(cast(int, ((i)>>POS_B) & 0x1FF)) // MASK1(SIZE_B,0):0x1FF
 
-#define GETARG_Bx(i)	(cast(int, ((i)>>POS_Bx) & MASK1(SIZE_Bx,0)))
-#define SETARG_Bx(i,b)	((i) = (((i)&MASK0(SIZE_Bx,POS_Bx)) | \
-		((cast(Instruction, b)<<POS_Bx)&MASK1(SIZE_Bx,POS_Bx))))
+// #define SETARG_B(i,b)	((i) = (((i)&MASK0(SIZE_B,POS_B)) | ((cast(Instruction, b)<<POS_B)&MASK1(SIZE_B,POS_B))))
+#define SETARG_B(i,b)	((i) = (((i)&0xFF007FFF) | ((cast(Instruction, b)<<POS_B)&0xFF8000))) // MASK0(SIZE_B,POS_B):0xFF007FFF   MASK1(SIZE_B,POS_B):0xFF8000
+
+// #define GETARG_C(i)	(cast(int, ((i)>>POS_C) & MASK1(SIZE_C,0)))
+#define GETARG_C(i)	(cast(int, ((i)>>POS_C) & 0x1FF)) // MASK1(SIZE_C,0):0x1FF
+
+// #define SETARG_C(i,b)	((i) = (((i)&MASK0(SIZE_C,POS_C)) | ((cast(Instruction, b)<<POS_C)&MASK1(SIZE_C,POS_C))))
+#define SETARG_C(i,b)	((i) = (((i)&0xFFFF803F) | ((cast(Instruction, b)<<POS_C)&0x7FC0))) // MASK0(SIZE_C,POS_C):0xFFFF803F   MASK1(SIZE_C,POS_C):0x7FC0
+
+// #define GETARG_Bx(i)	(cast(int, ((i)>>POS_Bx) & MASK1(SIZE_Bx,0)))
+#define GETARG_Bx(i)	(cast(int, ((i)>>POS_Bx) & 0x3FFFF)) // MASK1(SIZE_Bx,0):0x3FFFF
+
+// #define SETARG_Bx(i,b)	((i) = (((i)&MASK0(SIZE_Bx,POS_Bx)) | ((cast(Instruction, b)<<POS_Bx)&MASK1(SIZE_Bx,POS_Bx))))
+#define SETARG_Bx(i,b)	((i) = (((i)&0xFF00003F) | ((cast(Instruction, b)<<POS_Bx)&0xFFFFC0))) // MASK0(SIZE_Bx,POS_Bx):0xFF00003F   MASK1(SIZE_Bx,POS_Bx):0xFFFFC0
 
 #define GETARG_sBx(i)	(GETARG_Bx(i)-MAXARG_sBx)
 #define SETARG_sBx(i,b)	SETARG_Bx((i),cast(unsigned int, (b)+MAXARG_sBx))

@@ -14,7 +14,7 @@ int rand2(void) {
     return rand();
 }
 
-static long atol(const char *s) {
+static long atol2(const char *s) {
     unsigned long ret = 0;
     unsigned long d;
     int neg = 0;
@@ -36,7 +36,7 @@ static long atol(const char *s) {
 }
 
 int atoi2(const char *s) {
-    return atol(s);
+    return atol2(s);
 }
 ///////////////////////////////////////////////////////////////////////////
 
