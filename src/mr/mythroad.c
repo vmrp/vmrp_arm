@@ -21,14 +21,6 @@
 #include "printf.h"
 #include "other.h"
 
-//#ifdef MR_M0_FILE
-//#include "mr_m0file.h"
-//#else
-/*
-static const unsigned char mr_m0_file1[]=
-{0x00
-};
-*/
 
 /* PKZIP header definitions */
 #define LOCSIG 0x04034b50L      /* four-byte lead-in (lsb first) */
@@ -260,8 +252,6 @@ static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b
 int _BitmapCheck(uint16*p, int16 x, int16 y, uint16 w, uint16 h, uint16 transcoler, uint16 color_check);
 #endif
 
-
-void mr_platDrawChar(uint16 ch, int32 x, int32 y, int32 color);
 
 void * _mr_readFile(const char* filename, int *filelen, int lookfor);
 int mr_wstrlen(char * txt);
@@ -796,19 +786,6 @@ typedef struct
    int32 color;
 }mr_drawCharSt;
 */
-#ifdef MR_PLAT_DRAWTEXT
-void mr_platDrawChar(uint16 ch, int32 x, int32 y, int32 color)
-{
-
-   mr_platDrawCharReal((uint16)ch, x, y, (uint16)color);
-
-}
-#else
-void mr_platDrawChar(uint16 ch, int32 x, int32 y, int32 color)
-{
- 
-}
-#endif
 
 static void _DrawPoint(int16 x, int16 y, uint16 nativecolor)
 {
@@ -921,7 +898,6 @@ void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, ui
       switch (rop) 
       {
          case BM_TRANSPARENT:
-            //mr_platDrawCharReal(0,0,0,0);
             for (dy=MinY; dy < MaxY; dy++)
             {
               //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
@@ -931,7 +907,6 @@ void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, ui
                {
                   if (*srcp != transcoler)
                      *dstp = *srcp;
-                  //mr_platDrawCharReal(1,0,0,0);
                   dstp++;
                   srcp++;
                }
@@ -1632,6 +1607,7 @@ static int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, m
                }
             }
          }
+         Y1 = X1; // 抑制gcc编译时的set but not used警告
       }
       
       if (!(flag & DRAW_TEXT_EX_IS_UNICODE)){
@@ -3870,9 +3846,9 @@ static int MRF_DispUp(mrp_State* L)
 //display
 
 //timer
-static int MRF_TimerStart(mrp_State* L)
-{
-   int n = ((int)  to_mr_tonumber(L,1,0));
+static int MRF_TimerStart(mrp_State* L) {
+   // int n = ((int)  to_mr_tonumber(L,1,0));
+   to_mr_tonumber(L,1,0);
    uint16 thistime = ((uint16)  to_mr_tonumber(L,2,0));
    char* pcFunction = ((char*)  to_mr_tostring(L,3,0));
    if (!((mr_state == MR_STATE_RUN) || ((mr_timer_run_without_pause) && (mr_state == MR_STATE_PAUSE))))
@@ -3882,17 +3858,14 @@ static int MRF_TimerStart(mrp_State* L)
    mr_timer_p = (void*)pcFunction;
    MR_TIME_START(thistime);
    //mr_timer_state = MR_TIMER_STATE_RUNNING;
-
-   n=0;
    return 0;
 }
 
-static int MRF_TimerStop(mrp_State* L)
-{
-   int n = ((int)  to_mr_tonumber(L,1,0));
+static int MRF_TimerStop(mrp_State* L) {
+   // int n = ((int)  to_mr_tonumber(L,1,0));
+   to_mr_tonumber(L,1,0);
    MR_TIME_STOP();
    //mr_timer_state = MR_TIMER_STATE_IDLE;
-   n=0;
    return 0;
 }
 //timer

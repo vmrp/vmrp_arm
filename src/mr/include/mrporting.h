@@ -503,9 +503,8 @@ extern void* mr_getScreenBuf(void);
 /*******************************************************************/
 #endif
 
-/*显示字符于屏幕，绘制左上角为x,y。color是565的RGB颜色
-ch为字符unicode码*/
-extern void mr_platDrawCharReal(uint16 ch, int32 x, int32 y, uint16 color);
+/*显示字符于屏幕，绘制左上角为x,y。color是565的RGB颜色 ch为字符unicode码*/
+extern void mr_platDrawChar(uint16 ch, int32 x, int32 y, uint32 color);
 
 /*启动定时器*/
 extern int32 mr_timerStart(uint16 t);

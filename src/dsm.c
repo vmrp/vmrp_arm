@@ -1027,9 +1027,9 @@ const char *mr_getCharBitmap(uint16 ch, uint16 fontSize, int *width, int *height
     return xl_font_sky16_getChar(ch);
 }
 
-void mr_platDrawCharReal(uint16 ch, int32 x, int32 y, uint16 color) {
+void mr_platDrawChar(uint16 ch, int32 x, int32 y, uint32 color) {
     //		tsf_drawChar(ch, x, y, color);
-    xl_font_sky16_drawChar(ch, x, y, color);
+    xl_font_sky16_drawChar(ch, x, y, (uint16)color);
 }
 
 int32 mr_startShake(int32 ms) {

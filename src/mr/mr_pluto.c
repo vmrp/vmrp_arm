@@ -1365,7 +1365,7 @@ static void unpersist(UnpersistInfo *upi)
    mrp_assert(mrp_gettop(upi->L) == stacksize + 1);
    //mrp_setgcthreshold(upi->L, 0);
    //mrp_setgcthreshold(upi->L, 0);
-   stacksize = 0;
+   firstTime = stacksize; // 抑制gcc编译时的set but not used警告
 }
 
 void mr_store_unpersist(mrp_State *L, mrp_Chunkreader reader, void *ud)

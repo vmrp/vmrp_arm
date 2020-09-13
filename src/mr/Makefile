@@ -61,10 +61,7 @@ LOCAL_SRC_FILES_FULL += tomr/tomr_event.c \
                 tomr/tomr_to.c
 
 mr_vm_full:
-	gcc -g -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-function -Wno-stringop-truncation\
-                $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL)\
-                -I./src -I./tomr -I./include
-
+	gcc -g -Wall $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL) -I./src -I./tomr -I./include
 	ar crv ./libmr_vm_full.a *.o
 
 #####################################################################

@@ -16,14 +16,6 @@
 #include "mr_graphics.h"
 #include "string.h"
 
-//#ifdef MR_M0_FILE
-//#include "mr_m0file.h"
-//#else
-/*
-static const unsigned char mr_m0_file1[]=
-{0x00
-};
-*/
 
 /* PKZIP header definitions */
 #define LOCSIG 0x04034b50L      /* four-byte lead-in (lsb first) */
@@ -817,18 +809,6 @@ int32 y;
 int32 color;
 }mr_drawCharSt;
 */
-
-#ifdef MR_PLAT_DRAWTEXT
-void mr_platDrawChar(uint16 ch, int32 x, int32 y, int32 color)
-{
-	mr_platDrawCharReal((uint16)ch, x, y, (uint16)color);
-}
-#else
-void mr_platDrawChar(uint16 ch, int32 x, int32 y, int32 color)
-{
-
-}
-#endif
 
 
 
