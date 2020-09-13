@@ -3848,7 +3848,6 @@ static int MRF_DispUp(mrp_State* L)
 //timer
 static int MRF_TimerStart(mrp_State* L) {
    // int n = ((int)  to_mr_tonumber(L,1,0));
-   to_mr_tonumber(L,1,0);
    uint16 thistime = ((uint16)  to_mr_tonumber(L,2,0));
    char* pcFunction = ((char*)  to_mr_tostring(L,3,0));
    if (!((mr_state == MR_STATE_RUN) || ((mr_timer_run_without_pause) && (mr_state == MR_STATE_PAUSE))))
