@@ -12,7 +12,7 @@
 
 #include "dsm.h"
 #include "main.h"
-#include "mr_types.h"
+#include "./mr/include/type.h"
 
 T_DSM_SOC_STAT socStat[DSM_SUPPROT_SOC_NUM];
 mr_socket_struct mr_soc;

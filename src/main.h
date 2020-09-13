@@ -3,7 +3,7 @@
 
 #include "dsm.h"
 #include "mr_helper.h"
-#include "mr_types.h"
+#include "./mr/include/type.h"
 #include "utils.h"
 
 #define LOG_TAG "mrpoid_jni"

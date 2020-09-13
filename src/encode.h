@@ -2,7 +2,7 @@
 #define _ENCODE_H
 
 
-#include "mr_types.h"
+#include "./mr/include/type.h"
 
 
 int gbToUCS2(unsigned char *gbCode, unsigned char *unicode);

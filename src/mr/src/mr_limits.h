@@ -11,6 +11,9 @@
 
 #include "mr.h"
 
+#define INT_MAX 0x7FFFFFFF
+#define LONG_MAX 0x7FFFFFFF
+#define ULONG_MAX 0xFFFFFFFFUL
 
 /*
 ** try to find number of bits in an integer
@@ -45,6 +48,7 @@ typedef int ls_hash;
 /* an unsigned integer big enough to count the total memory used by Lua; */
 /* it should be at least as large as size_t */
 typedef unsigned long lu_mem;
+
 
 #define MAX_LUMEM	ULONG_MAX
 

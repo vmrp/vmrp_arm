@@ -1,17 +1,8 @@
 
-#ifndef mrporting_h
-#define mrporting_h
+#ifndef _MRPORTING_H
+#define _MRPORTING_H
 
-/*如果手机平台没有定义下面的类型，将#if 语句内的定义生效*/
-#ifndef MR_C_NUMBER_TYPE
-#define MR_C_NUMBER_TYPE
-typedef unsigned short uint16; /* Unsigned 16 bit value */
-typedef unsigned int uint32;   /* Unsigned 32 bit value */
-typedef int int32;             /* signed 32 bit value */
-typedef unsigned char uint8;   /* Signed 8  bit value */
-typedef signed char int8;      /* Signed 8  bit value */
-typedef signed short int16;    /* Signed 16 bit value */
-#endif
+#include "type.h"
 
 enum {
     MR_KEY_0,            //按键 0

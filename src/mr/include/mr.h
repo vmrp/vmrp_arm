@@ -90,18 +90,6 @@ int mr_islower(int ch);
 #endif
 
 
-
-
-
-typedef  unsigned short     uint16;      /* Unsigned 16 bit value */
-typedef  unsigned long int  uint32;      /* Unsigned 32 bit value */
-typedef  long int                int32;      /* signed 32 bit value */
-typedef  unsigned char      uint8;        /*Unsigned  Signed 8  bit value */
-typedef  signed char          int8;        /* Signed 8  bit value */
-typedef  signed short         int16;       /* Signed 16 bit value */
-#define MR_C_NUMBER_TYPE
-
-
 #include "mr_forvm.h"
 //#define FREE_MEMORY mfwAlloc
 //#define ALLOC_MEMORY mfwFree
