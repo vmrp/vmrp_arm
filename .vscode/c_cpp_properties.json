@@ -6,6 +6,7 @@
                 "${workspaceFolder}/**"
             ],
             "defines": [
+                "DSM_FULL",
                 "TARGET_MOD",
                 "MTK_MOD",
                 "MR_VERSION=1968",

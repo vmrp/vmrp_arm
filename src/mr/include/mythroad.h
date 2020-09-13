@@ -268,6 +268,7 @@ typedef void (*mrc_timerCB)(int32 data);
 extern int32 mr_c_function_load(int32 code);
 #endif
 
+void mr_getMemoryInfo(uint32 *total, uint32 *free, uint32 *top);
 void mythroad_init(void);
 
 #endif

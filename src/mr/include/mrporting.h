@@ -4,6 +4,11 @@
 
 #include "type.h"
 
+#define MAKERGB565(r, g, b) (uint16_t)(((uint32_t)(r >> 3) << 11) | ((uint32_t)(g >> 2) << 5) | ((uint32_t)(b >> 3)))
+#define PIXEL565R(v) ((((uint32_t)v >> 11) << 3) & 0xff)
+#define PIXEL565G(v) ((((uint32_t)v >> 5) << 2) & 0xff)
+#define PIXEL565B(v) (((uint32_t)v << 3) & 0xff)
+
 enum {
     MR_KEY_0,            //按键 0
     MR_KEY_1,            //按键 1

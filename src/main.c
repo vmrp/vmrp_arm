@@ -1,16 +1,21 @@
 #include "main.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <malloc.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "encode.h"
 #include "font_sky16_2.h"
+#include "mr_helper.h"
 #include "timer.h"
-#include "utils.h"
 
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 320
@@ -25,8 +30,62 @@ int showApiLog = TRUE;
 
 static char runMrpPath[DSM_MAX_FILE_LEN + 1];
 
-//初始化模拟器  唯一实例
-void j2n_create() {
+void logPrint(char *level, char *tag, ...) {
+    va_list ap;
+    char *fmt;
+    va_start(ap, tag);
+    fmt = va_arg(ap, char *);
+    printf("%s[%s]: ", level, tag);
+    vprintf(fmt, ap);
+    putchar('\n');
+    va_end(ap);
+}
+
+int getFileType(const char *name) {
+    struct stat s1;
+    int ret;
+
+    //返回 0 成功
+    ret = stat(name, &s1);
+    if (ret != 0) {
+        LOGE("getFileType errno=%d", errno);
+        return MR_IS_INVALID;
+    }
+
+    if (s1.st_mode & S_IFDIR)
+        return MR_IS_DIR;
+    else if (s1.st_mode & S_IFREG)
+        return MR_IS_FILE;
+    else
+        return MR_IS_INVALID;
+}
+
+int getFileSize(const char *path) {
+    struct stat s1;
+    int ret;
+
+    ret = stat(path, &s1);
+    if (ret != 0) {
+        LOGE("getFileSize errno=%d", errno);
+        return -1;
+    }
+
+    return s1.st_size;
+}
+
+int64 get_uptime_ms(void) {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64)ts.tv_sec * 1000 + (ts.tv_nsec / 1000000);
+}
+
+int64 get_time_ms(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (int64)tv.tv_sec * 1000 + (tv.tv_usec / 1000);
+}
+
+void main_init() {
     gEmuEnv.showFile = TRUE;
     gEmuEnv.showNet = TRUE;
     gEmuEnv.showMrPlat = TRUE;
@@ -63,25 +122,20 @@ void j2n_startMrp(char *path) {
 }
 
 void j2n_pause() {
-    LOGD("native pause!");
     LOGI("mr_pauseApp");
     mr_pauseApp();
 }
 
 void j2n_resume() {
-    LOGD("native resume!");
     LOGI("mr_resumeApp");
     mr_resumeApp();
     emu_bitmapToscreen(cacheScreenBuffer, 0, 0, SCRW, SCRH);
 }
 
 void j2n_stop() {
-    LOGD("native stop!");
     LOGI("mr_stop");
-    //仅仅是通知调用 mrc_exit()
-    mr_stop();
-    //最后执行
-    mr_exit();
+    mr_stop(); //仅仅是通知调用 mrc_exit()
+    mr_exit(); //最后执行
 }
 
 void j2n_smsRecv(char *numStr, char *contentStr) {
@@ -166,16 +220,8 @@ void emu_releaseEdit(int32 editHd) {
 void emu_finish() {
 }
 
-void N2J_readTsfFont(uint8 **outbuf, int32 *outlen) {
-    // todo
-    *outbuf = NULL;
-    *outlen = 0;
-}
-
 void emu_getImageSize(const char *path, int *w, int *h) {
-    // todo
-    *w = 0;
-    *h = 0;
+    panic("emu_getImageSize() Not implemented");
 }
 
 void emu_drawImage(const char *path, int x, int y, int w, int h) {
@@ -250,8 +296,6 @@ void emu_bitmapToscreen(uint16 *data, int x, int y, int w, int h) {
             if (data == cacheScreenBuffer) {
                 uint16 color = *(cacheScreenBuffer + (xx + yy * SCRW));
                 SDL_SetRenderDrawColor(renderer, PIXEL565R(color), PIXEL565G(color), PIXEL565B(color), 0xFF);
-                // SDL_SetRenderDrawColor(renderer, 0xff, 0, 0, 0xFF);
-                // SDL_RenderDrawPoint(renderer, 1, 1);
                 SDL_RenderDrawPoint(renderer, xx, yy);
             }
         }
@@ -293,7 +337,7 @@ int main(int argc, char *args[]) {
 #elif __i386__
     printf("__i386__\n");
 #endif
-    j2n_create();
+    main_init();
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());

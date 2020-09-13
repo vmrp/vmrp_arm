@@ -1,27 +1,29 @@
 #ifndef _EMULATOR_H
 #define _EMULATOR_H
 
+#include "./mr/include/type.h"
 #include "dsm.h"
 #include "mr_helper.h"
-#include "./mr/include/type.h"
-#include "utils.h"
 
-#define LOG_TAG "mrpoid_jni"
+#define LOG_TAG "vmrp"
+#define LOGI(...)  logPrint("INFO", LOG_TAG, __VA_ARGS__)
+#define LOGW(...)  logPrint("WARN", LOG_TAG, __VA_ARGS__)
+#define LOGE(...)  logPrint("ERROR", LOG_TAG, __VA_ARGS__)
+#define LOGD(...)  logPrint("DEBUG", LOG_TAG, __VA_ARGS__)
 
-#define LOGI(...) \
-    ((void)__android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__))
-#define LOGW(...) \
-    ((void)__android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__))
-#define LOGE(...) \
-    ((void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__))
-#define LOGD(...) \
-    ((void)__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__))
+#define panic(msg)          \
+    do {                    \
+        perror(msg);        \
+        exit(EXIT_FAILURE); \
+    } while (0)
 
-typedef enum {
-    EMU_MSG_STATR = 0x10000,
+int getFileType(const char *name);
+int getFileSize(const char *path);
+void logPrint(char *level, char *tag, ...);
 
-    EMU_MSG_MAX
-} E_EMU_MSGID;
+int64 get_uptime_ms(void);
+int64 get_time_ms(void);
+
 
 typedef struct _EmuEnv {
     int showFile;               //文件 I/O
@@ -43,7 +45,6 @@ typedef struct {
 } T_MR_MENU, *PT_MR_MENU;
 
 typedef int32 (*MR_CALLBACK)(int32 result);
-
 
 //--- DSM 配置参数 ----------------------------
 #define DSM_MAX_FILE_LEN 256
@@ -87,8 +88,6 @@ extern char dsmSmsCenter[MAX_SMS_CENTER_LEN + 1];
             mr_remove(as);             \
     } while (0)
 
-///////// 注册方法 J->N /////////////////////////////////////////
-extern void mr_getMemoryInfo(uint32 *total, uint32 *free, uint32 *top);
 
 ////////// 平台相关个方法 N->J //////////////////////////////////
 void emu_bitmapToscreen(uint16 *data, int x, int y, int w, int h);
@@ -104,8 +103,6 @@ void emu_palySound(const char *path, int loop);
 void emu_stopSound(int id);
 void emu_musicLoadFile(const char *path);
 int emu_musicCMD(int cmd, int arg0, int arg1);
-
-void N2J_readTsfFont(uint8 **outbuf, int32 *outlen);
 
 void emu_getImageSize(const char *path, int *w, int *h);
 void emu_drawImage(const char *path, int x, int y, int w, int h);

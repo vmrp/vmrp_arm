@@ -9614,8 +9614,7 @@ int32 _mr_getMetaMemLimit()
    return memValue;
 }
 
-extern void mr_getMemoryInfo(uint32 *total, uint32 *free, uint32 *top)
-{
+void mr_getMemoryInfo(uint32 *total, uint32 *free, uint32 *top) {
 	if(total) *total = LG_mem_len;
 	if(free) *free = LG_mem_left;
 	if(top) *top = LG_mem_top;

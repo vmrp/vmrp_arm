@@ -17,7 +17,6 @@
 #include "encode.h"
 #include "font_sky16_2.h"
 #include "main.h"
-#include "utils.h"
 
 static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 *output_len);
 static void DsmPathInit();
@@ -26,12 +25,6 @@ extern void DsmSocketInit();
 extern void DsmSocketClose();
 void dsmRestoreRootDir();
 
-//Linux处理错误
-#define handle_error(msg)   \
-    do {                    \
-        perror(msg);        \
-        exit(EXIT_FAILURE); \
-    } while (0)
 
 uint16 *screenBuf;
 
@@ -127,18 +120,18 @@ int32 mr_mem_get(char **mem_base, uint32 *mem_len) {
 
     pagesize = sysconf(_SC_PAGE_SIZE);
     if (pagesize == -1)
-        handle_error("sysconf");
+        panic("sysconf");
 
     pagecount = len / pagesize;
     len = pagesize * pagecount;
     buffer = memalign(pagesize, len);
     if (buffer == NULL)
-        handle_error("memalign");
+        panic("memalign");
 
     //设置内存可执行权限
     if (mprotect(buffer, len, PROT_EXEC | PROT_WRITE | PROT_READ) == -1) {
         free(buffer);
-        handle_error("mprotect");
+        panic("mprotect");
     }
 
     *mem_base = buffer;
@@ -172,18 +165,18 @@ int32 pageMalloc(void **out, int32 *outLen, uint32 needLen) {
 
     pagesize = sysconf(_SC_PAGE_SIZE);
     if (pagesize == -1)
-        handle_error("sysconf");
+        panic("sysconf");
 
     pagecount = needLen / pagesize + 1;
     needLen = pagesize * pagecount;
     buf = memalign(pagesize, needLen);
     if (buf == NULL)
-        handle_error("memalign");
+        panic("memalign");
 
     //设置内存可执行权限
     if (mprotect(buf, needLen, PROT_EXEC | PROT_WRITE | PROT_READ) == -1) {
         free(buf);
-        handle_error("mprotect");
+        panic("mprotect");
     }
 
     *out = buf;
@@ -210,10 +203,8 @@ int mr_sprintf(char *buf, const char *fmt, ...) {
 }
 
 void mr_printf(const char *format, ...) {
-    //	LOGI("mr_printf(%s)", format);
-
     if (!format) {
-        __android_log_print(ANDROID_LOG_ERROR, "mythroad", "mr_printf null");
+        panic("mr_printf null");
         return;
     }
 
@@ -225,7 +216,7 @@ void mr_printf(const char *format, ...) {
     va_end(params);
 
     GBToUTF8String((uint8 *)printfBuf, (uint8 *)utf8Buf, sizeof(utf8Buf));
-    __android_log_print(ANDROID_LOG_INFO, "mythroad", "%s", utf8Buf);
+    LOGI("mr_printf(): %s", utf8Buf);
 }
 
 int32 mr_timerStart(uint16 t) {
@@ -965,7 +956,7 @@ int32 mr_getLen(const char *filename) {
 }
 
 static int32 dsmGetFreeSpace(uint8 *input, int32 input_len, T_DSM_DISK_INFO *spaceInfo) {
-    handle_error("dsmGetFreeSpace()");
+    panic("dsmGetFreeSpace()");
     /* todo z
     U64 disk_free_space, disk_total_space;
     int32 fs_ret;

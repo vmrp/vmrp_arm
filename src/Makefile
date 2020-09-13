@@ -6,7 +6,6 @@ mrpoid2:
 		main.c \
 		dsm.c \
 		network.c \
-		utils.c \
 		encode.c \
 		timer.c \
 		font_sky16_2.c \
