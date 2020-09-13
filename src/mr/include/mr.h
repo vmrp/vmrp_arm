@@ -45,73 +45,21 @@
 
 
 
-#ifdef MR_SPREADTRUM_MOD
-#define SETJMP mr_setjmp
-#define LONGJMP mr_longjmp
-#else
 #define SETJMP setjmp
 #define LONGJMP longjmp
-#endif
 
-#if (defined(MR_ANYKA_MOD)||defined(MR_SPREADTRUM_MOD)||defined(MR_BREW_MOD))
-
-/*
-#define ISDIGIT mr_isdigit
-#define ISXDIGIT mr_isxdigit
-#define ISALPHA mr_isalpha
-#define ISLOWER mr_islower
-#define ISSPACE mr_isspace
-*/
-int mr_isdigit(int ch);
 int mr_isxdigit(int ch);
 int mr_isalpha(int ch);
-int mr_islower(int ch);
 int mr_isspace(int ch);
+int mr_toupper(int ch); 
+int mr_tolower(int ch); 
+int mr_isalnum(int ch); 
+int mr_isupper(int ch); 
+int mr_ispunct(int ch); 
+int mr_iscntrl(int ch); 
+int mr_isdigit(int ch);
+int mr_islower(int ch);
 
-
-#undef isdigit 
-#undef isxdigit 
-#undef isalpha 
-#undef islower 
-#undef isspace 
-
-#define isdigit mr_isdigit
-#define isxdigit mr_isxdigit
-#define isalpha mr_isalpha
-#define islower mr_islower
-#define isspace mr_isspace
-
-extern int atoi( const char *string );
-extern unsigned long strtoul(const char *nptr, char **endptr, int base);
-extern int rand(void); 
-extern long strtol(const char *nptr, char **endptr, int base);
-extern int abs(int x); 
-
-extern int mr_toupper(int ch); 
-extern int mr_tolower(int ch); 
-extern int mr_iscntrl(int ch); 
-extern int mr_ispunct(int ch); 
-extern int mr_isupper(int ch); 
-extern int mr_isalnum(int ch); 
-
-#define toupper mr_toupper
-#define tolower mr_tolower
-#define iscntrl mr_iscntrl
-#define ispunct mr_ispunct
-#define isupper mr_isupper
-#define isalnum mr_isalnum
-
-#else
-
-/*
-#define ISDIGIT isdigit
-#define ISXDIGIT isxdigit
-#define ISALPHA isalpha
-#define ISLOWER islower
-#define ISSPACE isspace
-*/
-
-#endif
 
 
 

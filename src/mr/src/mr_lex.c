@@ -170,7 +170,7 @@ static size_t readname (LexState *LS) {
   do {
     checkbuffer(LS, l);
     save_and_next(LS, l);
-  } while (isalnum(LS->current) || LS->current == '_');
+  } while (mr_isalnum(LS->current) || LS->current == '_');
   save(LS, '\0', l);
   return l-1;
 }
@@ -181,7 +181,7 @@ static int mr_O_hexstr2d (const char *s, mrp_Number *result) {
   char *endptr;
   mrp_Number res = strtoul(s, &endptr, 0);
   if (endptr == s) return 0;  /* no conversion */
-  while (isspace((unsigned char)(*endptr))) endptr++;
+  while (mr_isspace((unsigned char)(*endptr))) endptr++;
   if (*endptr != '\0') return 0;  /* invalid trailing characters? */
   *result = res;
   return 1;
@@ -199,7 +199,7 @@ static void read_numeral (LexState *LS, int comma, SemInfo *seminfo) {
     save_and_next(LS, l);
     if (LS->current == 'x' || LS->current == 'X') {
       save_and_next(LS, l);
-      while (isxdigit(LS->current)) {
+      while (mr_isxdigit(LS->current)) {
         checkbuffer(LS, l);
         save_and_next(LS, l);
       }
@@ -210,7 +210,7 @@ static void read_numeral (LexState *LS, int comma, SemInfo *seminfo) {
     }
   }
   //Hex Patch
-  while (isdigit(LS->current)) {
+  while (mr_isdigit(LS->current)) {
     checkbuffer(LS, l);
     save_and_next(LS, l);
   }
@@ -224,7 +224,7 @@ static void read_numeral (LexState *LS, int comma, SemInfo *seminfo) {
                  TK_NUMBER);
     }
   }
-  while (isdigit(LS->current)) {
+  while (mr_isdigit(LS->current)) {
     checkbuffer(LS, l);
     save_and_next(LS, l);
   }
@@ -232,7 +232,7 @@ static void read_numeral (LexState *LS, int comma, SemInfo *seminfo) {
     save_and_next(LS, l);  /* read `E' */
     if (LS->current == '+' || LS->current == '-')
       save_and_next(LS, l);  /* optional exponent sign */
-    while (isdigit(LS->current)) {
+    while (mr_isdigit(LS->current)) {
       checkbuffer(LS, l);
       save_and_next(LS, l);
     }
@@ -435,13 +435,13 @@ static void read_string (LexState *LS, int del, SemInfo *seminfo) {
           case 'x': case 'X': {
             int c = 0;
             next(LS);
-            if (!isxdigit(LS->current)) {
+            if (!mr_isxdigit(LS->current)) {
               save(LS, '\0', l);
               mr_X_lexerror(LS, "hex expect for '\\x'", TK_STRING);
             }
             c = hexval(LS->current);
             next(LS);
-            if (isxdigit(LS->current)) {
+            if (mr_isxdigit(LS->current)) {
               c = 16*c + hexval(LS->current);
               next(LS);
             }
@@ -451,7 +451,7 @@ static void read_string (LexState *LS, int del, SemInfo *seminfo) {
 #endif
           case EOZ: break;  /* will raise an error next loop */
           default: {
-            if (!isdigit(LS->current))
+            if (!mr_isdigit(LS->current))
               save_and_next(LS, l);  /* handles \\, \", \', and \? */
             else {  /* \xxx */
               int c = 0;
@@ -459,8 +459,9 @@ static void read_string (LexState *LS, int del, SemInfo *seminfo) {
               do {
                 c = 10*c + (LS->current-'0');
                 next(LS);
-              } while (++i<3 && isdigit(LS->current));
-              if (c > UCHAR_MAX) {
+              } while (++i<3 && mr_isdigit(LS->current));
+              // if (c > UCHAR_MAX) {
+              if (c > 0xFF) {
                 save(LS, '\0', l);
                 mr_X_lexerror(LS, "escape sequence too large", TK_STRING);
               }
@@ -575,7 +576,7 @@ int mr_X_lex (LexState *LS, SemInfo *seminfo) {
           }
           else return TK_CONCAT;   /* .. */
         }
-        else if (!isdigit(LS->current)) return '.';
+        else if (!mr_isdigit(LS->current)) return '.';
         else {
           read_numeral(LS, 1, seminfo);
           return TK_NUMBER;
@@ -585,15 +586,15 @@ int mr_X_lex (LexState *LS, SemInfo *seminfo) {
         return TK_EOS;
       }
       default: {
-        if (isspace(LS->current)) {
+        if (mr_isspace(LS->current)) {
           next(LS);
           continue;
         }
-        else if (isdigit(LS->current)) {
+        else if (mr_isdigit(LS->current)) {
           read_numeral(LS, 0, seminfo);
           return TK_NUMBER;
         }
-        else if (isalpha(LS->current) || LS->current == '_') {
+        else if (mr_isalpha(LS->current) || LS->current == '_') {
           /* identifier or reserved word */
           size_t l = readname(LS);
           TString *ts = mr_S_newlstr(LS->L, mr_Z_buffer(LS->buff), l);
@@ -604,7 +605,7 @@ int mr_X_lex (LexState *LS, SemInfo *seminfo) {
         }
         else {
           int c = LS->current;
-          if (iscntrl(c))
+          if (mr_iscntrl(c))
             mr_X_error(LS, "invalid control char",
                            mr_O_pushfstring(LS->L, "char(%d)", c));
           next(LS);

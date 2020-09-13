@@ -69,7 +69,7 @@ static int mr_B_tonumber (mrp_State *L) {
     mr_L_argcheck(L, 2 <= base && base <= 36, 2, "base out of range");
     n = STRTOUL(s1, &s2, base);  //ouli brew
     if (s1 != s2) {  /* at least one valid digit? */
-      while (isspace((unsigned char)(*s2))) s2++;  /* skip trailing spaces */
+      while (mr_isspace((unsigned char)(*s2))) s2++;  /* skip trailing spaces */
       if (*s2 == '\0') {  /* no invalid trailing characters? */
         mrp_pushnumber(L, (mrp_Number)n);
         return 1;

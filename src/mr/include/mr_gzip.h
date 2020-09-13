@@ -129,7 +129,7 @@ extern unsigned LG_gzoutcnt; /* bytes in output buffer */
 #define seekable()    0  /* force sequential output */
 #define translate_eol 0  /* no option -a yet */
 
-#define tolow(c)  (isupper(c) ? (c)-'A'+'a' : (c))    /* force to lower case */
+#define tolow(c)  (mr_isupper(c) ? (c)-'A'+'a' : (c))    /* force to lower case */
 
 /* Macros for getting two-byte and four-byte header values */
 #define SH(p) ((ush)(uch)((p)[0]) | ((ush)(uch)((p)[1]) << 8))

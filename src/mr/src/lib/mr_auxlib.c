@@ -551,7 +551,7 @@ MRPLIB_API int mr_L_loadfile (mrp_State *L, const char *filename) {
    }
    if (lf.f == NULL) return errfile(L, fnameindex);  /* unable to open file */
    c = ungetc(getc(lf.f), lf.f);
-   if (!(isspace(c) || isprint(c)) && lf.f != stdin) {  /* binary file? */
+   if (!(mr_isspace(c) || mr_isprint(c)) && lf.f != stdin) {  /* binary file? */
      fclose(lf.f);
      lf.f = fopen(filename, "rb");  /* reopen in binary mode */
      if (lf.f == NULL) return errfile(L, fnameindex); /* unable to reopen file */
@@ -732,7 +732,7 @@ MRPLIB_API int mr_L_loadfile (mrp_State *L, const char *filename) {
 
 //ouli brew
 //  c = ungetc(getc(lf.f), lf.f);
-//  if (!(isspace(c) || isprint(c)) ) {  /* binary file? */
+//  if (!(mr_isspace(c) || mr_isprint(c)) ) {  /* binary file? */
 //    fclose(lf.f);
 //    lf.f = fopen(filename, "rb");  /* reopen in binary mode */
 //    if (lf.f == NULL) return errfile(L, fnameindex); /* unable to reopen file */

@@ -556,7 +556,7 @@ static int getnum_mr_aux (mrp_State *L, const char **pc) {
     sig = -1;
     (*pc)++;
   }
-  while (isdigit(cast(int, **pc))) res = res*10 + (*(*pc)++) - '0';
+  while (mr_isdigit(cast(int, **pc))) res = res*10 + (*(*pc)++) - '0';
   return sig*res;
 }
   

@@ -24,89 +24,57 @@
 
 typedef long sint32;	/* a signed version for size_t */
 
-#if (defined(MR_ANYKA_MOD)||defined(MR_SPREADTRUM_MOD)||defined(MR_BREW_MOD))
-
-int mr_isdigit(int ch)
-{
-   return (ch >= '0') && (ch <= '9');
+int mr_isdigit(int ch) {
+    return (ch >= '0') && (ch <= '9');
 }
 
-int mr_isxdigit(int   ch)   
-{   
-   return   ((ch   >=   '0')   &&   (ch   <=   '9'))   ||   ((ch   >=   'a')   &&   (ch   <=   'f'))   ||   ((ch   >=   'A')   &&   (ch   <=   'F'));   
+int mr_isxdigit(int ch) {
+    return ((ch >= '0') && (ch <= '9')) || ((ch >= 'a') && (ch <= 'f')) || ((ch >= 'A') && (ch <= 'F'));
 }
 
-int mr_isalpha(int   ch)   
-{   
-   return   ((ch   >=   'a')   &&   (ch   <=   'z'))   ||   ((ch   >=   'A')   &&   (ch   <=   'Z'));   
-}   
-
-int mr_islower(int   ch)   
-{   
-   return   (ch   >=   'a')   &&   (ch   <=   'z');   
+int mr_isalpha(int ch) {
+    return ((ch >= 'a') && (ch <= 'z')) || ((ch >= 'A') && (ch <= 'Z'));
 }
 
-int mr_isspace(int ch)   
-{   
-   return   (ch   ==   ' ')   ||   (ch   ==   '\t')   ||   (ch   ==   '\r')   ||   (ch   ==   '\n')   ||   (ch   ==   '\f')   ||   (ch   ==   '\v');
-}   
-
-int mr_toupper(int ch)
-{
-   if ( (unsigned int)(ch - 'a') < 26u )
-     ch += 'A' - 'a';
-   return ch;
-
-}
-int mr_tolower(int ch)
-{
-#if 0
-   mr_printf("ch:%d", ch);
-   mr_printf("ch1:%d", (unsigned int)(ch - 'A'));
-   if ( (unsigned int)(ch - 'A') < 26u ){
-     ch += 'a' - 'A';
-     mr_printf("ch2:%d", ch);
-   }
-   return ch;
-#else
-   if ( (unsigned int)(ch - 'A') < 26u )
-     ch += 'a' - 'A';
-   return ch;
-#endif
+int mr_islower(int ch) {
+    return (ch >= 'a') && (ch <= 'z');
 }
 
-int mr_iscntrl(int ch)
-{
-   return (unsigned int)ch < 32u  ||  ch == 127;
+int mr_isspace(int ch) {
+    return (ch == ' ') || (ch == '\t') || (ch == '\r') || (ch == '\n') || (ch == '\f') || (ch == '\v');
 }
 
-int mr_isalnum(int ch)
-{
-   return (unsigned int)((ch | 0x20) - 'a') < 26u  || (unsigned int)( ch - '0') < 10u;
+int mr_toupper(int ch) {
+    if ((unsigned int)(ch - 'a') < 26u)
+        ch += 'A' - 'a';
+    return ch;
 }
 
-int mr_isupper(int ch)
-{
-   return (unsigned int)(ch - 'A') < 26u;
+int mr_tolower(int ch) {
+    if ((unsigned int)(ch - 'A') < 26u)
+        ch += 'a' - 'A';
+    return ch;
 }
 
-int mr_isprint(int ch)
-{
-   return (unsigned int)(ch - ' ') < 127u - ' ';
-   
+int mr_iscntrl(int ch) {
+    return (unsigned int)ch < 32u || ch == 127;
 }
 
-int mr_ispunct(int ch)
-{
-   return mr_isprint (ch)  &&  !mr_isalnum (ch)  &&  !mr_isspace (ch);
+int mr_isalnum(int ch) {
+    return (unsigned int)((ch | 0x20) - 'a') < 26u || (unsigned int)(ch - '0') < 10u;
 }
 
+int mr_isupper(int ch) {
+    return (unsigned int)(ch - 'A') < 26u;
+}
 
-#endif
+int mr_isprint(int ch) {
+    return (unsigned int)(ch - ' ') < 127u - ' ';
+}
 
-
-
-
+int mr_ispunct(int ch) {
+    return mr_isprint(ch) && !mr_isalnum(ch) && !mr_isspace(ch);
+}
 
 //////////-------------------------------------------------
 
@@ -165,13 +133,13 @@ static int getendianess (const char **s, int *native_out) {
 }
 
 static int getnum (const char **fmt, int df) {
-  if (!isdigit(**fmt))
+  if (!mr_isdigit(**fmt))
     return df;  /* no number */
   else {
     int a = 0;
     do {
       a = a*10 + *((*fmt)++) - '0';
-    } while (isdigit(**fmt));
+    } while (mr_isdigit(**fmt));
     return a;
   }
 }
@@ -390,7 +358,7 @@ static int b_unpack (mrp_State *L) {
       case ' ': break;  /* ignore white spaces */
       case 'b': case 'B': case 'h': case 'H':
       case 'l': case 'L': case 'i':  case 'I': {  /* integer types */
-        int withsign = islower(opt);
+        int withsign = mr_islower(opt);
         getinteger(L, data+pos, endian, withsign, size);
         break;
       }
@@ -506,7 +474,7 @@ static int str_lower (mrp_State *L) {
   const char *s = mr_L_checklstring(L, 1, (size_t*)&l);
   mr_L_buffinit(L, &b);
   for (i=0; i<l; i++)
-    mr_L_putchar(&b, tolower(uchar(s[i])));
+    mr_L_putchar(&b, mr_tolower(uchar(s[i])));
   mr_L_pushresult(&b);
   return 1;
 }
@@ -519,7 +487,7 @@ static int str_upper (mrp_State *L) {
   const char *s = mr_L_checklstring(L, 1, &l);
   mr_L_buffinit(L, &b);
   for (i=0; i<l; i++)
-    mr_L_putchar(&b, toupper(uchar(s[i])));
+    mr_L_putchar(&b, mr_toupper(uchar(s[i])));
   mr_L_pushresult(&b);
   return 1;
 }
@@ -654,20 +622,20 @@ static const char *mr_I_classend (MatchState *ms, const char *p) {
 
 static int match_class (int c, int cl) {
   int res;
-  switch (tolower(cl)) {
-    case 'a' : res = isalpha(c); break;
-    case 'c' : res = iscntrl(c); break;
-    case 'd' : res = isdigit(c); break;
-    case 'l' : res = islower(c); break;
-    case 'p' : res = ispunct(c); break;
-    case 's' : res = isspace(c); break;
-    case 'u' : res = isupper(c); break;
-    case 'w' : res = isalnum(c); break;
-    case 'x' : res = isxdigit(c); break;
+  switch (mr_tolower(cl)) {
+    case 'a' : res = mr_isalpha(c); break;
+    case 'c' : res = mr_iscntrl(c); break;
+    case 'd' : res = mr_isdigit(c); break;
+    case 'l' : res = mr_islower(c); break;
+    case 'p' : res = mr_ispunct(c); break;
+    case 's' : res = mr_isspace(c); break;
+    case 'u' : res = mr_isupper(c); break;
+    case 'w' : res = mr_isalnum(c); break;
+    case 'x' : res = mr_isxdigit(c); break;
     case 'z' : res = (c == 0); break;
     default: return (cl == c);
   }
-  return (islower(cl) ? res : !res);
+  return (mr_islower(cl) ? res : !res);
 }
 
 
@@ -822,7 +790,7 @@ static const char *match (MatchState *ms, const char *s, const char *p) {
           p=ep; goto init;  /* else return match(ms, s, ep); */
         }
         default: {
-          if (isdigit(uchar(*(p+1)))) {  /* capture results (%0-%9)? */
+          if (mr_isdigit(uchar(*(p+1)))) {  /* capture results (%0-%9)? */
             s = match_capture(ms, s, *(p+1));
             if (s == NULL) return NULL;
             p+=2; goto init;  /* else return match(ms, s, p+2) */
@@ -1003,7 +971,7 @@ static void add_s (MatchState *ms, mr_L_Buffer *b,
         mr_L_putchar(b, news[i]);
       else {
         i++;  /* skip ESC */
-        if (!isdigit(uchar(news[i])))
+        if (!mr_isdigit(uchar(news[i])))
           mr_L_putchar(b, news[i]);
         else {
           int level = check_capture(ms, news[i]);
@@ -1112,15 +1080,15 @@ static const char *scanformat (mrp_State *L, const char *strfrmt,
                                  char *form, int *hasprecision) {
   const char *p = strfrmt;
   while (STRCHR("-+ #0", *p)) p++;  /* skip flags */
-  if (isdigit(uchar(*p))) p++;  /* skip width */
-  if (isdigit(uchar(*p))) p++;  /* (2 digits at most) */
+  if (mr_isdigit(uchar(*p))) p++;  /* skip width */
+  if (mr_isdigit(uchar(*p))) p++;  /* (2 digits at most) */
   if (*p == '.') {
     p++;
     *hasprecision = 1;
-    if (isdigit(uchar(*p))) p++;  /* skip precision */
-    if (isdigit(uchar(*p))) p++;  /* (2 digits at most) */
+    if (mr_isdigit(uchar(*p))) p++;  /* skip precision */
+    if (mr_isdigit(uchar(*p))) p++;  /* (2 digits at most) */
   }
-  if (isdigit(uchar(*p)))
+  if (mr_isdigit(uchar(*p)))
     mr_L_error(L, "invalid format (width or precision too long)");
   if (p-strfrmt+2 > MAX_FORMAT)  /* +2 to include `%' and the specifier */
     mr_L_error(L, "invalid format (too long)");
@@ -1148,7 +1116,7 @@ static int str_format (mrp_State *L) {
       char buff[MAX_ITEM];  /* to store the formatted item */
       int hasprecision = 0;
 /*
-      if (isdigit(uchar(*strfrmt)) && *(strfrmt+1) == '$')
+      if (mr_isdigit(uchar(*strfrmt)) && *(strfrmt+1) == '$')
         return mr_L_error(L, "obsolete option (d$) to `format'");
 */
       arg++;
