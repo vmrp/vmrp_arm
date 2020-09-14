@@ -60,7 +60,6 @@
 void dsm_init(uint16 *scrBuf);
 
 int32 mr_exit(void);
-int mr_getSocketState(int s);
 
 /** 设置 SD卡路径，参数底层不做错误检查 */
 void SetDsmSDPath(const char *path);

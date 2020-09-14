@@ -99,12 +99,7 @@ enum {
     MR_SMS_OP_EVENT,
     MR_SMS_GET_SC,
     MR_DATA_ACCOUNT_EVENT,
-    MR_MOTION_EVENT,
-
-    MR_TIMER_EVENT = 1001,
-    MR_NET_EVENT,
-
-    MR_EMU_ON_TIMER = 2001
+    MR_MOTION_EVENT
 };
 
 enum {
@@ -611,6 +606,7 @@ extern int32 mr_recv(int32 s, char* buf, int len);
 extern int32 mr_recvfrom(int32 s, char* buf, int len, int32* ip, uint16* port);
 extern int32 mr_send(int32 s, const char* buf, int len);
 extern int32 mr_sendto(int32 s, const char* buf, int len, int32 ip, uint16 port);
+extern int32 mr_getSocketState(int s);
 
 typedef struct
 {

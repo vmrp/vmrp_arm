@@ -86,7 +86,6 @@ int64 get_time_ms(void) {
 void main_init() {
     gEmuEnv.showFile = TRUE;
     gEmuEnv.showNet = TRUE;
-    gEmuEnv.showMrPlat = TRUE;
     gEmuEnv.dsmStartTime = get_time_ms();
 
     cacheScreenBuffer = (uint16 *)malloc(SCRW * SCRH * 2);
@@ -131,8 +130,8 @@ void j2n_resume() {
 
 void j2n_stop() {
     LOGI("mr_stop");
-    mr_stop(); //仅仅是通知调用 mrc_exit()
-    mr_exit(); //最后执行
+    mr_stop();  //仅仅是通知调用 mrc_exit()
+    mr_exit();  //最后执行
 }
 
 void j2n_smsRecv(char *numStr, char *contentStr) {
@@ -151,21 +150,10 @@ void j2n_destroy() {
     LOGI("native destroy");
 }
 
-void j2n_callback_play_music() {
-    // dsmMediaPlay.cb(param);
-}
-
 void j2n_callback_gethostbyname() {
     // LOGI("getHost callback ip:%p", (void*)param);
     // ((MR_GET_HOST_CB)mr_soc.callBack)(param);
 }
-
-// void j2n_setStringOptions() {
-//     SetDsmSDPath(str2);
-//     //mythroad 路径
-//     SetDsmPath(str2);
-//     strncpy(dsmSmsCenter, str2, sizeof(dsmSmsCenter));
-// }
 
 void j2n_getMemoryInfo() {
     uint32 len, left, top;
@@ -195,44 +183,7 @@ int32 emu_timerStop() {
     return MR_SUCCESS;
 }
 
-int32 emu_showEdit(const char *title, const char *text, int type, int max_size) {
-    // todo
-    return MR_FAILED;
-}
-
-/**
- * 返回编辑框内容的起始地址(编辑框的内容指针，大端unicode编码)，如果失败返回NULL.
- */
-const char *emu_getEditInputContent(int32 editHd) {
-    // todo
-    return NULL;
-}
-
-void emu_releaseEdit(int32 editHd) {
-    // todo
-}
-
 void emu_finish() {
-}
-
-void emu_getImageSize(const char *path, int *w, int *h) {
-    panic("emu_getImageSize() Not implemented");
-}
-
-void emu_drawImage(const char *path, int x, int y, int w, int h) {
-}
-
-void emu_palySound(const char *path, int loop) {
-}
-
-void emu_stopSound(int id) {
-}
-
-void emu_musicLoadFile(const char *path) {
-}
-
-int emu_musicCMD(int cmd, int arg0, int arg1) {
-    return 0;
 }
 
 // 只支持240*320大小
@@ -268,11 +219,6 @@ void printScreen(char *filename, uint16 *buf) {
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 
-#define MOUSE_DOWN 2
-#define MOUSE_UP 3
-#define MOUSE_MOVE 12
-// 五笔输入法
-
 // http://wiki.libsdl.org/Tutorials
 // http://lazyfoo.net/tutorials/SDL/index.php
 
@@ -296,34 +242,6 @@ void emu_bitmapToscreen(uint16 *data, int x, int y, int w, int h) {
         }
     }
     SDL_RenderPresent(renderer);
-}
-
-static void eventFunc(int code, int p0, int p1) {
-    // guiSetPixel(p0,p1);
-    LOGI("mr_event(%d, %d, %d)", code, p0, p1);
-
-    // if (code == MR_SMS_GET_SC) {  //获取短信中心
-    //     p0 = (int)dsmSmsCenter;
-    //     p1 = 0;
-    // } else if (code == MR_EMU_ON_TIMER) {
-    //     LOGI("call mr_timer");
-    //     mr_timer();
-    //     return;
-    // }
-    switch (code) {
-        case MOUSE_DOWN:
-            // printf("MOUSE_DOWN x:%d y:%d\n", p1, p2);
-            mr_event(MR_MOUSE_DOWN, p0, p1);
-            break;
-        case MOUSE_UP:
-            // printf("MOUSE_UP x:%d y:%d\n", p1, p2);
-            mr_event(MR_MOUSE_UP, p0, p1);
-            break;
-        case MOUSE_MOVE:
-            // printf("MOUSE_MOVE x:%d y:%d\n", p1, p2);
-            mr_event(MR_MOUSE_MOVE, p0, p1);
-            break;
-    }
 }
 
 int main(int argc, char *args[]) {
@@ -377,15 +295,15 @@ int main(int argc, char *args[]) {
                 printf("key:%d\n", event.key.keysym.sym);
             } else if (event.type == SDL_MOUSEMOTION) {
                 if (isDown) {
-                    eventFunc(MOUSE_MOVE, event.motion.x, event.motion.y);
+                    mr_event(MR_MOUSE_MOVE, event.motion.x, event.motion.y);
                 }
             } else if (event.type == SDL_MOUSEBUTTONDOWN) {
                 isDown = true;
-                eventFunc(MOUSE_DOWN, event.motion.x, event.motion.y);
+                mr_event(MR_MOUSE_DOWN, event.motion.x, event.motion.y);
 
             } else if (event.type == SDL_MOUSEBUTTONUP) {
                 isDown = false;
-                eventFunc(MOUSE_UP, event.motion.x, event.motion.y);
+                mr_event(MR_MOUSE_UP, event.motion.x, event.motion.y);
             }
         }
     }

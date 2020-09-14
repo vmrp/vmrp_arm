@@ -10,9 +10,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "./mr/include/type.h"
 #include "dsm.h"
 #include "main.h"
-#include "./mr/include/type.h"
 
 #define DSM_SUPPROT_SOC_NUM (5)
 
@@ -178,7 +178,7 @@ int32 mr_getHostByName_block(const char *ptr) {
 }
 
 int32 mr_getHostByName(const char *ptr, MR_GET_HOST_CB cb) {
-    int ret=-1;
+    int ret = -1;
 
     LOGI("mr_getHostByName(%s)", ptr);
 
@@ -287,7 +287,7 @@ int32 mr_socket(int32 type, int32 protocol) {
         return MR_FAILED;
     }
     */
-        return MR_FAILED;
+    return MR_FAILED;
 }
 
 static int32 _selectSocket(int s, long waitms) {
@@ -351,7 +351,7 @@ static int32 _selectSocket(int s, long waitms) {
         }
     }
     */
-            return MR_FAILED;
+    return MR_FAILED;
 }
 
 int32 mr_connect(int32 s, int32 ip, uint16 port, int32 type) {
@@ -416,24 +416,20 @@ int32 mr_connect(int32 s, int32 ip, uint16 port, int32 type) {
         }
     }
     */
-        return MR_FAILED;
+    return MR_FAILED;
 }
 
-int mr_getSocketState(int s) {
-    if (gEmuEnv.showNet)
-        LOGI("getSocketState(%d)", s);
+int32 mr_getSocketState(int32 s) {
+    LOGI("getSocketState(%d)", s);
 
     if (socStat[s].socStat == DSM_SOC_CONNECTED) {  //已连接
-        if (gEmuEnv.showNet)
-            LOGI("  socket connected!");
-
+        LOGI("  socket connected!");
         return MR_SUCCESS;
     } else if (socStat[s].socStat == DSM_SOC_CONNECTING) {  //正在连接
         return _selectSocket(s, 50);                        //等 50 ms
     } else {
         LOGE("  socketfd error! %d", s);
         socStat[s].socStat = DSM_SOC_ERR;
-
         return MR_FAILED;
     }
 }

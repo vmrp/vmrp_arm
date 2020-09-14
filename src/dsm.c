@@ -35,28 +35,54 @@ static char printfBuf[PRINTF_BUF_LEN + 2] = {0};
 static char utf8Buf[PRINTF_BUF_LEN * 2 + 2] = {0};
 
 static T_DSM_DISK_INFO dsmDiskInfo;
-static T_DSM_CELL_INFO dsmCellInfo;
-static char dsmIMEI[MAX_IMEI_LEN + 1];
-static char dsmIMSI[MAX_IMSI_LEN + 1];
 static int dsmNetWorkID;
-static T_MEDIA_TIME dsmCommonRsp;  //播放器回调变量
 
-char dsmSmsCenter[MAX_SMS_CENTER_LEN + 1];
 int dsmNetType;
-T_DSM_MEDIA_PLAY dsmMediaPlay;  //音乐播放接口回调
 
-static MRAPP_IMAGE_SIZE_T dsmImageSize;
+/////////////////////////////////////////////////////////////////
+#define HANDLE_NUM 64
+
+// 因为系统句柄转成int32可能是负数，导致mrp编程不规范只判断是否大于0时出现遍历文件夹为空的bug，需要有一种转换机制避免返回负数
+// 0号下标不使用，下标作为mrp使用的句柄，值为系统的句柄，值为-1时表示未使用
+static uint32 handles[HANDLE_NUM + 1];
+
+static void handleInit() {
+    for (int i = 1; i <= HANDLE_NUM; i++) {
+        handles[i] = -1;
+    }
+}
+
+static int32 handle2int32(uint32 v) {
+    for (int i = 1; i <= HANDLE_NUM; i++) {
+        if (handles[i] == -1) {
+            handles[i] = v;
+            return i;
+        }
+    }
+    return -1;  // 失败
+}
+
+static uint32 int32ToHandle(int32 v) {
+    if (v <= 0 || v > HANDLE_NUM) {
+        return -1;
+    }
+    return handles[v];
+}
+
+static void handleDel(int32 v) {
+    if (v <= 0 || v > HANDLE_NUM) {
+        return;
+    }
+    handles[v] = -1;
+}
+/////////////////////////////////////////////////////////////////
 
 void dsm_init(uint16 *scrBuf) {
     screenBuf = scrBuf;
     DsmPathInit();
     DsmSocketInit();
 
-    char *str = "864086040622841";
-    strcpy(dsmIMEI, str);
 
-    str = "460019707327302";
-    strcpy(dsmIMSI, str);
 
     dsmNetWorkID = MR_NET_ID_MOBILE;
     dsmNetType = NETTYPE_CMWAP;
@@ -86,8 +112,8 @@ int32 mr_getUserInfo(mr_userinfo *info) {
     LOGI("mr_getUserInfo");
 
     memset(info, 0, sizeof(mr_userinfo));
-    memcpy(info->IMEI, dsmIMEI, 15);
-    memcpy(info->IMSI, dsmIMSI, 15);
+    strcpy(info->IMEI, "864086040622841");
+    strcpy(info->IMSI, "460019707327302");
     strncpy(info->manufactory, "vmrp", 7);
     strncpy(info->type, "vmrp", 7);
 
@@ -374,28 +400,6 @@ void SetDsmSDPath(const char *path) {
     strncpy(SDPath, gbBuf, sizeof(SDPath) - 1);
 }
 
-/**
- * 设置 mythroad 工作目录 外部调用
- */
-void SetDsmPath(const char *path) {
-    LOGI("old dsmpath %s", dsmPath);
-    strncpy(dsmPath, path, sizeof(dsmPath) - 1);
-    FormatPathString(dsmPath, '/');
-
-    int l = strlen(dsmPath);
-    if (dsmPath[l - 1] != '/') {
-        dsmPath[l] = '/';
-        dsmPath[l + 1] = '\0';
-    }
-    LOGI("new dsmpath %s", dsmPath);
-
-    char gbBuf[DSM_MAX_FILE_LEN + 1];
-    UTF8ToGBString(dsmPath, gbBuf, DSM_MAX_FILE_LEN);
-
-    strncpy(dsmPath, gbBuf, sizeof(dsmPath) - 1);
-    strcpy(dsmWorkPath, dsmPath);
-}
-
 static void SetDsmWorkPath_inner(const char *path) {
     strncpy(dsmWorkPath, path, sizeof(dsmWorkPath) - 1);
     FormatPathString(dsmWorkPath, '/');
@@ -406,14 +410,6 @@ static void SetDsmWorkPath_inner(const char *path) {
         dsmWorkPath[l + 1] = '\0';
     }
     //检查并创建目录
-}
-
-const char *GetDsmWorkPath(void) {
-    return dsmWorkPath;
-}
-
-const char *GetDsmSDPath() {
-    return SDPath;
 }
 
 /****************************************************************************
@@ -956,59 +952,8 @@ int32 mr_getLen(const char *filename) {
     return s1.st_size;
 }
 
-static int32 dsmGetFreeSpace(uint8 *input, int32 input_len, T_DSM_DISK_INFO *spaceInfo) {
-    panic("dsmGetFreeSpace()");
-    /* todo z
-    U64 disk_free_space, disk_total_space;
-    int32 fs_ret;
-    struct statfs disk_statfs;
-
-    disk_free_space = 0;
-    disk_total_space = 0;
-
-    fs_ret = statfs(GetDsmSDPath(), &disk_statfs);
-
-    //	if(showApiLog)
-    //		LOGI("dsmGetFreeSpace() ret=%d", fs_ret);
-
-    if (fs_ret == 0) {
-        //disk_free_space	= (U64)1024*1024*1024*2;
-        //disk_total_space  = (U64)1024*1024*1024;
-        disk_total_space = disk_statfs.f_blocks * disk_statfs.f_bsize;
-        disk_free_space = disk_statfs.f_bfree * disk_statfs.f_bsize;
-
-        if ((disk_total_space / 10) > (U64)1024 * 1024 * 1024) {
-            spaceInfo->tUnit = 1024 * 1024 * 1024;
-        } else if ((disk_total_space / 10) > 1024 * 1024) {
-            spaceInfo->tUnit = 1024 * 1024;
-        } else if ((disk_total_space / 10) > 1024) {
-            spaceInfo->tUnit = 1024;
-        } else {
-            spaceInfo->tUnit = 1;
-        }
-
-        spaceInfo->total = disk_total_space / spaceInfo->tUnit;
-
-        if ((disk_free_space / 10) > (U64)1024 * 1024 * 1024) {
-            spaceInfo->unit = 1024 * 1024 * 1024;
-        } else if ((disk_free_space / 10) > 1024 * 1024) {
-            spaceInfo->unit = 1024 * 1024;
-        } else if ((disk_free_space / 10) > 1024) {
-            spaceInfo->unit = 1024;
-        } else {
-            spaceInfo->unit = 1;
-        }
-
-        spaceInfo->account = disk_free_space / spaceInfo->unit;
-
-        return MR_SUCCESS;
-    }
-*/
-    return MR_FAILED;
-}
-
 int32 mr_getScreenInfo(mr_screeninfo *s) {
-    //if(showApiLog) LOGI("mr_getScreenInfo");
+    LOGI("mr_getScreenInfo()");
     if (s) {
         s->width = SCRW;
         s->height = SCRH;
@@ -1023,13 +968,10 @@ void mr_drawBitmap(uint16 *bmp, int16 x, int16 y, uint16 w, uint16 h) {
 
 const char *mr_getCharBitmap(uint16 ch, uint16 fontSize, int *width, int *height) {
     xl_font_sky16_charWidthHeight(ch, width, height);
-    //		tsf_charWidthHeight(ch, width, height);
-    //		return tsf_getCharBitmapA(ch);
     return xl_font_sky16_getChar(ch);
 }
 
 void mr_platDrawChar(uint16 ch, int32 x, int32 y, uint32 color) {
-    //		tsf_drawChar(ch, x, y, color);
     xl_font_sky16_drawChar(ch, x, y, (uint16)color);
 }
 
@@ -1041,38 +983,11 @@ int32 mr_stopShake() {
     return MR_SUCCESS;
 }
 
-const static char exts[][5] = {".mid", ".wav", ".mp3", ".amr"};
-
 int32 mr_playSound(int type, const void *data, uint32 dataLen, int32 loop) {
-    if (type >= 4) {
-        LOGW("sound id %d not support!", type);
-        return MR_FAILED;
-    }
-
-    int32 fd;
-
-    if (MR_IS_DIR != mr_info(".tmp"))
-        mr_mkDir(".tmp");
-
-    char buf[128];
-    sprintf(buf, ".tmp/tmp%s", exts[type]);
-
-    MR_CHECK_AND_REMOVE(buf);
-
-    fd = mr_open(buf, MR_FILE_RDWR | MR_FILE_CREATE);
-    if (fd > 0) {
-        mr_write(fd, (void *)data, dataLen);
-        mr_close(fd);
-    }
-
-    char fullpathname[DSM_MAX_FILE_LEN] = {0};
-    emu_palySound(get_filename(fullpathname, buf), loop);
-
-    return MR_SUCCESS;
+    return MR_FAILED;
 }
 
 int32 mr_stopSound(int type) {
-    emu_stopSound(type);
     return MR_SUCCESS;
 }
 
@@ -1093,51 +1008,13 @@ void mr_connectWAP(char *wap) {
     LOGI("mr_connectWAP(%s)", wap);
 }
 
-#if 0
-static char *unibe_unile(const char *s) {
-    if (s == NULL)
-        return NULL;
-
-    int l = UCS2_strlen(s);
-    char *buf = malloc(l + 2);
-
-    memset(buf, 0, l + 2);
-    memcpy(buf, s, l);
-    UCS2ByteRev(buf);  //unicode大端转小端
-
-    return buf;
-}
-#endif
 
 int32 mr_menuCreate(const char *title, int16 num) {
-#if 0
-	if(num <= 0)
-		return MR_FAILED;
-
-	T_MR_MENU *menu = (T_MR_MENU *)malloc(sizeof(T_MR_MENU));
-	menu->itemCount = num;
-	menu->items = malloc(sizeof(char *) * num);
-	menu->title = unibe_unile(title);
-
-	return (int32)menu;
-#else
     return MR_FAILED;
-#endif
 }
 
 int32 mr_menuSetItem(int32 hd, const char *text, int32 index) {
-#if 0
-	T_MR_MENU *menu = (T_MR_MENU *)hd;
-
-	if(index < 0 || index > menu->itemCount-1)
-		return MR_FAILED;
-
-	menu->items[index] = unibe_unile(text);
-
-	return MR_SUCCESS;
-#else
     return MR_FAILED;
-#endif
 }
 
 int32 mr_menuShow(int32 menu) {
@@ -1181,17 +1058,15 @@ int32 mr_textRefresh(int32 handle, const char *title, const char *text) {
 }
 
 int32 mr_editCreate(const char *title, const char *text, int32 type, int32 max_size) {
-    return emu_showEdit(title, text, type, max_size);
+    return MR_FAILED;
 }
 
 int32 mr_editRelease(int32 edit) {
-    //	LOGI("mr_editRelease %d", edit);
-    emu_releaseEdit(edit);
     return MR_SUCCESS;
 }
 
 const char *mr_editGetText(int32 edit) {
-    return emu_getEditInputContent(edit);
+    return NULL;
 }
 
 int32 mr_winCreate(void) {
@@ -1201,93 +1076,25 @@ int32 mr_winRelease(int32 win) {
     return MR_IGNORE;
 }
 
-void dsmDrawImage(T_DRAW_DIRECT_REQ *t) {
-    if (t->src_type == SRC_NAME) {
-        char fullpathname[DSM_MAX_FILE_LEN] = {0};
-        emu_drawImage(get_filename(fullpathname, t->src), t->ox, t->oy, t->w, t->h);
-    }
-}
-
-MRAPP_IMAGE_SIZE_T *dsmGetImageSize(MRAPP_IMAGE_ORIGIN_T *t) {
-    if (t->src_type == SRC_NAME) {
-        char fullpathname[DSM_MAX_FILE_LEN] = {0};
-        emu_getImageSize(get_filename(fullpathname, t->src), &dsmImageSize.width, &dsmImageSize.height);
-    }
-
-    return &dsmImageSize;
-}
-
 //----------------------------------------------------
 /*平台扩展接口*/
 int32 mr_plat(int32 code, int32 param) {
-    if (gEmuEnv.showMrPlat)
-        LOGI("mr_plat code=%d param=%d", code, param);
+    LOGI("mr_plat code=%d param=%d", code, param);
 
     switch (code) {
-        case MR_GET_FILE_POS:  //获取文件读写指针
-        {
-            int32 ret = lseek(param - 5, 0, SEEK_CUR);
-            if (ret >= 0)
-                return (ret + MR_PLAT_VALUE_BASE);
-            else
-                return MR_FAILED;
-        }
-
-        case MR_CONNECT: {
+        case MR_CONNECT: {  //1001
             return mr_getSocketState(param);
         }
-
-        case MR_SET_SOCTIME: {
-            return MR_IGNORE;
-        }
-
-        case MR_GET_RAND:  //1211
-        {
+        case MR_GET_RAND: {  //1211
             srand(mr_getTime());
             return (MR_PLAT_VALUE_BASE + rand() % param);
         }
-
-        case MR_CHECK_TOUCH:  //是否支持触屏
-        {
-            return MR_NORMAL_SCREEN;
-        }
-
-        case MR_GET_HANDSET_LG:  //获取语言
-        {
+        case MR_CHECK_TOUCH:  //1205是否支持触屏
+            return MR_TOUCH_SCREEN;
+        case MR_GET_HANDSET_LG:  //1206获取语言
             return MR_CHINESE;
-        }
-
-        case 1391:  //查询后台支持
-        {
-            return MR_IGNORE;
-        }
-
-        case 1106:  //获取短信中心
-        {
-            return MR_WAITING;
-        }
-
-        case 1016:  //初始化信号强度
-            return MR_SUCCESS;
-
-        case 1302:  // 设置音量
-            emu_musicCMD(1302, param, param);
-            return MR_SUCCESS;
-
-        case 1214:
-            return MR_SUCCESS;
-
-        case 1327:  //查询 WIFI 是否可用
-            return MR_IGNORE;
-        case 1328:  //设置是否使用 WIFI
-            return MR_SUCCESS;
-
-        case 1011:  //设置收到新短信的时候是否显示提示界面。1提示
-            return MR_SUCCESS;
-
-        case 1218:
+        case 1218:  // 查询存储卡的状态
             return MR_MSDC_OK;
-
         default:
             LOGW("mr_plat(code:%d, param:%d) not impl!", code, param);
             break;
@@ -1296,91 +1103,44 @@ int32 mr_plat(int32 code, int32 param) {
     return MR_IGNORE;
 }
 
-void writeDataToTempFile(const char *path, void *data, int len) {
-    CHECK_AND_REMOVE(path);
-    int fd = open(path, O_RDWR | O_CREAT, 0777);
-    if (fd >= 0) {
-        write(fd, data, len);
-        close(fd);
-    }
-}
-
 /*增强的平台扩展接口*/
 int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32 *output_len, MR_PLAT_EX_CB *cb) {
-    if (gEmuEnv.showMrPlat)
-        LOGI("mr_platEx code=%d ip=%p il=%d op=%p olp=%p cb=%p", code, input, input_len, output, output_len, cb);
+    LOGI("mr_platEx code=%d in=%p inlen=%d out=%p outlen=%p cb=%p", code, input, input_len, output, output_len, cb);
 
     switch (code) {
-        case MR_MALLOC_EX:  //1001申请屏幕缓冲区，这里给的值即 VM 的屏幕缓冲区
-        {
+        case MR_MALLOC_EX: {  //1001申请屏幕缓冲区，这里给的值即 VM 的屏幕缓冲区
             *output = (uint8 *)screenBuf;
             *output_len = SCRW * SCRH * 2;
             LOGD("MR_MALLOC_EX ram2 addr=%p l=%d", output, *output_len);
             return MR_SUCCESS;
         }
-
-        case MR_MFREE_EX:  //1002
-        {
+        case MR_MFREE_EX: {  //1002
             return MR_SUCCESS;
         }
-
         case 1012:  //申请内部cache
-        {
-            *output = NULL;
-            return MR_SUCCESS;
-        }
         case 1013:  //释放内部cache
-        {
-            return MR_SUCCESS;
-        }
-
-        case 1014:  //申请拓展内存
-        {
-            if (0) {
-                *output_len = SCRW * SCRH * 4;
-                *output = malloc(*output_len);
-                LOGI("malloc exRam addr=%p len=%d", output, output_len);
-                return MR_SUCCESS;
-            } else {
-                *output = NULL;
-                *output_len = 0;
-                return MR_IGNORE;
-            }
-        }
-
-        case 1015:  //释放拓展内存
-        {
-            if (0) {
-                LOGI("free exRam");
-                free(input);
-                return MR_SUCCESS;
-            }
+            return MR_IGNORE;
+        case 1014: {  //申请拓展内存
+            // *output_len = SCRW * SCRH * 4;
+            // *output = malloc(*output_len);
+            // LOGI("malloc exRam addr=%p len=%d", output, output_len);
+            // return MR_SUCCESS;
             return MR_IGNORE;
         }
-
+        case 1015: {  //释放拓展内存
+            // LOGI("free exRam");
+            // free(input);
+            // return MR_SUCCESS;
+            return MR_IGNORE;
+        }
         case MR_TUROFFBACKLIGHT:  //关闭背光常亮
-        {
+        case MR_TURONBACKLIGHT:   //开启背光常亮
             return MR_SUCCESS;
-        }
-        case MR_TURONBACKLIGHT:  //开启背光常亮
-        {
-            return MR_SUCCESS;
-        }
 
         case MR_SWITCHPATH:  //切换跟目录 1204
             return dsmSwitchPath(input, input_len, output, output_len);
 
-        case MR_GET_FREE_SPACE: {
-            if (dsmGetFreeSpace(input, input_len, &dsmDiskInfo) == MR_SUCCESS) {
-                *output = (uint8 *)&dsmDiskInfo;
-                *output_len = sizeof(T_DSM_DISK_INFO);
-                return MR_SUCCESS;
-            }
-            return MR_FAILED;
-        }
-
-        case MR_UCS2GB:  //1207
-        {
+        case MR_UCS2GB: {  //1207
             if (!input || input_len == 0) {
                 LOGE("mr_platEx(1207) input err");
                 return MR_FAILED;
@@ -1391,20 +1151,18 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
                 return MR_FAILED;
             }
 
-            //input is bigend
-            {
-                int len = UCS2_strlen(input);
-                char *buf = malloc(len + 2);
+            int len = UCS2_strlen(input);
+            char *buf = malloc(len + 2);
 
-                int gbBufLen = len + 1;
-                char *gbBuf = malloc(gbBufLen);
+            int gbBufLen = len + 1;
+            char *gbBuf = malloc(gbBufLen);
 
-                memcpy(buf, input, len + 2);
-                UCS2ByteRev(buf);
-                UCS2ToGBString((uint16 *)buf, gbBuf, gbBufLen);
+            memcpy(buf, input, len + 2);
+            UCS2ByteRev(buf);
+            UCS2ToGBString((uint16 *)buf, gbBuf, gbBufLen);
 
-                strcpy(*output, gbBuf);
-                /**
+            strcpy(*output, gbBuf);
+            /**
 				 * output_len 返回的GB字符串缓冲的长度。
 				 *
 				 * output   	转换成功以后的bg2312编码字符串存放缓冲区指针，缓冲区的内存由应用调用者提供并管理、释放。
@@ -1412,12 +1170,10 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
 				 *
 				 * 2013-3-25 16:29:21 2013-3-25 16:51:44
 				 */
-                //				if(output_len)
-                //					*output_len = strlen(gbBuf);
+            //				if(output_len)
+            //					*output_len = strlen(gbBuf);
 
-                free(buf);
-            }
-
+            free(buf);
             return MR_SUCCESS;
         }
 
@@ -1428,162 +1184,52 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
             return MR_SUCCESS;
         }
 
-        case 1116:  //获取编译时间
-        {
+        case 1116: {  //获取编译时间
             static char buf[32];
-
             int l = snprintf(buf, sizeof(buf), "%s %s", __TIME__, __DATE__);
             *output = (uint8 *)buf;  //"2013/3/21 21:36";
             *output_len = l + 1;
-
             LOGI("build time %s", buf);
-
             return MR_SUCCESS;
         }
 
+        case 1224:  //小区信息ID
         case 1307:  //获取SIM卡个数，非多卡多待直接返回 MR_INGORE
             return MR_IGNORE;
 
-            //case 1224: //T_DSM_CELL_INFO 获取小区信息 需要调用mr_plat中的1215和1216进行初始化和退出
-
-        case 0x90004:  //获取型号强度
-            return 5;
-
-        case 1224:  //小区信息ID
-        {
-            memset(&dsmCellInfo, 0, sizeof(T_DSM_CELL_INFO));
-            *output = (uint8 *)&dsmCellInfo;
-            *output_len = sizeof(T_DSM_CELL_INFO);
-            LOGW("get T_DSM_CELL_INFO");
-            return MR_IGNORE;
-        }
-
-        case 1017:  //获得信号强度。
-        {
+        case 1017: {  //获得信号强度。
             static T_RX rx = {3, 5, 5, 1};
-
             *output = (uint8 *)&rx;
             *output_len = sizeof(T_RX);
             return MR_SUCCESS;
         }
 
-        case 3001:  //获取图片信息
-        {
-            MRAPP_IMAGE_ORIGIN_T *t = (MRAPP_IMAGE_ORIGIN_T *)input;
-
-            *output = (uint8 *)dsmGetImageSize(t);
-            *output_len = sizeof(MRAPP_IMAGE_SIZE_T);
-
-            return MR_SUCCESS;
-        }
-
-        case 3010:  //画图
-        {
-            T_DRAW_DIRECT_REQ *t = (T_DRAW_DIRECT_REQ *)input;
-
-            dsmDrawImage(t);
-
-            return MR_SUCCESS;
-        }
-
         default: {
-            LOGW("mr_platEx(code=%d, input=%#p, il=%d) not impl!", code, input, input_len);
-
-            //			if(input_len>0 && input){
-            //				int fd;
-            //				if(MR_IS_FILE != mr_info("system.log"))
-            //					fd = mr_open("system.log", MR_FILE_CREATE|MR_FILE_RDWR);
-            //				else
-            //					fd = mr_open("system.log", MR_FILE_RDWR);
-            //				if(fd){
-            //					mr_seek(fd, 0, MR_SEEK_END);
-            //					mr_write(fd, input, input_len);
-            //					mr_write(fd, "\r\n", 2);
-            //					mr_close(fd);
-            //				}
-            //			}
+            LOGW("mr_platEx(code=%d, in=%#p, inlen=%d) not impl!", code, input, input_len);
             break;
         }
     }
 
-    int cmd = code / 10;
-    switch (cmd) {
-        case MR_MEDIA_INIT:
-            emu_musicCMD(cmd, 0, 0);
-            return MR_SUCCESS;
-
-        case MR_MEDIA_BUF_LOAD: {
-            char fullpathname[DSM_MAX_FILE_LEN] = {0};
-            get_filename(fullpathname, "musicbuf");
-            writeDataToTempFile(fullpathname, input, input_len);
-            emu_musicLoadFile(fullpathname);
-
-            return MR_SUCCESS;
-        }
-
-        case MR_MEDIA_FILE_LOAD: {
-            char fullpathname[DSM_MAX_FILE_LEN] = {0};
-            emu_musicLoadFile((const char *)get_filename(fullpathname, (const char *)input));
-
-            return MR_SUCCESS;
-        }
-
-        case MR_MEDIA_PLAY_CUR_REQ: {
-            if (input_len >= sizeof(T_DSM_MEDIA_PLAY) && input != NULL) {
-                LOGI("mediaplay need callback!");
-
-                T_DSM_MEDIA_PLAY *pt = (T_DSM_MEDIA_PLAY *)input;
-
-                dsmMediaPlay.cb = pt->cb;
-
-                emu_musicCMD(MR_MEDIA_PLAY_CUR_REQ, pt->loop, 1);
-            } else {
-                emu_musicCMD(MR_MEDIA_PLAY_CUR_REQ, 0, 0);
-            }
-
-            return MR_SUCCESS;
-        }
-
-        case MR_MEDIA_PAUSE_REQ:
-        case MR_MEDIA_RESUME_REQ:
-        case MR_MEDIA_STOP_REQ:
-        case MR_MEDIA_CLOSE:
-            emu_musicCMD(cmd, 0, 0);
-            return MR_SUCCESS;
-
-        case MR_MEDIA_GET_STATUS:
-            return emu_musicCMD(cmd, 0, 0);
-
-        case MR_MEDIA_SETPOS: {
-            T_SET_PLAY_POS *pos = (T_SET_PLAY_POS *)input;
-            emu_musicCMD(cmd, pos->pos * 1000, 0);  //上层需要 ms
-
-            return MR_SUCCESS;
-        }
-
-        case MR_MEDIA_GET_TOTAL_TIME:
-        case MR_MEDIA_GET_CURTIME:
-        case MR_MEDIA_GET_CURTIME_MSEC: {
-            int ret = emu_musicCMD(cmd, 0, 0);
-            if (ret == -1) {
-                LOGE("emu_musicCMD(%d) error", cmd);
-                return MR_FAILED;
-            } else {
-                dsmCommonRsp.pos = ret;
-                *output = (uint8 *)&dsmCommonRsp;
-                *output_len = sizeof(int32);
-                return MR_SUCCESS;
-            }
-        }
-
-        case MR_MEDIA_FREE:
-            emu_musicCMD(cmd, 0, 0);
-            return MR_SUCCESS;
-
-        default:
-            LOGW("mr_platEx(code=%d, input=%p, il=%d) not impl!", code, (void *)input, input_len);
-            break;
-    }
+    // int cmd = code / 10;
+    // switch (cmd) {
+    //     case MR_MEDIA_INIT:              //201
+    //     case MR_MEDIA_FILE_LOAD:         //202
+    //     case MR_MEDIA_BUF_LOAD:          //203
+    //     case MR_MEDIA_PLAY_CUR_REQ:      //204
+    //     case MR_MEDIA_PAUSE_REQ:         //205
+    //     case MR_MEDIA_RESUME_REQ:        //206
+    //     case MR_MEDIA_STOP_REQ:          //207
+    //     case MR_MEDIA_CLOSE:             //208
+    //     case MR_MEDIA_GET_STATUS:        //209
+    //     case MR_MEDIA_SETPOS:            //210
+    //     case MR_MEDIA_GET_TOTAL_TIME:    //212
+    //     case MR_MEDIA_GET_CURTIME:       //213
+    //     case MR_MEDIA_GET_CURTIME_MSEC:  //215
+    //     case MR_MEDIA_FREE:              //216
+    //     default:
+    //         LOGW("mr_platEx(code=%d, input=%p, il=%d) not impl!", code, (void *)input, input_len);
+    //         break;
+    // }
 
     return MR_IGNORE;
 }
