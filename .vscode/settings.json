@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "type_traits": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "cstdlib": "cpp"
     }
 }

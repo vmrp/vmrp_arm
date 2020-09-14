@@ -14,6 +14,8 @@
 #include "main.h"
 #include "./mr/include/type.h"
 
+#define DSM_SUPPROT_SOC_NUM (5)
+
 T_DSM_SOC_STAT socStat[DSM_SUPPROT_SOC_NUM];
 mr_socket_struct mr_soc;
 

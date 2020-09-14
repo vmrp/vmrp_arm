@@ -2,8 +2,8 @@
 #define _EMULATOR_H
 
 #include "./mr/include/type.h"
+#include "./mr/include/mr_helper.h"
 #include "dsm.h"
-#include "mr_helper.h"
 
 #define LOG_TAG "vmrp"
 #define LOGI(...)  logPrint("INFO", LOG_TAG, __VA_ARGS__)
@@ -34,7 +34,6 @@ typedef struct _EmuEnv {
     char *vm_mem_base;          //虚拟机内存地址
     int32 vm_mem_len;           //虚拟机内存大小
     char *vm_mem_end;           //虚拟机内存地址
-    uint16 *cacheScreenBuffer;  //缓冲屏幕地址
     uint16 *screenBuffer;       //缓冲屏幕地址
 } T_EMUENV;
 
@@ -59,8 +58,6 @@ extern int SCRH;
 
 extern T_EMUENV gEmuEnv;  //API LOG 控制
 
-extern int showApiLog;
-extern uint16 *cacheScreenBuffer;  //缓冲屏幕地址
 extern mr_socket_struct mr_soc;
 extern T_DSM_MEDIA_PLAY dsmMediaPlay;  //音乐播放接口回调
 extern int dsmNetType;

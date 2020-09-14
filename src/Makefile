@@ -6,7 +6,6 @@ mrpoid2:
 		main.c \
 		dsm.c \
 		network.c \
-		encode.c \
 		timer.c \
 		font_sky16_2.c \
 		-L./mr -lmr_vm_full -lSDL2 -lm -lz \

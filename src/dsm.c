@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <zlib.h>
 
-#include "encode.h"
+#include "./mr/include/encode.h"
 #include "font_sky16_2.h"
 #include "main.h"
 
@@ -25,8 +25,7 @@ extern void DsmSocketInit();
 extern void DsmSocketClose();
 void dsmRestoreRootDir();
 
-
-uint16 *screenBuf;
+static uint16 *screenBuf;
 
 #define DSM_MEM_SIZE (5 * 1024 * 1024)  //DSM内存大小
 
@@ -45,12 +44,11 @@ static T_MEDIA_TIME dsmCommonRsp;  //播放器回调变量
 char dsmSmsCenter[MAX_SMS_CENTER_LEN + 1];
 int dsmNetType;
 T_DSM_MEDIA_PLAY dsmMediaPlay;  //音乐播放接口回调
-char dsmType[8] = DSM_FACTORY;
-char dsmFactory[8] = DSM_TYPE;
 
 static MRAPP_IMAGE_SIZE_T dsmImageSize;
 
-void dsm_init() {
+void dsm_init(uint16 *scrBuf) {
+    screenBuf = scrBuf;
     DsmPathInit();
     DsmSocketInit();
 
@@ -72,6 +70,12 @@ int32 mr_exit(void) {
     return MR_SUCCESS;
 }
 
+void dpoint(int x, int y, int color) {
+    if (x < 0 || x >= SCRW || y < 0 || y >= SCRH)
+        return;
+    *(screenBuf + y * SCRW + x) = color;
+}
+
 #define MAKE_PLAT_VERSION(plat, ver, card, impl, brun) \
     (100000000 + (plat)*1000000 + (ver)*10000 + (card)*1000 + (impl)*10 + (brun))
 
@@ -79,13 +83,13 @@ int32 mr_getUserInfo(mr_userinfo *info) {
     if (info == NULL)
         return MR_FAILED;
 
-    if (showApiLog) LOGI("mr_getUserInfo");
+    LOGI("mr_getUserInfo");
 
     memset(info, 0, sizeof(mr_userinfo));
     memcpy(info->IMEI, dsmIMEI, 15);
     memcpy(info->IMSI, dsmIMSI, 15);
-    strncpy(info->manufactory, dsmFactory, 7);
-    strncpy(info->type, dsmType, 7);
+    strncpy(info->manufactory, "vmrp", 7);
+    strncpy(info->type, "vmrp", 7);
 
     info->ver = 101000000 + DSM_PLAT_VERSION * 10000 + DSM_FAE_VERSION;
     //	info->ver = 116000000 + DSM_PLAT_VERSION * 10000 + DSM_FAE_VERSION; //SPLE
@@ -141,8 +145,7 @@ int32 mr_mem_get(char **mem_base, uint32 *mem_len) {
     gEmuEnv.vm_mem_len = len;
     gEmuEnv.vm_mem_end = buffer + len;
 
-    if (showApiLog)
-        LOGE("mr_mem_get base=%p len=%x end=%p =================", gEmuEnv.vm_mem_base, len, gEmuEnv.vm_mem_end);
+    LOGE("mr_mem_get base=%p len=%x end=%p =================", gEmuEnv.vm_mem_base, len, gEmuEnv.vm_mem_end);
 
     return MR_SUCCESS;
 }
@@ -153,8 +156,7 @@ int32 mr_mem_free(char *mem, uint32 mem_len) {
     gEmuEnv.vm_mem_base = NULL;
     gEmuEnv.vm_mem_len = 0;
 
-    if (showApiLog)
-        LOGI("mr_mem_free");
+    LOGI("mr_mem_free");
 
     return MR_SUCCESS;
 }
@@ -262,8 +264,7 @@ int32 mr_getDatetime(mr_datetime *datetime) {
 
 /*任务睡眠，单位ms*/
 int32 mr_sleep(uint32 ms) {
-    if (showApiLog)
-        LOGI("mr_sleep(%d)", ms);
+    LOGI("mr_sleep(%d)", ms);
 
     usleep(ms * 1000);  //注意 usleep 传的是 微秒 ，所以要 *1000
 
@@ -288,37 +289,37 @@ void DsmPathInit(void) {
 
     snprintf(buf, sizeof(buf), "%s", SDPath);  //sd卡根目录
     GBToUTF8String((uint8 *)buf, (uint8 *)buf2, sizeof(buf2));
-    if (showApiLog) LOGI("checkdir %s", buf2);
+    LOGI("checkdir %s", buf2);
     if (MR_IS_DIR != getFileType(buf2))
         MKDIR(buf2);
 
     snprintf(buf, sizeof(buf), "%s%s", SDPath, dsmPath);  //mythroad 目录
     GBToUTF8String((uint8 *)buf, (uint8 *)buf2, sizeof(buf2));
-    if (showApiLog) LOGI("checkdir %s", buf2);
+    LOGI("checkdir %s", buf2);
     if (MR_IS_DIR != getFileType(buf2))
         MKDIR(buf2);
 
     snprintf(buf, sizeof(buf), "%s%s%s", SDPath, dsmPath, DSM_HIDE_DRIVE);
     GBToUTF8String((uint8 *)buf, (uint8 *)buf2, sizeof(buf2));
-    if (showApiLog) LOGI("checkdir %s", buf2);
+    LOGI("checkdir %s", buf2);
     if (MR_IS_DIR != getFileType(buf2))
         MKDIR(buf2);
 
     snprintf(buf, sizeof(buf), "%s%s%s%s", SDPath, dsmPath, DSM_HIDE_DRIVE, DSM_DRIVE_A);
     GBToUTF8String((uint8 *)buf, (uint8 *)buf2, sizeof(buf2));
-    if (showApiLog) LOGI("checkdir %s", buf2);
+    LOGI("checkdir %s", buf2);
     if (MR_IS_DIR != getFileType(buf2))
         MKDIR(buf2);
 
     snprintf(buf, sizeof(buf), "%s%s%s%s", SDPath, dsmPath, DSM_HIDE_DRIVE, DSM_DRIVE_B);
     GBToUTF8String((uint8 *)buf, (uint8 *)buf2, sizeof(buf2));
-    if (showApiLog) LOGI("checkdir %s", buf2);
+    LOGI("checkdir %s", buf2);
     if (MR_IS_DIR != getFileType(buf2))
         MKDIR(buf2);
 
     snprintf(buf, sizeof(buf), "%s%s%s%s%s", SDPath, dsmPath, DSM_HIDE_DRIVE, DSM_DRIVE_A, DSM_ROOT_PATH_SYS);
     GBToUTF8String((uint8 *)buf, (uint8 *)buf2, sizeof(buf2));
-    if (showApiLog) LOGI("checkdir %s", buf2);
+    LOGI("checkdir %s", buf2);
     if (MR_IS_DIR != getFileType(buf2))
         MKDIR(buf2);
 }
@@ -528,13 +529,9 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
  ****************************************************************************/
 char *get_filename(char *outputbuf, const char *filename) {
     char dsmFullPath[DSM_MAX_FILE_LEN + 1];
-    char *p = outputbuf;
-
-    snprintf(dsmFullPath, sizeof(dsmFullPath),
-             "%s%s%s", SDPath, dsmWorkPath, filename);
+    snprintf(dsmFullPath, sizeof(dsmFullPath), "%s%s%s", SDPath, dsmWorkPath, filename);
     FormatPathString(dsmFullPath, '/');
     GBToUTF8String(dsmFullPath, outputbuf, DSM_MAX_FILE_LEN);
-
     return outputbuf;
 }
 
@@ -839,7 +836,6 @@ int32 mr_rmDir(const char *name) {
 }
 
 /****************************************************************************
- 函数名:MR_FILE_HANDLE mr_findStart(const char* name, char* buffer, uint32 len)
  描  述:初始化一个文件目录的搜索，并返回第一搜索。
  参  数:name	 :要搜索的目录名
  buffer:保存第一个搜索结果的buf
@@ -851,22 +847,28 @@ MR_FILE_HANDLE mr_findStart(const char *name, char *buffer, uint32 len) {
     if (!name || !buffer || len == 0)
         return MR_FAILED;
 
-    if (gEmuEnv.showFile)
-        LOGI("mr_findStart %s", name);
-
     DIR *pDir;
     struct dirent *pDt;
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
+    int32 ret;
 
-    memset(buffer, 0, len);
-    if ((pDir = opendir(get_filename(fullpathname, name))) != NULL) {
+    get_filename(fullpathname, name);
+
+    if (gEmuEnv.showFile) LOGI("mr_findStart %s", fullpathname);
+
+    if ((pDir = opendir(fullpathname)) != NULL) {
+        // todo 因为转成int32是负数，导致mrp编程不规范只判断是否大于0时出现遍历文件夹为空的bug，需要有一种转换机制避免返回负数
+        ret = (int32)pDir;
+        LOGI("mr_findStart readdir %d", ret);
         if ((pDt = readdir(pDir)) != NULL) {
+            LOGI("mr_findStart readdir %s", pDt->d_name);
+            memset(buffer, 0, len);
             UTF8ToGBString(pDt->d_name, buffer, len);
         } else {
             LOGW("mr_findStart: readdir FAIL!");
         }
 
-        return (MR_FILE_HANDLE)pDir;
+        return ret;
     } else {
         LOGE("mr_findStart %s: opendir FAIL!", fullpathname);
     }
@@ -885,7 +887,6 @@ MR_FILE_HANDLE mr_findStart(const char *name, char *buffer, uint32 len) {
 int32 mr_findGetNext(MR_FILE_HANDLE search_handle, char *buffer, uint32 len) {
     if (!search_handle || search_handle == MR_FAILED || !buffer || len == 0)
         return MR_FAILED;
-
     if (gEmuEnv.showFile)
         LOGI("mr_findGetNext 0x%X", search_handle);
 
@@ -1084,7 +1085,7 @@ void mr_call(char *number) {
 }
 
 int32 mr_getNetworkID(void) {
-    if (showApiLog) LOGI("mr_getNetworkID %d", dsmNetWorkID);
+    LOGI("mr_getNetworkID %d", dsmNetWorkID);
     return dsmNetWorkID;
 }
 
@@ -1312,10 +1313,9 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
     switch (code) {
         case MR_MALLOC_EX:  //1001申请屏幕缓冲区，这里给的值即 VM 的屏幕缓冲区
         {
-            *output = (uint8 *)cacheScreenBuffer;
-            //			screenBuf = cacheScreenBuffer;
+            *output = (uint8 *)screenBuf;
             *output_len = SCRW * SCRH * 2;
-            LOGD("mocall ram2 addr=%p l=%d", output, *output_len);
+            LOGD("MR_MALLOC_EX ram2 addr=%p l=%d", output, *output_len);
             return MR_SUCCESS;
         }
 
@@ -1421,11 +1421,10 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
             return MR_SUCCESS;
         }
 
-        case MR_CHARACTER_HEIGHT: {
-            static int32 wordInfo = (DSM_ENWORD_H << 24) | (DSM_ENWORD_W << 16) | (DSM_CHWORD_H << 8) | (DSM_CHWORD_W);
+        case MR_CHARACTER_HEIGHT: {  // 1201
+            static int32 wordInfo = (EN_CHAR_H << 24) | (EN_CHAR_W << 16) | (CN_CHAR_H << 8) | (CN_CHAR_W);
             *output = (unsigned char *)&wordInfo;
             *output_len = 4;
-
             return MR_SUCCESS;
         }
 

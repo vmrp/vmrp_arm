@@ -1,5 +1,6 @@
 #include "font_sky16_2.h"
-
+#include "dsm.h"
+#include "main.h"
 // todo "上有名不"这四个字必定显示为错别字
 
 
@@ -20,12 +21,6 @@ int xl_font_sky16_init() {  //字体初始化，打开字体文件
 int xl_font_sky16_close() {  //关闭字体
     LOGW("关闭字体");
     return mr_close(font_sky16_f);
-}
-
-static void dpoint(int x, int y, int color) {
-    if (x < 0 || x >= SCRW || y < 0 || y >= SCRH)
-        return;
-    *(screenBuf + y * SCRW + x) = color;
 }
 
 //获取字体第n个点信息
@@ -65,12 +60,12 @@ char *xl_font_sky16_drawChar(uint16 id, int x, int y, uint16 color) {
 //获取一个文字的宽高
 void xl_font_sky16_charWidthHeight(uint16 id, int32 *width, int32 *height) {
     if (id < 128) {
-        if (width) *width = 8;
-        if (height) *height = 16;
+        if (width) *width = EN_CHAR_W;
+        if (height) *height = EN_CHAR_H;
         return;
     }
-    if (width) *width = 16;
-    if (height) *height = 16;
+    if (width) *width = CN_CHAR_W;
+    if (height) *height = CN_CHAR_H;
 }
 
 //获取单行文字的宽高

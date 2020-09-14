@@ -12,9 +12,8 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "encode.h"
+#include "./mr/include/encode.h"
 #include "font_sky16_2.h"
-#include "mr_helper.h"
 #include "timer.h"
 
 #define SCREEN_WIDTH 240
@@ -23,10 +22,9 @@
 //---------------------------------
 T_EMUENV gEmuEnv;  //API LOG 控制
 
-uint16 *cacheScreenBuffer;  //缓冲屏幕地址
+static uint16 *cacheScreenBuffer;  //缓冲屏幕地址
 int SCRW = SCREEN_WIDTH;
 int SCRH = SCREEN_HEIGHT;
-int showApiLog = TRUE;
 
 static char runMrpPath[DSM_MAX_FILE_LEN + 1];
 
@@ -91,7 +89,7 @@ void main_init() {
     gEmuEnv.showMrPlat = TRUE;
     gEmuEnv.dsmStartTime = get_time_ms();
 
-    screenBuf = cacheScreenBuffer = (uint16 *)malloc(SCRW * SCRH * 2);
+    cacheScreenBuffer = (uint16 *)malloc(SCRW * SCRH * 2);
 
     mr_tm_init();
     mr_baselib_init();
@@ -109,8 +107,7 @@ void j2n_startMrp(char *path) {
     const char *str = path;
     LOGD("vm_loadMrp entry:%s", str);
     UTF8ToGBString((uint8 *)str, (uint8 *)runMrpPath, sizeof(runMrpPath));
-    showApiLog = 1;
-    dsm_init();
+    dsm_init(cacheScreenBuffer);
     // mr_registerAPP((uint8 *)buf, (int32)len, (int32)index);
 #ifdef DSM_FULL
     LOGD("DSM_FULL");
@@ -167,8 +164,6 @@ void j2n_callback_gethostbyname() {
 //     SetDsmSDPath(str2);
 //     //mythroad 路径
 //     SetDsmPath(str2);
-//     strncpy(dsmFactory, str2, 7);
-//     strncpy(dsmType, str2, 7);
 //     strncpy(dsmSmsCenter, str2, sizeof(dsmSmsCenter));
 // }
 
@@ -344,7 +339,7 @@ int main(int argc, char *args[]) {
         return -1;
     }
 
-    SDL_Window *window = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    SDL_Window *window = SDL_CreateWindow("vmrp", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (window == NULL) {
         printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
         return -1;

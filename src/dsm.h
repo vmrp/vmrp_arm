@@ -3,16 +3,6 @@
 
 #include "./mr/include/mrporting.h"
 
-extern char dsmType[8];
-extern char dsmFactory[8];
-
-#define DSM_ENWORD_H 16
-#define DSM_ENWORD_W 8
-#define DSM_CHWORD_H 16
-#define DSM_CHWORD_W 16
-
-#define DSM_SUPPROT_SOC_NUM (5)
-
 /**
  * 协议：SDCARD 作为跟目录 以 /结尾
  *		dsmWorkPath 以 / 结尾，切换到跟路径后为空
@@ -28,9 +18,6 @@ extern char dsmFactory[8];
 #define TMP_PATH ".tmp"
 
 //------------------------------------------------
-#define DSM_FACTORY "vmrp"
-#define DSM_TYPE "vmrp"
-#define DSM_FACTORY_ID "vmrp"
 
 #define MT6235
 
@@ -69,10 +56,8 @@ extern char dsmFactory[8];
 #define DSM_FAE_VERSION (182) /*由平台组统一分配版本号，有需求请联系平台组*/
 #endif
 
-#define DSM_HANDSET_ID "mtk" /*手机标识，最多七个小写字符*/
-
 //---------------------------------
-void dsm_init(void);
+void dsm_init(uint16 *scrBuf);
 
 int32 mr_exit(void);
 int mr_getSocketState(int s);
@@ -80,6 +65,5 @@ int mr_getSocketState(int s);
 /** 设置 SD卡路径，参数底层不做错误检查 */
 void SetDsmSDPath(const char *path);
 void SetDsmWorkPath(const char *path);
-
 
 #endif

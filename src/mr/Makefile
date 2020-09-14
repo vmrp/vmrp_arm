@@ -49,6 +49,7 @@ LOCAL_SRC_FILES_FULL += mythroad.c \
                     string.c	\
                     printf.c	\
                     other.c	\
+                    encode.c	\
 #                    src/mr_maketo.c	
 #                    src/MySprite.c   \
 #                    src/pluto.c	\
