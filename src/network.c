@@ -48,8 +48,7 @@ void DsmSocketClose() {
 }
 
 int32 mr_initNetwork(MR_INIT_NETWORK_CB cb, const char *mode) {
-    if (gEmuEnv.showNet)
-        LOGI("mr_initNetwork(mod:%s)", mode);
+    LOGI("mr_initNetwork(mod:%s)", mode);
 
     DsmSocketInit();
     mr_soc.callBack = (void *)cb;
@@ -61,8 +60,7 @@ int32 mr_initNetwork(MR_INIT_NETWORK_CB cb, const char *mode) {
 }
 
 int32 mr_closeNetwork() {
-    if (gEmuEnv.showNet)
-        LOGI("mr_closeNetwork");
+    LOGI("mr_closeNetwork");
 
     DsmSocketClose();
     if (thread_id != 0) {
@@ -444,8 +442,7 @@ int32 mr_closeSocket(int32 s) {
     if (socStat[s].socketId != MR_FAILED)
         ret = close(socStat[s].socketId);
 
-    if (gEmuEnv.showNet)
-        LOGI("mr_closeSocket(%d)", s);
+    LOGI("mr_closeSocket(%d)", s);
 
     if (ret == 0) {
         socStat[s].socketId = MR_FAILED;
@@ -487,10 +484,8 @@ int32 mr_recv(int32 s, char *buf, int len) {
     if (socStat[s].readStat == DSM_SOC_READABLE) {
         read = recv(socStat[s].socketId, (void *)buf, len, 0);
 
-        if (gEmuEnv.showNet) {
-            //			LOGI("  nread %d", read);
-            //			writeRecvData((void *)buf, read);
-        }
+        //			LOGI("  nread %d", read);
+        //			writeRecvData((void *)buf, read);
 
         if (read > 0) {
             return read;
@@ -553,8 +548,7 @@ void getRealIP(const char *buf, int len, int32 *ip, int32 *prot) {
 }
 
 int32 mr_send(int32 s, const char *buf, int len) {
-    if (gEmuEnv.showNet)
-        LOGI("mr_send %d %s", s, buf);
+    LOGI("mr_send %d %s", s, buf);
 
     if (socStat[s].isProxy) {
         //		writeSendData(s, (void *)buf, len);
@@ -585,9 +579,7 @@ int32 mr_send(int32 s, const char *buf, int len) {
     if (socStat[s].writeStat == DSM_SOC_WRITEABLE) {
         write = send(socStat[s].socketId, (void *)buf, len, 0);
 
-        if (gEmuEnv.showNet) {
-            //			LOGI("  nwrite %d", write);
-        }
+        //			LOGI("  nwrite %d", write);
 
         if (write >= 0) {
             return write;

@@ -51,7 +51,7 @@ static void handleInit() {
         handles[i] = -1;
     }
 }
-
+// 注意： mrc_open需要返回0表示失败， mrc_findStart需要返回-1表示失败，这里没做区分
 static int32 handle2int32(uint32 v) {
     for (int i = 1; i <= HANDLE_NUM; i++) {
         if (handles[i] == -1) {
@@ -81,9 +81,7 @@ void dsm_init(uint16 *scrBuf) {
     screenBuf = scrBuf;
     DsmPathInit();
     DsmSocketInit();
-
-
-
+    handleInit();
     dsmNetWorkID = MR_NET_ID_MOBILE;
     dsmNetType = NETTYPE_CMWAP;
 }
@@ -178,12 +176,9 @@ int32 mr_mem_get(char **mem_base, uint32 *mem_len) {
 
 int32 mr_mem_free(char *mem, uint32 mem_len) {
     free(mem);
-
     gEmuEnv.vm_mem_base = NULL;
     gEmuEnv.vm_mem_len = 0;
-
     LOGI("mr_mem_free");
-
     return MR_SUCCESS;
 }
 
@@ -201,15 +196,12 @@ int32 pageMalloc(void **out, int32 *outLen, uint32 needLen) {
     if (buf == NULL)
         panic("memalign");
 
-    //设置内存可执行权限
     if (mprotect(buf, needLen, PROT_EXEC | PROT_WRITE | PROT_READ) == -1) {
         free(buf);
         panic("mprotect");
     }
-
     *out = buf;
     *outLen = needLen;
-
     return MR_SUCCESS;
 }
 
@@ -218,15 +210,12 @@ void dsmGB2UCS2(char *src, char *dest) {
 }
 
 int mr_sprintf(char *buf, const char *fmt, ...) {
-    //	LOGI("mr_sprintf(%#p, %s)", buf, fmt);
-
     va_list vars;
     int ret;
 
     va_start(vars, fmt);
     ret = vsprintf(buf, fmt, vars);
     va_end(vars);
-
     return ret;
 }
 
@@ -257,14 +246,12 @@ int32 mr_timerStop(void) {
     return MR_SUCCESS;
 }
 
-/*取得时间，单位ms*/
 uint32 mr_getTime(void) {
     uint32 s = get_time_ms() - gEmuEnv.dsmStartTime;
     LOGI("mr_getTime():%d", s);
     return s;
 }
 
-/*获取系统日期时间。*/
 int32 mr_getDatetime(mr_datetime *datetime) {
     if (!datetime)
         return MR_FAILED;
@@ -275,7 +262,6 @@ int32 mr_getDatetime(mr_datetime *datetime) {
     time(&now);
     t = localtime(&now);
 
-    //2013-3-22 13:08:50 修正需要加上时间 1900
     datetime->year = t->tm_year + 1900;
     datetime->month = t->tm_mon + 1;
     datetime->day = t->tm_mday;
@@ -284,16 +270,12 @@ int32 mr_getDatetime(mr_datetime *datetime) {
     datetime->second = t->tm_sec;
 
     LOGI("mr_getDatetime [%d/%d/%d %d:%d:%d]", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-
     return MR_SUCCESS;
 }
 
-/*任务睡眠，单位ms*/
 int32 mr_sleep(uint32 ms) {
     LOGI("mr_sleep(%d)", ms);
-
     usleep(ms * 1000);  //注意 usleep 传的是 微秒 ，所以要 *1000
-
     return MR_SUCCESS;
 }
 
@@ -306,9 +288,6 @@ static char filenamebuf[DSM_MAX_FILE_LEN + 1] = {0};
 
 #define CHAR_DIR_SEP '/'
 
-/**
- * 创建运行时需要的目录
- */
 void DsmPathInit(void) {
     char buf[DSM_MAX_FILE_LEN * 2 + 1] = {0};
     char buf2[DSM_MAX_FILE_LEN * 2 + 1] = {0};
@@ -352,7 +331,6 @@ void DsmPathInit(void) {
 
 /*
  * 整理路径，将分隔符统一为sep，并清除连续的多个
- *
  * 参数：路径(必须可读写)
  */
 char *FormatPathString(char *path, char sep) {
@@ -378,9 +356,6 @@ char *FormatPathString(char *path, char sep) {
     return path;
 }
 
-/**
- * 设置 SD卡路径
- */
 void SetDsmSDPath(const char *path) {
     LOGI("old sdpath %s", SDPath);
 
@@ -412,15 +387,8 @@ static void SetDsmWorkPath_inner(const char *path) {
     //检查并创建目录
 }
 
-/****************************************************************************
-函数名:static int32 dsmSwitchPath(uint8* input, int32 input_len, uint8** output, int32* output_len)
-描  述:VM 对路径操作的接口
-参  数:
-返  回:
-****************************************************************************/
 static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 *output_len) {
-    if (gEmuEnv.showFile)
-        LOGI("dsmSwitchPath %s,%d, %p,%p", input, input_len, output, output_len);
+    LOGI("dsmSwitchPath %s,%d, %p,%p", input, input_len, output, output_len);
 
     if (input == NULL)
         return MR_FAILED;
@@ -428,8 +396,6 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
     input_len = strlen((char *)input);
     if (input_len > (DSM_MAX_FILE_LEN - 3))
         return MR_FAILED;
-
-    //	LOGI("dsmSwitchPath(%s, %d)", input, input_len);
 
     switch (input[0]) {
         case 'Z':  //返回刚启动时路径
@@ -516,13 +482,6 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
     return MR_SUCCESS;
 }
 
-/****************************************************************************
- 函数名:char* get_filename(char* outputbuf,const char *filename)
- 描  述:由相对路径的文件名接成绝对路径名
- 参  数:filename:相对路径的文件名
- outputbuf:转换好的绝对路径文件名(outputbuf的大小要大于等于DSM_MAX_FILE_LEN * ENCODING_LENGTH)
- 返  回:绝对路径的文件名
- ****************************************************************************/
 char *get_filename(char *outputbuf, const char *filename) {
     char dsmFullPath[DSM_MAX_FILE_LEN + 1];
     snprintf(dsmFullPath, sizeof(dsmFullPath), "%s%s%s", SDPath, dsmWorkPath, filename);
@@ -537,14 +496,6 @@ int startWith(const char *str, const char *s) {
     return (l > 0 && 0 == strncasecmp(str, s, l));
 }
 
-/****************************************************************************
- 函数名:MR_FILE_HANDLE mr_open(const char* filename,  uint32 mode)
- 描  述:打开一个文件
- 参  数:filename:文件名
- mode:打开方式
- 返  回:文件句柄
- ****************************************************************************/
-///
 MR_FILE_HANDLE mr_open(const char *filename, uint32 mode) {
     int f;
     int new_mode = 0;
@@ -561,168 +512,79 @@ MR_FILE_HANDLE mr_open(const char *filename, uint32 mode) {
     if ((mode & MR_FILE_CREATE) && (0 != access(fullpathname, F_OK)))
         new_mode |= O_CREAT;
 
-    //返回值：成功则返回文件描述符，否则返回 -1
     f = open(get_filename(fullpathname, filename), new_mode, 0777);
-    //返回 0 也是成功的啊我擦
-    //	if(f == 0) LOGW("open fd = 0");
-    if (f < 0) {
-        //		EEXIST
-        //大部分 mrp 通过此法检测文件是否存在，打印日志太多注释
-        //		LOGE("mr_open(%s,%d(%d)) err, e=%d", fullpathname, new_mode, mode, errno);
+    if (f == -1) {
         return (MR_FILE_HANDLE)NULL;
     }
-
-    f += 5;  //因为 linux 返回0也成功，mrp返回0 为失败！所以统一加5
-    if (gEmuEnv.showFile)
-        LOGI("mr_open(%s,%d) fd is: %d", fullpathname, new_mode, f);
-
-    return (MR_FILE_HANDLE)(f);
+    int32 ret = handle2int32(f);
+    LOGI("mr_open(%s,%d) fd is: %d", fullpathname, new_mode, ret);
+    return ret;
 }
 
-/****************************************************************************
- 函数名:int32 mr_close(MR_FILE_HANDLE f)
- 描  述:关闭一个文件
- 参  数:f:要关闭得文件得句柄
- 返  回:NR_SUCCESS,MR_FAILED
- ****************************************************************************/
 int32 mr_close(MR_FILE_HANDLE f) {
     if (f == 0)
         return MR_FAILED;
 
-    int ret;
-
-    ret = close(f - 5);
+    int ret = close(int32ToHandle(f));
+    handleDel(f);
     if (ret != 0) {
         LOGE("mr_close(%d) err, %d", f, errno);
         return MR_FAILED;
     }
-
-    if (gEmuEnv.showFile)
-        LOGI("mr_close(%d) suc", f);
-
+    LOGI("mr_close(%d) suc", f);
     return MR_SUCCESS;
 }
 
-/****************************************************************************
- 函数名:int32 mr_read(MR_FILE_HANDLE f,void *p,uint32 l)
- 描  述:读取文件中得数据
- 参  数:f:要读得文件得句柄
- p:缓存得指针
- l:缓存得大小
- 返  回:
- ****************************************************************************/
 int32 mr_read(MR_FILE_HANDLE f, void *p, uint32 l) {
-    if (gEmuEnv.showFile) {
-        extern int font_sky16_f;
-        if (f != font_sky16_f) {
-            LOGI("mr_read %d,%p,%d", f, p, l);
-        }
+    extern int font_sky16_f;
+    if (f != font_sky16_f) {
+        LOGI("mr_read %d,%p,%d", f, p, l);
     }
-    if (f < 5)
-        return MR_FAILED;
-
-    size_t readnum;
-
-    readnum = read(f - 5, p, (size_t)l);
+    int32 readnum = read(int32ToHandle(f), p, (size_t)l);
     if (readnum < 0) {
         LOGE("mr_read(%d) err, %d", f, errno);
         return MR_FAILED;
     }
-
-    return (int32)readnum;
+    return readnum;
 }
 
-/****************************************************************************
- 函数名:int32 mr_write(MR_FILE_HANDLE f,void *p,uint32 l)
- 描  述:往一个文件中写入数据
- 参  数:f:要写入得文件得句柄
- p:缓存得指针
- l:要写入数据得大小
- 返  回:
- ****************************************************************************/
 int32 mr_write(MR_FILE_HANDLE f, void *p, uint32 l) {
-    if (gEmuEnv.showFile)
-        LOGI("mr_write %d,%p,%d", f, p, l);
-
-    if (f < 0)
-        return MR_FAILED;
-
-    size_t writenum = 0;
-
-    writenum = write(f - 5, p, (size_t)l);
-
+    LOGI("mr_write %d,%p,%d", f, p, l);
+    int32 writenum = write(int32ToHandle(f), p, (size_t)l);
     if (writenum < 0) {
         LOGE("mr_write(%d) err, %d", f, errno);
         return MR_FAILED;
     }
-
     return writenum;
 }
 
-/****************************************************************************
- 函数名:int32 mr_seek(MR_FILE_HANDLE f, int32 pos, int method)
- 描  述:偏移文件读写指针
- 参  数:f     :文件句柄
- pos   :要偏移得数量
- method:偏移起算的位置
- 返  回:MR_SUCCESS,MR_FAILED
- ****************************************************************************/
 int32 mr_seek(MR_FILE_HANDLE f, int32 pos, int method) {
-    if (f == 0)
-        return MR_FAILED;
-
-    off_t ret;
-
-    ret = lseek(f - 5, (off_t)pos, method);
+    off_t ret = lseek(int32ToHandle(f), (off_t)pos, method);
     if (ret < 0) {
         LOGE("mr_seek(%d,%d) err, %d", f, pos, errno);
         return MR_FAILED;
     }
-
     return MR_SUCCESS;
 }
 
-/****************************************************************************
- 函数名:int32 mr_info(const char* filename)
- 描  述:得到一个文件信息
- 参  数:filename
- 返  回:是文件:MR_IS_FILE
- 是目录:MR_IS_DIR
- 无效:  MR_IS_INVALID
- ****************************************************************************/
 int32 mr_info(const char *filename) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
     struct stat s1;
-    int ret;
+    int ret = stat(get_filename(fullpathname, filename), &s1);
 
-    //返回 0 成功
-    ret = stat(get_filename(fullpathname, filename), &s1);
-    if (gEmuEnv.showFile)
-        LOGI("mr_info(%s)", fullpathname);
+    LOGI("mr_info(%s)", fullpathname);
 
     if (ret != 0) {
-        if (gEmuEnv.showFile) LOGI("  is err");
         return MR_IS_INVALID;
     }
-
     if (s1.st_mode & S_IFDIR) {
-        if (gEmuEnv.showFile) LOGI("  is dir");
         return MR_IS_DIR;
     } else if (s1.st_mode & S_IFREG) {
-        if (gEmuEnv.showFile) LOGI("  is file");
         return MR_IS_FILE;
-    } else {
-        if (gEmuEnv.showFile) LOGI("  is other");
-        return MR_IS_INVALID;
     }
+    return MR_IS_INVALID;
 }
 
-/****************************************************************************
- 函数名:int32 mr_remove(const char* filename)
- 描  述:删除一个文件
- 参  数:filename:要被删除的文件的文件名
- 返  回:MR_SUCCESS,MR_FAILED
- ****************************************************************************/
 int32 mr_remove(const char *filename) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
     int ret;
@@ -732,27 +594,16 @@ int32 mr_remove(const char *filename) {
         LOGE("mr_remove(%s) err, ret=%d, errno=%d", fullpathname, ret, errno);
         return MR_FAILED;
     }
-
-    if (gEmuEnv.showFile)
-        LOGI("mr_remove(%s) suc", fullpathname);
-
+    LOGI("mr_remove(%s) suc", fullpathname);
     return MR_SUCCESS;
 }
 
-/****************************************************************************
- 函数名:int32 mr_rename(const char* oldname, const char* newname)
- 描  述:对一个文件进行重命名
- 参  数:oldname:原文件名
- newname:新文件名
- 返  回:MR_SUCCESS,MR_FAILED
- ****************************************************************************/
 int32 mr_rename(const char *oldname, const char *newname) {
     char fullpathname_1[DSM_MAX_FILE_LEN] = {0};
     char fullpathname_2[DSM_MAX_FILE_LEN] = {0};
     int ret;
 
-    if (gEmuEnv.showFile)
-        LOGI("mr_rename(%s to %s)", oldname, newname);
+    LOGI("mr_rename(%s to %s)", oldname, newname);
 
     get_filename(fullpathname_1, oldname);
     get_filename(fullpathname_2, newname);
@@ -761,18 +612,9 @@ int32 mr_rename(const char *oldname, const char *newname) {
         LOGE("mr_rename(%s to %s) err! errno=%d", fullpathname_1, fullpathname_2, errno);
         return MR_FAILED;
     }
-    if (gEmuEnv.showFile)
-        LOGI("  suc");
-
     return MR_SUCCESS;
 }
 
-/****************************************************************************
- 函数名:int32 mr_mkDir(const char* name)
- 描  述:创建一个目录
- 参  数:name:目录名
- 返  回:MR_SUCCESS,MR_FAILED
- ****************************************************************************/
 int32 mr_mkDir(const char *name) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
     int ret;
@@ -788,18 +630,10 @@ int32 mr_mkDir(const char *name) {
         return MR_FAILED;
     }
 ok:
-    if (gEmuEnv.showFile)
-        LOGI("mr_mkDir(%s) suc!", fullpathname);
-
+    LOGI("mr_mkDir(%s) suc!", fullpathname);
     return MR_SUCCESS;
 }
 
-/****************************************************************************
- 函数名:int32 mr_rmDir(const char* name)
- 描  述:删除一个目录
- 参  数:name:被删除的目录名
- 返  回:MR_SUCCESS,MR_FAILED
- ****************************************************************************/
 int32 mr_rmDir(const char *name) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
     char fullpathname2[DSM_MAX_FILE_LEN] = {0};
@@ -825,20 +659,10 @@ int32 mr_rmDir(const char *name) {
         return MR_FAILED;
     }
 
-    if (gEmuEnv.showFile)
-        LOGI("mr_rmDir(%s) suc!", fullpathname);
-
+    LOGI("mr_rmDir(%s) suc!", fullpathname);
     return MR_SUCCESS;
 }
 
-/****************************************************************************
- 描  述:初始化一个文件目录的搜索，并返回第一搜索。
- 参  数:name	 :要搜索的目录名
- buffer:保存第一个搜索结果的buf
- len   :buf的大小
- 返  回:成功:第一个搜索结果的句柄
- 失败:MR_FAILED
- ****************************************************************************/
 MR_FILE_HANDLE mr_findStart(const char *name, char *buffer, uint32 len) {
     if (!name || !buffer || len == 0)
         return MR_FAILED;
@@ -850,11 +674,10 @@ MR_FILE_HANDLE mr_findStart(const char *name, char *buffer, uint32 len) {
 
     get_filename(fullpathname, name);
 
-    if (gEmuEnv.showFile) LOGI("mr_findStart %s", fullpathname);
+    LOGI("mr_findStart %s", fullpathname);
 
     if ((pDir = opendir(fullpathname)) != NULL) {
-        // todo 因为转成int32是负数，导致mrp编程不规范只判断是否大于0时出现遍历文件夹为空的bug，需要有一种转换机制避免返回负数
-        ret = (int32)pDir;
+        ret = handle2int32((uint32)pDir);
         LOGI("mr_findStart readdir %d", ret);
         if ((pDt = readdir(pDir)) != NULL) {
             LOGI("mr_findStart readdir %s", pDt->d_name);
@@ -872,83 +695,45 @@ MR_FILE_HANDLE mr_findStart(const char *name, char *buffer, uint32 len) {
     return MR_FAILED;
 }
 
-/****************************************************************************
- 函数名:int32 mr_findGetNext(MR_FILE_HANDLE search_handle, char* buffer, uint32 len)
- 描  述:搜索目录的下一个结果
- 参  数:search_handle :目录的句柄
- buffer        :存放搜索结果的buf
- len           :buf的大小
- 返  回:MR_SUCCESS,MR_FAILED
- ****************************************************************************/
 int32 mr_findGetNext(MR_FILE_HANDLE search_handle, char *buffer, uint32 len) {
     if (!search_handle || search_handle == MR_FAILED || !buffer || len == 0)
         return MR_FAILED;
-    if (gEmuEnv.showFile)
-        LOGI("mr_findGetNext 0x%X", search_handle);
+    LOGI("mr_findGetNext %d", search_handle);
 
-    DIR *pDir = (DIR *)search_handle;
+    DIR *pDir = (DIR *)int32ToHandle(search_handle);
     struct dirent *pDt;
 
     memset(buffer, 0, len);
     if ((pDt = readdir(pDir)) != NULL) {
-        if (gEmuEnv.showFile)
-            LOGI("mr_findGetNext %s", pDt->d_name);
-
+        LOGI("mr_findGetNext %d %s", search_handle, pDt->d_name);
         UTF8ToGBString(pDt->d_name, buffer, len);
         return MR_SUCCESS;
     } else {
-        //查找完毕
-        if (gEmuEnv.showFile)
-            LOGI("mr_findGetNext end");
+        LOGI("mr_findGetNext end");
     }
-
     return MR_FAILED;
 }
 
-/****************************************************************************
- 函数名:int32 mr_findStop(MR_SEARCH_HANDLE search_handle)
- 描  述:停止当前的搜索
- 参  数:search_handle:搜索句柄
- 返  回:MR_SUCCESS,MR_FAILED
- ****************************************************************************/
 int32 mr_findStop(MR_SEARCH_HANDLE search_handle) {
     if (!search_handle || search_handle == MR_FAILED)
         return MR_FAILED;
 
-    DIR *pDir = (DIR *)search_handle;
+    DIR *pDir = (DIR *)int32ToHandle(search_handle);
     closedir(pDir);
-
+    handleDel(search_handle);
     return MR_SUCCESS;
 }
 
-/****************************************************************************
- 函数名:int32 mr_ferrno(void)
- 描  述:该函数用于调试使用，返回的是最后一次操作文件失败的错误信息，返回的错误
- 信息具体含义与平台上使用的文件系统有关。
- 参  数:无
- 返  回:MR_SUCCESS,MR_FAILED
- ****************************************************************************/
 int32 mr_ferrno(void) {
-    return (int32)MR_FAILED;
+    return MR_FAILED;
 }
 
-/****************************************************************************
- 函数名:int32 mr_getLen(const char* filename)
- 描  述:得到指定文件得大小
- 参  数:filename:所指定得文件名
- 返  回:成功返回文件大小
- 失败返回:MR_FAILED
- ****************************************************************************/
 int32 mr_getLen(const char *filename) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
     struct stat s1;
-    int ret;
-
-    ret = stat(get_filename(fullpathname, filename), &s1);
-
+    int ret = stat(get_filename(fullpathname, filename), &s1);
     if (ret != 0)
         return -1;
-
     return s1.st_size;
 }
 
@@ -1007,7 +792,6 @@ int32 mr_getNetworkID(void) {
 void mr_connectWAP(char *wap) {
     LOGI("mr_connectWAP(%s)", wap);
 }
-
 
 int32 mr_menuCreate(const char *title, int16 num) {
     return MR_FAILED;

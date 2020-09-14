@@ -84,12 +84,11 @@ int64 get_time_ms(void) {
 }
 
 void main_init() {
-    gEmuEnv.showFile = TRUE;
-    gEmuEnv.showNet = TRUE;
     gEmuEnv.dsmStartTime = get_time_ms();
 
     cacheScreenBuffer = (uint16 *)malloc(SCRW * SCRH * 2);
 
+    dsm_init(cacheScreenBuffer);
     mr_tm_init();
     mr_baselib_init();
     mr_tablib_init();
@@ -106,7 +105,6 @@ void j2n_startMrp(char *path) {
     const char *str = path;
     LOGD("vm_loadMrp entry:%s", str);
     UTF8ToGBString((uint8 *)str, (uint8 *)runMrpPath, sizeof(runMrpPath));
-    dsm_init(cacheScreenBuffer);
     // mr_registerAPP((uint8 *)buf, (int32)len, (int32)index);
 #ifdef DSM_FULL
     LOGD("DSM_FULL");

@@ -26,8 +26,6 @@ int64 get_time_ms(void);
 
 
 typedef struct _EmuEnv {
-    int showFile;               //文件 I/O
-    int showNet;                //网络
     int b_tsfInited;            //tsf 加载结果
     int64 dsmStartTime;         //虚拟机初始化时间，用来计算系统运行时间
     char *vm_mem_base;          //虚拟机内存地址
