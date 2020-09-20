@@ -1,9 +1,12 @@
 #include "main.h"
 
+#include <SDL2/SDL.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <malloc.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,7 +17,6 @@
 
 #include "./mr/include/encode.h"
 #include "font_sky16_2.h"
-#include "timer.h"
 
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 320
@@ -79,7 +81,9 @@ int64 get_uptime_ms(void) {
 
 int64 get_time_ms(void) {
     struct timeval tv;
-    gettimeofday(&tv, NULL);
+    if (-1 == gettimeofday(&tv, NULL)) {
+        panic("get_time_ms() err");
+    }
     return (int64)tv.tv_sec * 1000 + (tv.tv_usec / 1000);
 }
 
@@ -159,25 +163,31 @@ void j2n_getMemoryInfo() {
     printf("len:%d, left:%d, top:%d\n", len, left, top);
 }
 
-int timerRunning = 0;
+static SDL_TimerID timeId = 0;
 
-void timer_handler(void) {
-    if (!timerRunning) return;
-    timerRunning = 0;
+Uint32 th2(Uint32 interval, void *param) {
     mr_timer();
+    return 0;
 }
 
 int32 emu_timerStart(uint16 t) {
     LOGI("emu_timerStart %d", t);
-    timerRunning = 1;
-    start_timer(t, timer_handler);
+    if (!timeId) {
+        timeId = SDL_AddTimer(t, th2, NULL);
+    } else {
+        LOGI("emu_timerStart ignore %d======================================", t);
+    }
     return MR_SUCCESS;
 }
 
 int32 emu_timerStop() {
     LOGI("emu_timerStop");
-    timerRunning = 0;
-    stop_timer();
+    if (timeId) {
+        SDL_RemoveTimer(timeId);
+        timeId = 0;
+    } else {
+        LOGI("emu_timerStop ignore----------------------------------------------");
+    }
     return MR_SUCCESS;
 }
 
@@ -211,19 +221,13 @@ void printScreen(char *filename, uint16 *buf) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <SDL2/SDL.h>
-
 // http://wiki.libsdl.org/Tutorials
 // http://lazyfoo.net/tutorials/SDL/index.php
 
 static SDL_Renderer *renderer;
 
 void emu_bitmapToscreen(uint16 *data, int x, int y, int w, int h) {
-    printf("emu_bitmapToscreen=====x:%d, y:%d, w:%d, h:%d, scrw:%d, scrh:%d===\n", x, y, w, h, SCRW, SCRH);
+    // printf("emu_bitmapToscreen=====x:%d, y:%d, w:%d, h:%d, scrw:%d, scrh:%d===\n", x, y, w, h, SCRW, SCRH);
     // printScreen("a.bmp", data);
     for (uint32 i = 0; i < w; i++) {
         for (uint32 j = 0; j < h; j++) {
@@ -250,7 +254,7 @@ int main(int argc, char *args[]) {
 #endif
     main_init();
 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
         printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return -1;
     }

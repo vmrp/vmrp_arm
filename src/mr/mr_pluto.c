@@ -1226,7 +1226,7 @@ static void unpersistuserdata(int ref, UnpersistInfo *upi)
       mrp_assert(mrp_isuserdata(upi->L, -1));
                /* perms reftbl ... udata */
    } else {
-      int length;
+      int length=0;
       verify(mr_Z_read(&upi->zio, &length, sizeof(int)) == 0);
 
       mrp_newuserdata(upi->L, length);

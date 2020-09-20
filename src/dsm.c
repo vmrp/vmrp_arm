@@ -540,7 +540,12 @@ int32 mr_read(MR_FILE_HANDLE f, void *p, uint32 l) {
     if (f != font_sky16_f) {
         LOGI("mr_read %d,%p,%d", f, p, l);
     }
-    int32 readnum = read(int32ToHandle(f), p, (size_t)l);
+    int32 fd = int32ToHandle(f);
+    if (fd == -1) {
+        LOGE("mr_read(%d) err", f);
+        return MR_FAILED;
+    }
+    int32 readnum = read(fd, p, (size_t)l);
     if (readnum < 0) {
         LOGE("mr_read(%d) err, %d", f, errno);
         return MR_FAILED;
