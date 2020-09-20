@@ -21,8 +21,6 @@
 static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 *output_len);
 static void DsmPathInit();
 
-extern void DsmSocketInit();
-extern void DsmSocketClose();
 void dsmRestoreRootDir();
 
 static uint16 *screenBuf;
@@ -80,7 +78,6 @@ static void handleDel(int32 v) {
 void dsm_init(uint16 *scrBuf) {
     screenBuf = scrBuf;
     DsmPathInit();
-    DsmSocketInit();
     handleInit();
     dsmNetWorkID = MR_NET_ID_MOBILE;
     dsmNetType = NETTYPE_CMWAP;
@@ -88,8 +85,6 @@ void dsm_init(uint16 *scrBuf) {
 
 int32 mr_exit(void) {
     LOGD("mr_exit() called by mythroad!");
-
-    DsmSocketClose();
     emu_finish();
     return MR_SUCCESS;
 }
@@ -1021,4 +1016,59 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
     // }
 
     return MR_IGNORE;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int32 mr_initNetwork(MR_INIT_NETWORK_CB cb, const char *mode) {
+    LOGI("mr_initNetwork(mod:%s)", mode);
+    return MR_FAILED;
+}
+
+int32 mr_closeNetwork() {
+    LOGI("mr_closeNetwork");
+    return MR_FAILED;
+}
+
+int32 mr_getHostByName(const char *ptr, MR_GET_HOST_CB cb) {
+    return MR_FAILED;
+}
+
+int32 mr_socket(int32 type, int32 protocol) {
+    LOGI("mr_socket(type:%d, protocol:%d)", type, protocol);
+    return MR_FAILED;
+}
+
+int32 mr_connect(int32 s, int32 ip, uint16 port, int32 type) {
+    LOGI("mr_connect(s:%d, ip:%d, port:%d, type:%d)", s, ip, port, type);
+    return MR_FAILED;
+}
+
+int32 mr_getSocketState(int32 s) {
+    LOGI("getSocketState(%d)", s);
+    return MR_FAILED;
+}
+
+int32 mr_closeSocket(int32 s) {
+    LOGI("mr_closeSocket(%d)", s);
+    return MR_FAILED;
+}
+
+int32 mr_recv(int32 s, char *buf, int len) {
+    LOGI("mr_recv(%d)", s);
+    return MR_FAILED;
+}
+
+int32 mr_send(int32 s, const char *buf, int len) {
+    LOGI("mr_send %d %s", s, buf);
+    return MR_FAILED;
+}
+
+int32 mr_recvfrom(int32 s, char *buf, int len, int32 *ip, uint16 *port) {
+    LOGI("mr_recvfrom(%d,%s,%d,%d,%d)", s, buf,len, *ip, *port);
+    return MR_FAILED;
+}
+
+int32 mr_sendto(int32 s, const char *buf, int len, int32 ip, uint16 port) {
+    LOGI("mr_sendto(%d,%s,%d,%d,%d)", s, buf, len, ip, port);
+    return MR_FAILED;
 }
