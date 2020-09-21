@@ -246,6 +246,41 @@ void emu_bitmapToscreen(uint16 *data, int x, int y, int w, int h) {
     SDL_RenderPresent(renderer);
 }
 
+static void keyEvent(int16 type, SDL_Keycode code) {
+    switch (code) {
+        case SDLK_RETURN:
+            mr_event(type, MR_KEY_SELECT, 0);
+            break;
+        case SDLK_w:
+        case SDLK_UP:
+            mr_event(type, MR_KEY_UP, 0);
+            break;
+        case SDLK_s:
+        case SDLK_DOWN:
+            mr_event(type, MR_KEY_DOWN, 0);
+            break;
+        case SDLK_a:
+        case SDLK_LEFT:
+            mr_event(type, MR_KEY_LEFT, 0);
+            break;
+        case SDLK_d:
+        case SDLK_RIGHT:
+            mr_event(type, MR_KEY_RIGHT, 0);
+            break;
+        case SDLK_q:
+        case SDLK_LEFTBRACKET:
+            mr_event(type, MR_KEY_SOFTLEFT, 0);
+            break;
+        case SDLK_e:
+        case SDLK_RIGHTBRACKET:
+            mr_event(type, MR_KEY_SOFTRIGHT, 0);
+            break;
+        default:
+            printf("key:%d\n", code);
+            break;
+    }
+}
+
 int main(int argc, char *args[]) {
 #ifdef __x86_64__
     printf("__x86_64__\n");
@@ -293,8 +328,10 @@ int main(int argc, char *args[]) {
             if (event.type == SDL_QUIT) {
                 isLoop = false;
                 break;
+            } else if (event.type == SDL_KEYDOWN) {
+                keyEvent(MR_KEY_PRESS, event.key.keysym.sym);
             } else if (event.type == SDL_KEYUP) {
-                printf("key:%d\n", event.key.keysym.sym);
+                keyEvent(MR_KEY_RELEASE, event.key.keysym.sym);
             } else if (event.type == SDL_MOUSEMOTION) {
                 if (isDown) {
                     mr_event(MR_MOUSE_MOVE, event.motion.x, event.motion.y);

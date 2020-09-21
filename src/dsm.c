@@ -19,7 +19,6 @@
 #include "main.h"
 
 static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 *output_len);
-static void DsmPathInit();
 
 void dsmRestoreRootDir();
 
@@ -32,7 +31,6 @@ static uint16 *screenBuf;
 static char printfBuf[PRINTF_BUF_LEN + 2] = {0};
 static char utf8Buf[PRINTF_BUF_LEN * 2 + 2] = {0};
 
-static T_DSM_DISK_INFO dsmDiskInfo;
 static int dsmNetWorkID;
 
 int dsmNetType;
@@ -74,14 +72,6 @@ static void handleDel(int32 v) {
     handles[v] = -1;
 }
 /////////////////////////////////////////////////////////////////
-
-void dsm_init(uint16 *scrBuf) {
-    screenBuf = scrBuf;
-    DsmPathInit();
-    handleInit();
-    dsmNetWorkID = MR_NET_ID_MOBILE;
-    dsmNetType = NETTYPE_CMWAP;
-}
 
 int32 mr_exit(void) {
     LOGD("mr_exit() called by mythroad!");
@@ -200,20 +190,6 @@ int32 pageMalloc(void **out, int32 *outLen, uint32 needLen) {
     return MR_SUCCESS;
 }
 
-void dsmGB2UCS2(char *src, char *dest) {
-    gbToUCS2((uint8 *)src, (uint8 *)dest);
-}
-
-int mr_sprintf(char *buf, const char *fmt, ...) {
-    va_list vars;
-    int ret;
-
-    va_start(vars, fmt);
-    ret = vsprintf(buf, fmt, vars);
-    va_end(vars);
-    return ret;
-}
-
 void mr_printf(const char *format, ...) {
     if (!format) {
         panic("mr_printf null");
@@ -275,116 +251,63 @@ int32 mr_sleep(uint32 ms) {
 }
 
 ///////////////////////// 文件操作接口 //////////////////////////////////////
-static char SDPath[DSM_MAX_FILE_LEN / 2 + 1] = SDCARD_PATH;        /*SD卡根路径 gb 编码*/
-static char dsmPath[DSM_MAX_FILE_LEN / 2 + 1] = DSM_ROOT_PATH;     /*mythroad工作目录（相对于SD卡路径） gb 编码*/
-static char dsmWorkPath[DSM_MAX_FILE_LEN / 2 + 1] = DSM_ROOT_PATH; /*当前工作路径 gb 编码*/
+#define MYTHROAD_PATH "mythroad/"
+#define DSM_HIDE_DRIVE "mythroad/.disk/"
+#define DSM_DRIVE_A "mythroad/.disk/a/"
+#define DSM_DRIVE_B "mythroad/.disk/b/"
+#define DSM_DRIVE_X "mythroad/.disk/x/"
 
-static char filenamebuf[DSM_MAX_FILE_LEN + 1] = {0};
-
-#define CHAR_DIR_SEP '/'
-
-void DsmPathInit(void) {
-    char buf[DSM_MAX_FILE_LEN * 2 + 1] = {0};
-    char buf2[DSM_MAX_FILE_LEN * 2 + 1] = {0};
-
-    snprintf(buf, sizeof(buf), "%s", SDPath);  //sd卡根目录
-    GBToUTF8String((uint8 *)buf, (uint8 *)buf2, sizeof(buf2));
-    LOGI("checkdir %s", buf2);
-    if (MR_IS_DIR != getFileType(buf2))
-        MKDIR(buf2);
-
-    snprintf(buf, sizeof(buf), "%s%s", SDPath, dsmPath);  //mythroad 目录
-    GBToUTF8String((uint8 *)buf, (uint8 *)buf2, sizeof(buf2));
-    LOGI("checkdir %s", buf2);
-    if (MR_IS_DIR != getFileType(buf2))
-        MKDIR(buf2);
-
-    snprintf(buf, sizeof(buf), "%s%s%s", SDPath, dsmPath, DSM_HIDE_DRIVE);
-    GBToUTF8String((uint8 *)buf, (uint8 *)buf2, sizeof(buf2));
-    LOGI("checkdir %s", buf2);
-    if (MR_IS_DIR != getFileType(buf2))
-        MKDIR(buf2);
-
-    snprintf(buf, sizeof(buf), "%s%s%s%s", SDPath, dsmPath, DSM_HIDE_DRIVE, DSM_DRIVE_A);
-    GBToUTF8String((uint8 *)buf, (uint8 *)buf2, sizeof(buf2));
-    LOGI("checkdir %s", buf2);
-    if (MR_IS_DIR != getFileType(buf2))
-        MKDIR(buf2);
-
-    snprintf(buf, sizeof(buf), "%s%s%s%s", SDPath, dsmPath, DSM_HIDE_DRIVE, DSM_DRIVE_B);
-    GBToUTF8String((uint8 *)buf, (uint8 *)buf2, sizeof(buf2));
-    LOGI("checkdir %s", buf2);
-    if (MR_IS_DIR != getFileType(buf2))
-        MKDIR(buf2);
-
-    snprintf(buf, sizeof(buf), "%s%s%s%s%s", SDPath, dsmPath, DSM_HIDE_DRIVE, DSM_DRIVE_A, DSM_ROOT_PATH_SYS);
-    GBToUTF8String((uint8 *)buf, (uint8 *)buf2, sizeof(buf2));
-    LOGI("checkdir %s", buf2);
-    if (MR_IS_DIR != getFileType(buf2))
-        MKDIR(buf2);
-}
+static char dsmWorkPath[DSM_MAX_FILE_LEN] = MYTHROAD_PATH; /*当前工作路径 gb 编码*/
 
 /*
  * 整理路径，将分隔符统一为sep，并清除连续的多个
  * 参数：路径(必须可读写)
  */
-char *FormatPathString(char *path, char sep) {
+static char *formatPathString(char *path, char sep) {
     char *p, *q;
     int flag = 0;
 
-    if (NULL == path)
-        return NULL;
-
-    for (p = q = path; '\0' != *p; p++) {
+    for (p = q = path; *p; p++) {
         if ('\\' == *p || '/' == *p) {
-            if (0 == flag)
-                *q++ = sep;
+            if (0 == flag) {
+                *q = sep;
+                q++;
+            }
             flag = 1;
         } else {
-            *q++ = *p;
+            *q = *p;
+            q++;
             flag = 0;
         }
     }
-
     *q = '\0';
-
     return path;
-}
-
-void SetDsmSDPath(const char *path) {
-    LOGI("old sdpath %s", SDPath);
-
-    strncpy(SDPath, path, sizeof(SDPath) - 1);
-    FormatPathString(SDPath, CHAR_DIR_SEP);
-
-    int l = strlen(SDPath);
-    if (SDPath[l - 1] != '/') {
-        SDPath[l] = '/';
-        SDPath[l + 1] = '\0';
-    }
-    LOGI("new sdpath %s", SDPath);
-
-    char gbBuf[DSM_MAX_FILE_LEN + 1];
-    UTF8ToGBString(SDPath, gbBuf, DSM_MAX_FILE_LEN);
-
-    strncpy(SDPath, gbBuf, sizeof(SDPath) - 1);
 }
 
 static void SetDsmWorkPath_inner(const char *path) {
     strncpy(dsmWorkPath, path, sizeof(dsmWorkPath) - 1);
-    FormatPathString(dsmWorkPath, '/');
+    formatPathString(dsmWorkPath, '/');
 
     int l = strlen(dsmWorkPath);
     if (dsmWorkPath[l - 1] != '/') {
         dsmWorkPath[l] = '/';
         dsmWorkPath[l + 1] = '\0';
     }
-    //检查并创建目录
 }
 
 static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 *output_len) {
     LOGI("dsmSwitchPath %s,%d, %p,%p", input, input_len, output, output_len);
 
+    /*
+        功能：将SkyEngine的根目录切换至新目录。目录字符串如：”C:/App/”，第一个字符表示切换至的存储设备：（盘符不区分大小写，GB编码）
+        A：  普通用户不可见（不可操作）存储盘；
+        B：  普通用户可操作存储盘（即可usb连接在PC上操作）；
+        C：  外插存储设备，如mmc，sd，t-flash等；
+        D：  第二外插存储设备；
+        X：  进入vm的根目录（后继子串参数无意义）。这个根目录必须放在用户不可见的，不能卸载的盘上。在这个根目录下可以保存一些设置信息，及收费信息等；
+        D～W： 保留。
+        第二、第三字符为“:/”，第四字符起为该存储设备上的目录名。
+    */
     if (input == NULL)
         return MR_FAILED;
 
@@ -393,22 +316,17 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
         return MR_FAILED;
 
     switch (input[0]) {
-        case 'Z':  //返回刚启动时路径
+        case 'Z':  // 返回刚启动时路径
         case 'z':
-            strcpy(dsmWorkPath, dsmPath);
+            strcpy(dsmWorkPath, MYTHROAD_PATH);
             break;
 
-        case 'Y':  //获取当前工作绝对路径
-        case 'y': {
-            static char buf[DSM_MAX_FILE_LEN];
-
-            memset(buf, 0, sizeof(buf));
-
+        case 'Y':
+        case 'y': {  // 获取当前的路径设置，返回型如：”C:/App/”（即必须符合上述输入标准），gb编码；
+            char buf[DSM_MAX_FILE_LEN];
             char *p;
 
-            /**
-			 * 此处用 c:/ a:/ b:/ 代替真正SD卡路径，避免mrp层空间不足死机
-			 */
+            // 此处用 c:/ a:/ b:/ 代替真正SD卡路径，避免mrp层空间不足死机
             if ((p = strstr(dsmWorkPath, DSM_HIDE_DRIVE)) != NULL) {  //在A盘下
                 p += strlen(DSM_HIDE_DRIVE);                          //a/...
                 if (p) {
@@ -419,28 +337,21 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
                 } else {
                     //说明不是 .disk/a/ 形式，未知错误
                     LOGE("dsmWorkPath ERROR!");
-
-                    strcpy(buf, "a:/");  //给他个默认值
+                    // 给他个默认值
+                    snprintf(buf, sizeof(buf), "c:/%s", dsmWorkPath);
                 }
             } else {
                 snprintf(buf, sizeof(buf), "c:/%s", dsmWorkPath);
             }
-
-            //			LOGI("dsmWorkPath:%s", buf);
-
             *output = (uint8 *)buf;
             *output_len = strlen(buf);
-
             break;
         }
 
         case 'X':  //进入DSM隐藏根目录
-        case 'x': {
-            snprintf(filenamebuf, sizeof(filenamebuf), "%s%s%s%s",
-                     dsmPath, DSM_HIDE_DRIVE, DSM_DRIVE_A, DSM_ROOT_PATH_SYS);
-            SetDsmWorkPath_inner(filenamebuf);
+        case 'x':
+            SetDsmWorkPath_inner(DSM_DRIVE_X);
             break;
-        }
 
         default: {
             char buf[DSM_MAX_FILE_LEN + 1] = {0};
@@ -450,16 +361,16 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
 
             if (*input == 'A' || *input == 'a') {  //A 盘
                 if (input_len > 3) {
-                    sprintf(buf, "%s%s%s%s", dsmPath, DSM_HIDE_DRIVE, DSM_DRIVE_A, input + 3);
+                    sprintf(buf, "%s%s", DSM_DRIVE_A, input + 3);
                 } else {
-                    sprintf(buf, "%s%s%s", dsmPath, DSM_HIDE_DRIVE, DSM_DRIVE_A);
+                    sprintf(buf, "%s", DSM_DRIVE_A);
                 }
                 SetDsmWorkPath_inner(buf);
             } else if (*input == 'B' || *input == 'b') {  //B 盘
                 if (input_len > 3) {
-                    sprintf(buf, "%s%s%s%s", dsmPath, DSM_HIDE_DRIVE, DSM_DRIVE_B, input + 3);
+                    sprintf(buf, "%s%s", DSM_DRIVE_B, input + 3);
                 } else {
-                    sprintf(buf, "%s%s%s", dsmPath, DSM_HIDE_DRIVE, DSM_DRIVE_B);
+                    sprintf(buf, "%s", DSM_DRIVE_B);
                 }
                 SetDsmWorkPath_inner(buf);
             } else {  //C 盘
@@ -479,8 +390,8 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
 
 char *get_filename(char *outputbuf, const char *filename) {
     char dsmFullPath[DSM_MAX_FILE_LEN + 1];
-    snprintf(dsmFullPath, sizeof(dsmFullPath), "%s%s%s", SDPath, dsmWorkPath, filename);
-    FormatPathString(dsmFullPath, '/');
+    snprintf(dsmFullPath, sizeof(dsmFullPath), "./%s%s", dsmWorkPath, filename);
+    formatPathString(dsmFullPath, '/');
     GBToUTF8String(dsmFullPath, outputbuf, DSM_MAX_FILE_LEN);
     return outputbuf;
 }
@@ -642,12 +553,12 @@ int32 mr_rmDir(const char *name) {
     get_filename(fullpathname, name);
 
     //删除权限
-    if (strcasecmp(fullpathname, SDCARD_PATH) == 0) {
+    if (strcasecmp(fullpathname, "./") == 0) {
         LOGE("Has no right to delete this directory:%s ", fullpathname);
         return MR_FAILED;
     }
 
-    sprintf(fullpathname2, "%s%s", SDCARD_PATH, DSM_ROOT_PATH);
+    sprintf(fullpathname2, "./mythroad/");
     if (strcasecmp(fullpathname, fullpathname2) == 0) {
         LOGE("Has no right to delete this directory:%s ", fullpathname);
         return MR_FAILED;
@@ -922,7 +833,10 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
             return MR_SUCCESS;
 
         case MR_SWITCHPATH:  //切换跟目录 1204
+            LOGI("dsmSwitchPath %s,%d, %p,%p", input, input_len, output, output_len);
+            return MR_IGNORE;
             return dsmSwitchPath(input, input_len, output, output_len);
+            // case MR_GET_FREE_SPACE:
 
         case MR_UCS2GB: {  //1207
             if (!input || input_len == 0) {
@@ -1064,11 +978,23 @@ int32 mr_send(int32 s, const char *buf, int len) {
 }
 
 int32 mr_recvfrom(int32 s, char *buf, int len, int32 *ip, uint16 *port) {
-    LOGI("mr_recvfrom(%d,%s,%d,%d,%d)", s, buf,len, *ip, *port);
+    LOGI("mr_recvfrom(%d,%s,%d,%d,%d)", s, buf, len, *ip, *port);
     return MR_FAILED;
 }
 
 int32 mr_sendto(int32 s, const char *buf, int len, int32 ip, uint16 port) {
     LOGI("mr_sendto(%d,%s,%d,%d,%d)", s, buf, len, ip, port);
     return MR_FAILED;
+}
+
+void dsm_init(uint16 *scrBuf) {
+    MKDIR(MYTHROAD_PATH);
+    MKDIR(DSM_HIDE_DRIVE);
+    MKDIR(DSM_DRIVE_A);
+    MKDIR(DSM_DRIVE_B);
+    MKDIR(DSM_DRIVE_X);
+    screenBuf = scrBuf;
+    handleInit();
+    dsmNetWorkID = MR_NET_ID_MOBILE;
+    dsmNetType = NETTYPE_CMWAP;
 }

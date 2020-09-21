@@ -44,7 +44,6 @@ typedef int32 (*MR_CALLBACK)(int32 result);
 
 //--- DSM 配置参数 ----------------------------
 #define DSM_MAX_FILE_LEN 256
-#define DSM_MAX_NAME_LEN 128
 
 //------- 全局变量 -----------------------------------------
 extern int SCRW;

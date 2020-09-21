@@ -1,5 +1,6 @@
 
 #include "mr_gb2312.h"
+#include "encode.h"
 
 #include "mr.h"
 #include "mr_forvm.h"
@@ -626,7 +627,7 @@ unicode_char *c2u(const char *cp, int *err, int *size) {
 
                 dest[1] = 0;
 
-                dsmGB2UCS2((char *)&a_ch[0], (char *)&dest[1]);
+                gbToUCS2((uint8 *)&a_ch[0], (uint8 *)&dest[1]);
 #ifdef MR_BIG_ENDIAN
                 uc[cnt++] = (unicode_char)(dest[1] >> 16);
 #else

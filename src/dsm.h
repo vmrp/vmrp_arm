@@ -3,19 +3,6 @@
 
 #include "./mr/include/mrporting.h"
 
-/**
- * 协议：SDCARD 作为跟目录 以 /结尾
- *		dsmWorkPath 以 / 结尾，切换到跟路径后为空
- */
-#define DSM_ROOT_PATH "mythroad/"
-#define SDCARD_PATH "./"
-
-#define DSM_HIDE_DRIVE ".disk/"
-#define DSM_DRIVE_A "a/"
-#define DSM_DRIVE_B "b/"
-#define DSM_ROOT_PATH_SYS "mythroad/"
-
-#define TMP_PATH ".tmp"
 
 //------------------------------------------------
 
@@ -61,8 +48,6 @@ void dsm_init(uint16 *scrBuf);
 
 int32 mr_exit(void);
 
-/** 设置 SD卡路径，参数底层不做错误检查 */
-void SetDsmSDPath(const char *path);
 void SetDsmWorkPath(const char *path);
 
 #endif

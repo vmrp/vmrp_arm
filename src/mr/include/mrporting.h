@@ -1085,15 +1085,9 @@ typedef struct
 typedef int32 (*startSkyLapp)(uint8 *param);
 void mr_registerLappEntry(void *entry);
 
-/*
-这个函数，转成小端的unicode。支持批量转，但是一次
-最好不要多于128个字节。
-*/
-void dsmGB2UCS2(char* src, char* dest);
 
 int32 mr_cacheSync(void *addr, int32 len);
 
-int mr_sprintf(char *buf, const char *fmt, ...);
 
 
 #endif

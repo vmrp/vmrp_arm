@@ -49,7 +49,6 @@ const unsigned char *mr_m0_files[50];
 
 #define MRDBGPRINTF mr_printf
 
-extern int mr_sprintf(char * s, const char * format, ...);
 
 mrp_State    *vm_state;
 
@@ -405,11 +404,7 @@ static void _mr_c_function_table_init() {
    _mr_c_function_table[14] = (void*)memset2;
    _mr_c_function_table[15] = (void*)strlen2;
    _mr_c_function_table[16] = (void*)strstr2;
-   #ifndef SYMBIAN_MOD
    _mr_c_function_table[17] = (void*)sprintf_;
-   #else
-   _mr_c_function_table[17] = (void*)mr_sprintf;
-   #endif
    _mr_c_function_table[18] = (void*)atoi2;
    _mr_c_function_table[19] = (void*)strtoul2;  // 20
    _mr_c_function_table[20] = (void*)rand2;
