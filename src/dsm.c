@@ -293,28 +293,16 @@ static void SetDsmWorkPath_inner(const char *path) {
         dsmWorkPath[l] = '/';
         dsmWorkPath[l + 1] = '\0';
     }
+    LOGW("SetDsmWorkPath_inner():'%s'", dsmWorkPath);
 }
 
+static char dsmSwitchPathBuf[DSM_MAX_FILE_LEN + 10];
 static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 *output_len) {
-    LOGI("dsmSwitchPath %s,%d, %p,%p", input, input_len, output, output_len);
-
+    LOGI("dsmSwitchPath '%s', %d, %p, %p", input, input_len, output, output_len);
     /*
         功能：将SkyEngine的根目录切换至新目录。目录字符串如：”C:/App/”，第一个字符表示切换至的存储设备：（盘符不区分大小写，GB编码）
-        A：  普通用户不可见（不可操作）存储盘；
-        B：  普通用户可操作存储盘（即可usb连接在PC上操作）；
-        C：  外插存储设备，如mmc，sd，t-flash等；
-        D：  第二外插存储设备；
-        X：  进入vm的根目录（后继子串参数无意义）。这个根目录必须放在用户不可见的，不能卸载的盘上。在这个根目录下可以保存一些设置信息，及收费信息等；
-        D～W： 保留。
         第二、第三字符为“:/”，第四字符起为该存储设备上的目录名。
     */
-    if (input == NULL)
-        return MR_FAILED;
-
-    input_len = strlen((char *)input);
-    if (input_len > (DSM_MAX_FILE_LEN - 3))
-        return MR_FAILED;
-
     switch (input[0]) {
         case 'Z':  // 返回刚启动时路径
         case 'z':
@@ -322,75 +310,72 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
             break;
 
         case 'Y':
-        case 'y': {  // 获取当前的路径设置，返回型如：”C:/App/”（即必须符合上述输入标准），gb编码；
-            char buf[DSM_MAX_FILE_LEN];
+        case 'y': {  // 获取当前的路径设置，返回型如："C:/App/"（即必须符合上述输入标准），gb编码；
             char *p;
-
-            // 此处用 c:/ a:/ b:/ 代替真正SD卡路径，避免mrp层空间不足死机
             if ((p = strstr(dsmWorkPath, DSM_HIDE_DRIVE)) != NULL) {  //在A盘下
                 p += strlen(DSM_HIDE_DRIVE);                          //a/...
                 if (p) {
                     if (*(p + 2))
-                        snprintf(buf, sizeof(buf), "%c:/%s", *p, (p + 2));
+                        snprintf(dsmSwitchPathBuf, sizeof(dsmSwitchPathBuf), "%c:/%s", *p, (p + 2));
                     else
-                        snprintf(buf, sizeof(buf), "%c:/", *p);
+                        snprintf(dsmSwitchPathBuf, sizeof(dsmSwitchPathBuf), "%c:/", *p);
                 } else {
-                    //说明不是 .disk/a/ 形式，未知错误
-                    LOGE("dsmWorkPath ERROR!");
-                    // 给他个默认值
-                    snprintf(buf, sizeof(buf), "c:/%s", dsmWorkPath);
+                    panic("dsmWorkPath y ERROR!");
                 }
             } else {
-                snprintf(buf, sizeof(buf), "c:/%s", dsmWorkPath);
+                snprintf(dsmSwitchPathBuf, sizeof(dsmSwitchPathBuf), "c:/%s", dsmWorkPath);
             }
-            *output = (uint8 *)buf;
-            *output_len = strlen(buf);
+            LOGE("dsmSwitchPathBuf: y '%s'", dsmSwitchPathBuf);
+            *output = (uint8 *)dsmSwitchPathBuf;
+            *output_len = strlen(dsmSwitchPathBuf);
             break;
         }
 
-        case 'X':  //进入DSM隐藏根目录
         case 'x':
-            SetDsmWorkPath_inner(DSM_DRIVE_X);
+        case 'X':  // 进入vm的根目录（后继子串参数无意义）。这个根目录必须放在用户不可见的，不能卸载的盘上。在这个根目录下可以保存一些设置信息，及收费信息等；
+            strcpy(dsmWorkPath, DSM_DRIVE_X);
             break;
 
-        default: {
-            char buf[DSM_MAX_FILE_LEN + 1] = {0};
-
-            if (input_len > DSM_MAX_FILE_LEN)
-                return MR_FAILED;
-
-            if (*input == 'A' || *input == 'a') {  //A 盘
-                if (input_len > 3) {
-                    sprintf(buf, "%s%s", DSM_DRIVE_A, input + 3);
-                } else {
-                    sprintf(buf, "%s", DSM_DRIVE_A);
-                }
-                SetDsmWorkPath_inner(buf);
-            } else if (*input == 'B' || *input == 'b') {  //B 盘
-                if (input_len > 3) {
-                    sprintf(buf, "%s%s", DSM_DRIVE_B, input + 3);
-                } else {
-                    sprintf(buf, "%s", DSM_DRIVE_B);
-                }
-                SetDsmWorkPath_inner(buf);
-            } else {  //C 盘
-                if (input_len > 3) {
-                    sprintf(buf, "%s", input + 3);
-                    SetDsmWorkPath_inner(buf);
-                } else {
-                    SetDsmWorkPath_inner("");
-                }
+        case 'a':
+        case 'A': {  // A：  普通用户不可见（不可操作）存储盘；
+            if (input_len > 3) {
+                sprintf(dsmSwitchPathBuf, "%s%s", DSM_DRIVE_A, input + 3);
+            } else {
+                sprintf(dsmSwitchPathBuf, "%s", DSM_DRIVE_A);
             }
+            SetDsmWorkPath_inner(dsmSwitchPathBuf);
             break;
         }
+        case 'b':
+        case 'B': {  // B：  普通用户可操作存储盘（即可usb连接在PC上操作）；
+            if (input_len > 3) {
+                sprintf(dsmSwitchPathBuf, "%s%s", DSM_DRIVE_B, input + 3);
+            } else {
+                sprintf(dsmSwitchPathBuf, "%s", DSM_DRIVE_B);
+            }
+            SetDsmWorkPath_inner(dsmSwitchPathBuf);
+            break;
+        }
+        case 'c':
+        case 'C':  // 外插存储设备，如mmc，sd，t-flash等；
+            if (input_len > 3) {
+                SetDsmWorkPath_inner(input + 3);
+            } else {
+                panic("dsmWorkPath c ERROR!");
+            }
+            break;
+
+        default:
+            LOGE("dsmSwitchPath() default");
+            return MR_IGNORE;
     }
 
     return MR_SUCCESS;
 }
 
 char *get_filename(char *outputbuf, const char *filename) {
-    char dsmFullPath[DSM_MAX_FILE_LEN + 1];
-    snprintf(dsmFullPath, sizeof(dsmFullPath), "./%s%s", dsmWorkPath, filename);
+    char dsmFullPath[DSM_MAX_FILE_LEN + 10];
+    snprintf(dsmFullPath, sizeof(dsmFullPath), "%s%s", dsmWorkPath, filename);
     formatPathString(dsmFullPath, '/');
     GBToUTF8String(dsmFullPath, outputbuf, DSM_MAX_FILE_LEN);
     return outputbuf;
@@ -833,8 +818,6 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
             return MR_SUCCESS;
 
         case MR_SWITCHPATH:  //切换跟目录 1204
-            LOGI("dsmSwitchPath %s,%d, %p,%p", input, input_len, output, output_len);
-            return MR_IGNORE;
             return dsmSwitchPath(input, input_len, output, output_len);
             // case MR_GET_FREE_SPACE:
 

@@ -164,9 +164,12 @@ void j2n_getMemoryInfo() {
 }
 
 static SDL_TimerID timeId = 0;
+static int timeLock = 0;
 
 Uint32 th2(Uint32 interval, void *param) {
+    timeLock = 1;
     mr_timer();
+    timeLock = 0;
     return 0;
 }
 
@@ -176,6 +179,8 @@ int32 emu_timerStart(uint16 t) {
         timeId = SDL_AddTimer(t, th2, NULL);
     } else {
         LOGI("emu_timerStart ignore %d======================================", t);
+        SDL_RemoveTimer(timeId);
+        timeId = SDL_AddTimer(t, th2, NULL);
     }
     return MR_SUCCESS;
 }
@@ -328,21 +333,28 @@ int main(int argc, char *args[]) {
             if (event.type == SDL_QUIT) {
                 isLoop = false;
                 break;
-            } else if (event.type == SDL_KEYDOWN) {
-                keyEvent(MR_KEY_PRESS, event.key.keysym.sym);
-            } else if (event.type == SDL_KEYUP) {
-                keyEvent(MR_KEY_RELEASE, event.key.keysym.sym);
-            } else if (event.type == SDL_MOUSEMOTION) {
-                if (isDown) {
-                    mr_event(MR_MOUSE_MOVE, event.motion.x, event.motion.y);
-                }
-            } else if (event.type == SDL_MOUSEBUTTONDOWN) {
-                isDown = true;
-                mr_event(MR_MOUSE_DOWN, event.motion.x, event.motion.y);
-
-            } else if (event.type == SDL_MOUSEBUTTONUP) {
-                isDown = false;
-                mr_event(MR_MOUSE_UP, event.motion.x, event.motion.y);
+            }
+            if (timeLock) continue;
+            switch (event.type) {
+                case SDL_KEYDOWN:
+                    keyEvent(MR_KEY_PRESS, event.key.keysym.sym);
+                    break;
+                case SDL_KEYUP:
+                    keyEvent(MR_KEY_RELEASE, event.key.keysym.sym);
+                    break;
+                case SDL_MOUSEMOTION:
+                    if (isDown) {
+                        mr_event(MR_MOUSE_MOVE, event.motion.x, event.motion.y);
+                    }
+                    break;
+                case SDL_MOUSEBUTTONDOWN:
+                    isDown = true;
+                    mr_event(MR_MOUSE_DOWN, event.motion.x, event.motion.y);
+                    break;
+                case SDL_MOUSEBUTTONUP:
+                    isDown = false;
+                    mr_event(MR_MOUSE_UP, event.motion.x, event.motion.y);
+                    break;
             }
         }
     }
