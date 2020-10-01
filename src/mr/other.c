@@ -2,13 +2,6 @@
 
 #include <stdlib.h>
 
-unsigned long strtoul2(const char *s, char **end_ptr, int base) {
-    return strtoul(s, end_ptr, base);
-}
-
-long int strtol2(const char *str, char **endptr, int base) {
-    return strtol(str, endptr, base);
-}
 
 int rand2(void) {
     return rand();

@@ -8,7 +8,7 @@
 
 int atoi2(const char* s);
 int rand2(void);
-unsigned long strtoul2(const char* s, char** end_ptr, int base);
-long int strtol2(const char* str, char** endptr, int base);
+long strtol2(const char *nptr, char **endptr, register int base);
+unsigned long strtoul2(const char *nptr, char **endptr, register int base);
 
 #endif
