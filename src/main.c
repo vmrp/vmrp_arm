@@ -16,7 +16,6 @@
 #include <unistd.h>
 
 #include "./mr/include/encode.h"
-#include "font_sky16_2.h"
 
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 320
@@ -102,7 +101,6 @@ void main_init() {
     mr_strlib_init();
     mythroad_init();
     mr_pluto_init();
-    xl_font_sky16_init();
 }
 
 void j2n_startMrp(char *path) {
@@ -144,17 +142,6 @@ void j2n_smsRecv(char *numStr, char *contentStr) {
     UTF8ToGBString((uint8 *)contentStr, buf2, sizeof(buf2));
 
     mr_smsIndiaction((uint8 *)buf2, strlen((char *)buf2), (uint8 *)buf, MR_ENCODE_ASCII);
-}
-
-void j2n_destroy() {
-    //	tsf_dispose();
-    xl_font_sky16_close();
-    LOGI("native destroy");
-}
-
-void j2n_callback_gethostbyname() {
-    // LOGI("getHost callback ip:%p", (void*)param);
-    // ((MR_GET_HOST_CB)mr_soc.callBack)(param);
 }
 
 void j2n_getMemoryInfo() {

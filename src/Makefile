@@ -5,7 +5,6 @@ mrpoid2:
 		-DDSM_FULL \
 		main.c \
 		dsm.c \
-		font_sky16_2.c \
 		-L./mr -lmr_vm_full -lSDL2 -lm -lz \
 
 

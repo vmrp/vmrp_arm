@@ -10,7 +10,7 @@
 #include "./mr/include/mrporting.h"
 #include "./mr/include/printf.h"
 #include "./mr/include/string.h"
-#include "font_sky16_2.h"
+#include "./mr/include/type.h"
 #include "main.h"
 
 //------------------------------------------------
@@ -61,6 +61,97 @@ static uint16 *screenBuf;
 static char printfBuf[PRINTF_BUF_LEN + 2] = {0};
 static char utf8Buf[PRINTF_BUF_LEN * 2 + 2] = {0};
 
+///////////////////////////////////////////////////////////////////
+#define EN_CHAR_H 16
+#define EN_CHAR_W 8
+#define CN_CHAR_H 16
+#define CN_CHAR_W 16
+
+// todo "上有名不"这四个字必定显示为错别字
+static char font_sky16_bitbuf[32];
+static int font_sky16_f;
+
+static void dpoint(int x, int y, int color) {
+    if (x < 0 || x >= SCRW || y < 0 || y >= SCRH)
+        return;
+    *(screenBuf + y * SCRW + x) = color;
+}
+
+static int xl_font_sky16_init() {  //字体初始化，打开字体文件
+    font_sky16_f = mr_open("system/gb16.uc2", 0);
+    if (font_sky16_f <= 0) {
+        LOGW("字体加载失败");
+        return -1;
+    }
+    LOGI("字体加载成功 fd=%d", font_sky16_f);
+    return 0;
+}
+
+static int xl_font_sky16_close() {  //关闭字体
+    return mr_close(font_sky16_f);
+}
+
+//获取字体第n个点信息
+static int getfontpix(char *buf, int n) {
+    buf += n / 8;  //计算在第几个字节，从0开始
+    //计算在第几位n%8
+    return (128 >> (n % 8)) & *buf;
+}
+
+//获得字符的位图
+static char *xl_font_sky16_getChar(uint16 id) {
+    mr_seek(font_sky16_f, id * 32, 0);
+    mr_read(font_sky16_f, font_sky16_bitbuf, 32);
+    return font_sky16_bitbuf;
+}
+
+//画一个字
+static char *xl_font_sky16_drawChar(uint16 id, int x, int y, uint16 color) {
+    mr_seek(font_sky16_f, id * 32, 0);
+    mr_read(font_sky16_f, font_sky16_bitbuf, 32);
+    int y2 = y + 16;
+    int n = 0, count;
+
+    int ix = x;
+    int iy;
+    for (iy = y; iy < y2; iy++) {
+        ix = x;
+        for (count = 0; count < 16; count++) {
+            if (getfontpix(font_sky16_bitbuf, n))
+                dpoint(ix, iy, color);
+            n++, ix++;
+        }
+    }
+    return font_sky16_bitbuf;
+}
+
+//获取一个文字的宽高
+static void xl_font_sky16_charWidthHeight(uint16 id, int32 *width, int32 *height) {
+    if (id < 128) {
+        if (width) *width = EN_CHAR_W;
+        if (height) *height = EN_CHAR_H;
+        return;
+    }
+    if (width) *width = CN_CHAR_W;
+    if (height) *height = CN_CHAR_H;
+}
+
+/*
+//获取单行文字的宽高
+void xl_font_sky16_textWidthHeight(char *text, int32 *width, int32 *height) {
+    int textIdx = 0;
+    int id;
+    int fontw = 0, fonth = 0;
+    while (text[textIdx] != 0) {
+        id = (text[textIdx] << 8) + (text[textIdx + 1]);
+        xl_font_sky16_charWidthHeight(id, &fontw, &fonth);
+        (*width) += fontw;
+        (*height) += fonth;
+        textIdx += 2;
+    }
+}
+*/
+
 /////////////////////////////////////////////////////////////////
 #define HANDLE_NUM 64
 
@@ -101,15 +192,11 @@ static void handleDel(int32 v) {
 
 int32 mr_exit(void) {
     LOGD("mr_exit() called by mythroad!");
+    xl_font_sky16_close();
     emu_finish();
     return MR_SUCCESS;
 }
 
-void dpoint(int x, int y, int color) {
-    if (x < 0 || x >= SCRW || y < 0 || y >= SCRH)
-        return;
-    *(screenBuf + y * SCRW + x) = color;
-}
 
 #define MAKE_PLAT_VERSION(plat, ver, card, impl, brun) \
     (100000000 + (plat)*1000000 + (ver)*10000 + (card)*1000 + (impl)*10 + (brun))
@@ -186,10 +273,10 @@ int32 mr_mem_get(char **mem_base, uint32 *mem_len) {
 }
 
 int32 mr_mem_free(char *mem, uint32 mem_len) {
+    LOGE("mr_mem_free!!!!");
     free(mem);
     gEmuEnv.vm_mem_base = NULL;
     gEmuEnv.vm_mem_len = 0;
-    LOGI("mr_mem_free");
     return MR_SUCCESS;
 }
 
@@ -226,7 +313,7 @@ void mr_printf(const char *format, ...) {
     int len;
 
     va_start(params, format);
-    len = vsnprintf(printfBuf, PRINTF_BUF_LEN, format, params);
+    len = vsnprintf_(printfBuf, PRINTF_BUF_LEN, format, params);
     va_end(params);
 
     GBToUTF8String((uint8 *)printfBuf, (uint8 *)utf8Buf, sizeof(utf8Buf));
@@ -453,7 +540,6 @@ int32 mr_close(MR_FILE_HANDLE f) {
 }
 
 int32 mr_read(MR_FILE_HANDLE f, void *p, uint32 l) {
-    extern int font_sky16_f;
     if (f != font_sky16_f) {
         LOGI("mr_read %d,%p,%d", f, p, l);
     }
@@ -1003,4 +1089,5 @@ void dsm_init(uint16 *scrBuf) {
     MKDIR(DSM_DRIVE_X);
     screenBuf = scrBuf;
     handleInit();
+    xl_font_sky16_init();
 }
