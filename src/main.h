@@ -13,8 +13,8 @@
 
 #define panic(msg)          \
     do {                    \
-        perror(msg);        \
-        exit(EXIT_FAILURE); \
+        printf("%s\n",msg);        \
+        while (1); \
     } while (0)
 
 int getFileType(const char *name);
@@ -52,29 +52,13 @@ extern int SCRH;
 extern T_EMUENV gEmuEnv;  //API LOG 控制
 
 extern mr_socket_struct mr_soc;
-extern int dsmNetType;
 
 //------- 宏函数 ----------------------------------------------
 
-#define FREE_SET_NULL(ptr) \
-    if (ptr) {             \
-        free(ptr);         \
-        ptr = NULL;        \
-    }
 
 #define MKDIR(as) mkdir(as, S_IRWXU | S_IRWXG | S_IRWXO)
 
-#define CHECK_AND_REMOVE(as)               \
-    do {                                   \
-        if (MR_IS_FILE == getFileType(as)) \
-            remove(as);                    \
-    } while (0)
 
-#define MR_CHECK_AND_REMOVE(as)        \
-    do {                               \
-        if (MR_IS_FILE == mr_info(as)) \
-            mr_remove(as);             \
-    } while (0)
 
 
 ////////// 平台相关个方法 N->J //////////////////////////////////

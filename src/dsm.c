@@ -1,26 +1,56 @@
 #include <dirent.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <malloc.h>
-#include <signal.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-#include <zlib.h>
 
 #include "./mr/include/encode.h"
+#include "./mr/include/mrporting.h"
+#include "./mr/include/printf.h"
+#include "./mr/include/string.h"
 #include "font_sky16_2.h"
 #include "main.h"
 
-static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 *output_len);
+//------------------------------------------------
 
-void dsmRestoreRootDir();
+#define MT6235
+
+/*请不要修改这些值*/
+#if (defined(MT6223P) || defined(MT6223) || defined(MT6223P_S00))
+#define DSM_PLAT_VERSION (2) /*手机平台区分(1~99)*/
+#elif (defined(MT6226) || defined(MT6226M) || defined(MT6226D))
+#define DSM_PLAT_VERSION (4) /*手机平台区分(1~99)*/
+#elif (defined(MT6228))
+#define DSM_PLAT_VERSION (5) /*手机平台区分(1~99)*/
+#elif (defined(MT6225))
+#define DSM_PLAT_VERSION (3) /*手机平台区分(1~99)*/
+#elif (defined(MT6230))
+#define DSM_PLAT_VERSION (6) /*手机平台区分(1~99)*/
+#elif (defined(MT6227) || defined(MT6227D))
+#define DSM_PLAT_VERSION (7)
+#elif (defined(MT6219))
+#define DSM_PLAT_VERSION (1)
+#elif (defined(MT6235) || defined(MT6235B))
+#define DSM_PLAT_VERSION (8)
+#elif (defined(MT6229))
+#define DSM_PLAT_VERSION (9)
+#elif (defined(MT6253) || defined(MT6253T))
+#define DSM_PLAT_VERSION (10)
+#elif (defined(MT6238))
+#define DSM_PLAT_VERSION (11)
+#elif (defined(MT6239))
+#define DSM_PLAT_VERSION (12)
+#else
+#error PLATFORM NOT IN LIST PLEASE CALL SKY TO ADD THE PLATFORM
+#endif
+
+#ifdef DSM_IDLE_APP
+#define DSM_FAE_VERSION (180) /*由平台组统一分配版本号，有需求请联系平台组*/
+#else
+#define DSM_FAE_VERSION (182) /*由平台组统一分配版本号，有需求请联系平台组*/
+#endif
 
 static uint16 *screenBuf;
 
@@ -30,10 +60,6 @@ static uint16 *screenBuf;
 #define PRINTF_BUF_LEN 1024
 static char printfBuf[PRINTF_BUF_LEN + 2] = {0};
 static char utf8Buf[PRINTF_BUF_LEN * 2 + 2] = {0};
-
-static int dsmNetWorkID;
-
-int dsmNetType;
 
 /////////////////////////////////////////////////////////////////
 #define HANDLE_NUM 64
@@ -94,17 +120,17 @@ int32 mr_getUserInfo(mr_userinfo *info) {
 
     LOGI("mr_getUserInfo");
 
-    memset(info, 0, sizeof(mr_userinfo));
-    strcpy(info->IMEI, "864086040622841");
-    strcpy(info->IMSI, "460019707327302");
-    strncpy(info->manufactory, "vmrp", 7);
-    strncpy(info->type, "vmrp", 7);
+    memset2(info, 0, sizeof(mr_userinfo));
+    strcpy2(info->IMEI, "864086040622841");
+    strcpy2(info->IMSI, "460019707327302");
+    strncpy2(info->manufactory, "vmrp", 7);
+    strncpy2(info->type, "vmrp", 7);
 
     info->ver = 101000000 + DSM_PLAT_VERSION * 10000 + DSM_FAE_VERSION;
     //	info->ver = 116000000 + DSM_PLAT_VERSION * 10000 + DSM_FAE_VERSION; //SPLE
     //	info->ver = MAKE_PLAT_VERSION(1, 3, 0, 18, 0);
 
-    memset(info->spare, 0, sizeof(info->spare));
+    memset2(info->spare, 0, sizeof(info->spare));
 
 #if 1
     LOGI("imei = %s", info->IMEI);
@@ -120,7 +146,7 @@ int32 mr_getUserInfo(mr_userinfo *info) {
 }
 
 int32 mr_cacheSync(void *addr, int32 len) {
-    LOGI("mr_cacheSync(%#p, %d)", addr, len);
+    LOGE("mr_cacheSync(%#p, %d)", addr, len);
 #if defined(__arm__)
     // cacheflush((long)addr, (long)(addr + len), 0);
 #endif
@@ -285,10 +311,10 @@ static char *formatPathString(char *path, char sep) {
 }
 
 static void SetDsmWorkPath_inner(const char *path) {
-    strncpy(dsmWorkPath, path, sizeof(dsmWorkPath) - 1);
+    strncpy2(dsmWorkPath, path, sizeof(dsmWorkPath) - 1);
     formatPathString(dsmWorkPath, '/');
 
-    int l = strlen(dsmWorkPath);
+    int l = strlen2(dsmWorkPath);
     if (dsmWorkPath[l - 1] != '/') {
         dsmWorkPath[l] = '/';
         dsmWorkPath[l + 1] = '\0';
@@ -306,42 +332,42 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
     switch (input[0]) {
         case 'Z':  // 返回刚启动时路径
         case 'z':
-            strcpy(dsmWorkPath, MYTHROAD_PATH);
+            strcpy2(dsmWorkPath, MYTHROAD_PATH);
             break;
 
         case 'Y':
         case 'y': {  // 获取当前的路径设置，返回型如："C:/App/"（即必须符合上述输入标准），gb编码；
             char *p;
-            if ((p = strstr(dsmWorkPath, DSM_HIDE_DRIVE)) != NULL) {  //在A盘下
-                p += strlen(DSM_HIDE_DRIVE);                          //a/...
+            if ((p = strstr2(dsmWorkPath, DSM_HIDE_DRIVE)) != NULL) {  //在A盘下
+                p += strlen2(DSM_HIDE_DRIVE);                          //a/...
                 if (p) {
                     if (*(p + 2))
-                        snprintf(dsmSwitchPathBuf, sizeof(dsmSwitchPathBuf), "%c:/%s", *p, (p + 2));
+                        snprintf_(dsmSwitchPathBuf, sizeof(dsmSwitchPathBuf), "%c:/%s", *p, (p + 2));
                     else
-                        snprintf(dsmSwitchPathBuf, sizeof(dsmSwitchPathBuf), "%c:/", *p);
+                        snprintf_(dsmSwitchPathBuf, sizeof(dsmSwitchPathBuf), "%c:/", *p);
                 } else {
                     panic("dsmWorkPath y ERROR!");
                 }
             } else {
-                snprintf(dsmSwitchPathBuf, sizeof(dsmSwitchPathBuf), "c:/%s", dsmWorkPath);
+                snprintf_(dsmSwitchPathBuf, sizeof(dsmSwitchPathBuf), "c:/%s", dsmWorkPath);
             }
             LOGE("dsmSwitchPathBuf: y '%s'", dsmSwitchPathBuf);
             *output = (uint8 *)dsmSwitchPathBuf;
-            *output_len = strlen(dsmSwitchPathBuf);
+            *output_len = strlen2(dsmSwitchPathBuf);
             break;
         }
 
         case 'x':
         case 'X':  // 进入vm的根目录（后继子串参数无意义）。这个根目录必须放在用户不可见的，不能卸载的盘上。在这个根目录下可以保存一些设置信息，及收费信息等；
-            strcpy(dsmWorkPath, DSM_DRIVE_X);
+            strcpy2(dsmWorkPath, DSM_DRIVE_X);
             break;
 
         case 'a':
         case 'A': {  // A：  普通用户不可见（不可操作）存储盘；
             if (input_len > 3) {
-                sprintf(dsmSwitchPathBuf, "%s%s", DSM_DRIVE_A, input + 3);
+                sprintf_(dsmSwitchPathBuf, "%s%s", DSM_DRIVE_A, input + 3);
             } else {
-                sprintf(dsmSwitchPathBuf, "%s", DSM_DRIVE_A);
+                sprintf_(dsmSwitchPathBuf, "%s", DSM_DRIVE_A);
             }
             SetDsmWorkPath_inner(dsmSwitchPathBuf);
             break;
@@ -349,9 +375,9 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
         case 'b':
         case 'B': {  // B：  普通用户可操作存储盘（即可usb连接在PC上操作）；
             if (input_len > 3) {
-                sprintf(dsmSwitchPathBuf, "%s%s", DSM_DRIVE_B, input + 3);
+                sprintf_(dsmSwitchPathBuf, "%s%s", DSM_DRIVE_B, input + 3);
             } else {
-                sprintf(dsmSwitchPathBuf, "%s", DSM_DRIVE_B);
+                sprintf_(dsmSwitchPathBuf, "%s", DSM_DRIVE_B);
             }
             SetDsmWorkPath_inner(dsmSwitchPathBuf);
             break;
@@ -375,14 +401,14 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
 
 char *get_filename(char *outputbuf, const char *filename) {
     char dsmFullPath[DSM_MAX_FILE_LEN + 10];
-    snprintf(dsmFullPath, sizeof(dsmFullPath), "%s%s", dsmWorkPath, filename);
+    snprintf_(dsmFullPath, sizeof(dsmFullPath), "%s%s", dsmWorkPath, filename);
     formatPathString(dsmFullPath, '/');
     GBToUTF8String(dsmFullPath, outputbuf, DSM_MAX_FILE_LEN);
     return outputbuf;
 }
 
 int startWith(const char *str, const char *s) {
-    int l = strlen(s);
+    int l = strlen2(s);
     //若参数s1 和s2 字符串相同则返回0。s1 若大于s2 则返回大于0 的值，s1 若小于s2 则返回小于0 的值。
     return (l > 0 && 0 == strncasecmp(str, s, l));
 }
@@ -419,7 +445,7 @@ int32 mr_close(MR_FILE_HANDLE f) {
     int ret = close(int32ToHandle(f));
     handleDel(f);
     if (ret != 0) {
-        LOGE("mr_close(%d) err, %d", f, errno);
+        LOGE("mr_close(%d) err", f);
         return MR_FAILED;
     }
     LOGI("mr_close(%d) suc", f);
@@ -438,7 +464,7 @@ int32 mr_read(MR_FILE_HANDLE f, void *p, uint32 l) {
     }
     int32 readnum = read(fd, p, (size_t)l);
     if (readnum < 0) {
-        LOGE("mr_read(%d) err, %d", f, errno);
+        LOGE("mr_read(%d) err", f);
         return MR_FAILED;
     }
     return readnum;
@@ -448,7 +474,7 @@ int32 mr_write(MR_FILE_HANDLE f, void *p, uint32 l) {
     LOGI("mr_write %d,%p,%d", f, p, l);
     int32 writenum = write(int32ToHandle(f), p, (size_t)l);
     if (writenum < 0) {
-        LOGE("mr_write(%d) err, %d", f, errno);
+        LOGE("mr_write(%d) err", f);
         return MR_FAILED;
     }
     return writenum;
@@ -457,7 +483,7 @@ int32 mr_write(MR_FILE_HANDLE f, void *p, uint32 l) {
 int32 mr_seek(MR_FILE_HANDLE f, int32 pos, int method) {
     off_t ret = lseek(int32ToHandle(f), (off_t)pos, method);
     if (ret < 0) {
-        LOGE("mr_seek(%d,%d) err, %d", f, pos, errno);
+        LOGE("mr_seek(%d,%d) err", f, pos);
         return MR_FAILED;
     }
     return MR_SUCCESS;
@@ -486,8 +512,8 @@ int32 mr_remove(const char *filename) {
     int ret;
 
     ret = remove(get_filename(fullpathname, filename));
-    if (ret != 0 && errno != 2) {
-        LOGE("mr_remove(%s) err, ret=%d, errno=%d", fullpathname, ret, errno);
+    if (ret != 0) {
+        LOGE("mr_remove(%s) err, ret=%d", fullpathname, ret);
         return MR_FAILED;
     }
     LOGI("mr_remove(%s) suc", fullpathname);
@@ -505,7 +531,7 @@ int32 mr_rename(const char *oldname, const char *newname) {
     get_filename(fullpathname_2, newname);
     ret = rename(fullpathname_1, fullpathname_2);
     if (ret != 0) {
-        LOGE("mr_rename(%s to %s) err! errno=%d", fullpathname_1, fullpathname_2, errno);
+        LOGE("mr_rename(%s to %s) err!", fullpathname_1, fullpathname_2);
         return MR_FAILED;
     }
     return MR_SUCCESS;
@@ -577,7 +603,7 @@ MR_FILE_HANDLE mr_findStart(const char *name, char *buffer, uint32 len) {
         LOGI("mr_findStart readdir %d", ret);
         if ((pDt = readdir(pDir)) != NULL) {
             LOGI("mr_findStart readdir %s", pDt->d_name);
-            memset(buffer, 0, len);
+            memset2(buffer, 0, len);
             UTF8ToGBString(pDt->d_name, buffer, len);
         } else {
             LOGW("mr_findStart: readdir FAIL!");
@@ -599,7 +625,7 @@ int32 mr_findGetNext(MR_FILE_HANDLE search_handle, char *buffer, uint32 len) {
     DIR *pDir = (DIR *)int32ToHandle(search_handle);
     struct dirent *pDt;
 
-    memset(buffer, 0, len);
+    memset2(buffer, 0, len);
     if ((pDt = readdir(pDir)) != NULL) {
         LOGI("mr_findGetNext %d %s", search_handle, pDt->d_name);
         UTF8ToGBString(pDt->d_name, buffer, len);
@@ -681,8 +707,7 @@ void mr_call(char *number) {
 }
 
 int32 mr_getNetworkID(void) {
-    LOGI("mr_getNetworkID %d", dsmNetWorkID);
-    return dsmNetWorkID;
+    return MR_NET_ID_MOBILE;
 }
 
 void mr_connectWAP(char *wap) {
@@ -838,11 +863,11 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
             int gbBufLen = len + 1;
             char *gbBuf = malloc(gbBufLen);
 
-            memcpy(buf, input, len + 2);
+            memcpy2(buf, input, len + 2);
             UCS2ByteRev(buf);
             UCS2ToGBString((uint16 *)buf, gbBuf, gbBufLen);
 
-            strcpy(*output, gbBuf);
+            strcpy2(*output, gbBuf);
             /**
 				 * output_len 返回的GB字符串缓冲的长度。
 				 *
@@ -867,7 +892,7 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
 
         case 1116: {  //获取编译时间
             static char buf[32];
-            int l = snprintf(buf, sizeof(buf), "%s %s", __TIME__, __DATE__);
+            int l = snprintf_(buf, sizeof(buf), "%s %s", __TIME__, __DATE__);
             *output = (uint8 *)buf;  //"2013/3/21 21:36";
             *output_len = l + 1;
             LOGI("build time %s", buf);
@@ -978,6 +1003,4 @@ void dsm_init(uint16 *scrBuf) {
     MKDIR(DSM_DRIVE_X);
     screenBuf = scrBuf;
     handleInit();
-    dsmNetWorkID = MR_NET_ID_MOBILE;
-    dsmNetType = NETTYPE_CMWAP;
 }
