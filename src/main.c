@@ -20,9 +20,6 @@
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 320
 
-//---------------------------------
-T_EMUENV gEmuEnv;  //API LOG 控制
-
 static uint16 *cacheScreenBuffer;  //缓冲屏幕地址
 int SCRW = SCREEN_WIDTH;
 int SCRH = SCREEN_HEIGHT;
@@ -87,20 +84,10 @@ int64 get_time_ms(void) {
 }
 
 void main_init() {
-    gEmuEnv.dsmStartTime = get_time_ms();
 
     cacheScreenBuffer = (uint16 *)malloc(SCRW * SCRH * 2);
 
     dsm_init(cacheScreenBuffer);
-    mr_tm_init();
-    mr_baselib_init();
-    mr_tablib_init();
-    mr_socket_target_init();
-    mr_tcp_target_init();
-    mr_iolib_target_init();
-    mr_strlib_init();
-    mythroad_init();
-    mr_pluto_init();
 }
 
 void j2n_startMrp(char *path) {
@@ -144,11 +131,6 @@ void j2n_smsRecv(char *numStr, char *contentStr) {
     mr_smsIndiaction((uint8 *)buf2, strlen((char *)buf2), (uint8 *)buf, MR_ENCODE_ASCII);
 }
 
-void j2n_getMemoryInfo() {
-    uint32 len, left, top;
-    mr_getMemoryInfo(&len, &left, &top);
-    printf("len:%d, left:%d, top:%d\n", len, left, top);
-}
 
 static SDL_TimerID timeId = 0;
 static int timeLock = 0;

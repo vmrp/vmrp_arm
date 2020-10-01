@@ -58,9 +58,5 @@ extern int mr_B_rawset(mrp_State *L);
 extern int mr_B_pairs(mrp_State *L);
 extern int mr_B_ipairs(mrp_State *L);
 
-void mr_baselib_init(void);
-void mr_tablib_init(void);
-void mr_strlib_init(void);
-void mr_iolib_target_init(void);
 
 #endif

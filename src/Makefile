@@ -1,8 +1,6 @@
 #编译完整虚拟机
 mrpoid2:
-	gcc -o ../mrpoid2 -g -rdynamic  -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-unused-variable -Wno-unused-but-set-variable -Wno-pointer-sign -Wno-stringop-truncation -Wno-implicit-function-declaration\
-		-Wno-unused-function -Wno-uninitialized \
-		-DDSM_FULL \
+	gcc -o ../mrpoid2 -g -Wall -DDSM_FULL \
 		main.c \
 		dsm.c \
 		-L./mr -lmr_vm_full -lSDL2 -lm -lz \

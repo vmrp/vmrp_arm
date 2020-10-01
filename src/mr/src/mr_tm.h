@@ -35,7 +35,6 @@ typedef enum {
 const TObject *mr_T_gettm(Table *events, TMS event, TString *ename);
 const TObject *mr_T_gettmbyobj(mrp_State *L, const TObject *o, TMS event);
 void mr_T_init(mrp_State *L);
-void mr_tm_init(void);
 
 extern const char *mr_T_typenames[];
 extern const char *mr_T_short_typenames[];

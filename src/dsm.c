@@ -53,10 +53,10 @@
 #endif
 
 static uint16 *screenBuf;
+static int64 dsmStartTime;  //虚拟机初始化时间，用来计算系统运行时间
 
 #define DSM_MEM_SIZE (5 * 1024 * 1024)  //DSM内存大小
 
-//-- log 缓冲区 -------------------------------
 #define PRINTF_BUF_LEN 1024
 static char printfBuf[PRINTF_BUF_LEN + 2] = {0};
 static char utf8Buf[PRINTF_BUF_LEN * 2 + 2] = {0};
@@ -197,7 +197,6 @@ int32 mr_exit(void) {
     return MR_SUCCESS;
 }
 
-
 #define MAKE_PLAT_VERSION(plat, ver, card, impl, brun) \
     (100000000 + (plat)*1000000 + (ver)*10000 + (card)*1000 + (impl)*10 + (brun))
 
@@ -208,8 +207,8 @@ int32 mr_getUserInfo(mr_userinfo *info) {
     LOGI("mr_getUserInfo");
 
     memset2(info, 0, sizeof(mr_userinfo));
-    strcpy2(info->IMEI, "864086040622841");
-    strcpy2(info->IMSI, "460019707327302");
+    strcpy2((char *)info->IMEI, "864086040622841");
+    strcpy2((char *)info->IMSI, "460019707327302");
     strncpy2(info->manufactory, "vmrp", 7);
     strncpy2(info->type, "vmrp", 7);
 
@@ -262,44 +261,13 @@ int32 mr_mem_get(char **mem_base, uint32 *mem_len) {
 
     *mem_base = buffer;
     *mem_len = len;
-
-    gEmuEnv.vm_mem_base = buffer;
-    gEmuEnv.vm_mem_len = len;
-    gEmuEnv.vm_mem_end = buffer + len;
-
-    LOGE("mr_mem_get base=%p len=%x end=%p =================", gEmuEnv.vm_mem_base, len, gEmuEnv.vm_mem_end);
-
+    LOGE("mr_mem_get base=%p len=%x =================", buffer, len);
     return MR_SUCCESS;
 }
 
 int32 mr_mem_free(char *mem, uint32 mem_len) {
     LOGE("mr_mem_free!!!!");
     free(mem);
-    gEmuEnv.vm_mem_base = NULL;
-    gEmuEnv.vm_mem_len = 0;
-    return MR_SUCCESS;
-}
-
-int32 pageMalloc(void **out, int32 *outLen, uint32 needLen) {
-    char *buf;
-    int pagesize, pagecount;
-
-    pagesize = sysconf(_SC_PAGE_SIZE);
-    if (pagesize == -1)
-        panic("sysconf");
-
-    pagecount = needLen / pagesize + 1;
-    needLen = pagesize * pagecount;
-    buf = memalign(pagesize, needLen);
-    if (buf == NULL)
-        panic("memalign");
-
-    if (mprotect(buf, needLen, PROT_EXEC | PROT_WRITE | PROT_READ) == -1) {
-        free(buf);
-        panic("mprotect");
-    }
-    *out = buf;
-    *outLen = needLen;
     return MR_SUCCESS;
 }
 
@@ -310,10 +278,9 @@ void mr_printf(const char *format, ...) {
     }
 
     va_list params;
-    int len;
 
     va_start(params, format);
-    len = vsnprintf_(printfBuf, PRINTF_BUF_LEN, format, params);
+    vsnprintf_(printfBuf, PRINTF_BUF_LEN, format, params);
     va_end(params);
 
     GBToUTF8String((uint8 *)printfBuf, (uint8 *)utf8Buf, sizeof(utf8Buf));
@@ -331,7 +298,7 @@ int32 mr_timerStop(void) {
 }
 
 uint32 mr_getTime(void) {
-    uint32 s = get_time_ms() - gEmuEnv.dsmStartTime;
+    uint32 s = get_time_ms() - dsmStartTime;
     LOGI("mr_getTime():%d", s);
     return s;
 }
@@ -472,7 +439,7 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
         case 'c':
         case 'C':  // 外插存储设备，如mmc，sd，t-flash等；
             if (input_len > 3) {
-                SetDsmWorkPath_inner(input + 3);
+                SetDsmWorkPath_inner((char*)(input + 3));
             } else {
                 panic("dsmWorkPath c ERROR!");
             }
@@ -490,14 +457,8 @@ char *get_filename(char *outputbuf, const char *filename) {
     char dsmFullPath[DSM_MAX_FILE_LEN + 10];
     snprintf_(dsmFullPath, sizeof(dsmFullPath), "%s%s", dsmWorkPath, filename);
     formatPathString(dsmFullPath, '/');
-    GBToUTF8String(dsmFullPath, outputbuf, DSM_MAX_FILE_LEN);
+    GBToUTF8String((uint8*)dsmFullPath, (uint8*)outputbuf, DSM_MAX_FILE_LEN);
     return outputbuf;
-}
-
-int startWith(const char *str, const char *s) {
-    int l = strlen2(s);
-    //若参数s1 和s2 字符串相同则返回0。s1 若大于s2 则返回大于0 的值，s1 若小于s2 则返回小于0 的值。
-    return (l > 0 && 0 == strncasecmp(str, s, l));
 }
 
 MR_FILE_HANDLE mr_open(const char *filename, uint32 mode) {
@@ -644,19 +605,17 @@ ok:
 
 int32 mr_rmDir(const char *name) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
-    char fullpathname2[DSM_MAX_FILE_LEN] = {0};
     int ret;
 
     get_filename(fullpathname, name);
 
     //删除权限
-    if (strcasecmp(fullpathname, "./") == 0) {
+    if (strcmp2(fullpathname, "./") == 0) {
         LOGE("Has no right to delete this directory:%s ", fullpathname);
         return MR_FAILED;
     }
 
-    sprintf(fullpathname2, "./mythroad/");
-    if (strcasecmp(fullpathname, fullpathname2) == 0) {
+    if (strcmp2(fullpathname, "./mythroad/") == 0) {
         LOGE("Has no right to delete this directory:%s ", fullpathname);
         return MR_FAILED;
     }
@@ -690,7 +649,7 @@ MR_FILE_HANDLE mr_findStart(const char *name, char *buffer, uint32 len) {
         if ((pDt = readdir(pDir)) != NULL) {
             LOGI("mr_findStart readdir %s", pDt->d_name);
             memset2(buffer, 0, len);
-            UTF8ToGBString(pDt->d_name, buffer, len);
+            UTF8ToGBString((uint8*)pDt->d_name, (uint8*)buffer, len);
         } else {
             LOGW("mr_findStart: readdir FAIL!");
         }
@@ -714,7 +673,7 @@ int32 mr_findGetNext(MR_FILE_HANDLE search_handle, char *buffer, uint32 len) {
     memset2(buffer, 0, len);
     if ((pDt = readdir(pDir)) != NULL) {
         LOGI("mr_findGetNext %d %s", search_handle, pDt->d_name);
-        UTF8ToGBString(pDt->d_name, buffer, len);
+        UTF8ToGBString((uint8 *)pDt->d_name, (uint8 *)buffer, (int)len);
         return MR_SUCCESS;
     } else {
         LOGI("mr_findGetNext end");
@@ -943,7 +902,7 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
                 return MR_FAILED;
             }
 
-            int len = UCS2_strlen(input);
+            int len = UCS2_strlen((char *)input);
             char *buf = malloc(len + 2);
 
             int gbBufLen = len + 1;
@@ -951,9 +910,9 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
 
             memcpy2(buf, input, len + 2);
             UCS2ByteRev(buf);
-            UCS2ToGBString((uint16 *)buf, gbBuf, gbBufLen);
+            UCS2ToGBString((uint16 *)buf, (uint8 *)gbBuf, gbBufLen);
 
-            strcpy2(*output, gbBuf);
+            strcpy2((char *)(*output), gbBuf);
             /**
 				 * output_len 返回的GB字符串缓冲的长度。
 				 *
@@ -1082,12 +1041,22 @@ int32 mr_sendto(int32 s, const char *buf, int len, int32 ip, uint16 port) {
 }
 
 void dsm_init(uint16 *scrBuf) {
+    screenBuf = scrBuf;
+    dsmStartTime = get_time_ms();
     MKDIR(MYTHROAD_PATH);
     MKDIR(DSM_HIDE_DRIVE);
     MKDIR(DSM_DRIVE_A);
     MKDIR(DSM_DRIVE_B);
     MKDIR(DSM_DRIVE_X);
-    screenBuf = scrBuf;
+    mr_tm_init();
+    mr_baselib_init();
+    mr_tablib_init();
+    mr_socket_target_init();
+    mr_tcp_target_init();
+    mr_iolib_target_init();
+    mr_strlib_init();
+    mythroad_init();
+    mr_pluto_init();
     handleInit();
     xl_font_sky16_init();
 }

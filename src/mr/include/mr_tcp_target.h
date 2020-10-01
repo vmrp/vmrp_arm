@@ -50,7 +50,6 @@ typedef t_tcp *p_tcp;
 
 
 
-void mr_tcp_target_init(void);
 extern int mr_tcp_open(mrp_State *L);
 extern int mr_udp_open(mrp_State *L);
 

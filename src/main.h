@@ -21,18 +21,8 @@ int getFileType(const char *name);
 int getFileSize(const char *path);
 void logPrint(char *level, char *tag, ...);
 
-int64 get_uptime_ms(void);
 int64 get_time_ms(void);
 
-
-typedef struct _EmuEnv {
-    int b_tsfInited;            //tsf 加载结果
-    int64 dsmStartTime;         //虚拟机初始化时间，用来计算系统运行时间
-    char *vm_mem_base;          //虚拟机内存地址
-    int32 vm_mem_len;           //虚拟机内存大小
-    char *vm_mem_end;           //虚拟机内存地址
-    uint16 *screenBuffer;       //缓冲屏幕地址
-} T_EMUENV;
 
 typedef struct {
     char *title;
@@ -49,7 +39,6 @@ typedef int32 (*MR_CALLBACK)(int32 result);
 extern int SCRW;
 extern int SCRH;
 
-extern T_EMUENV gEmuEnv;  //API LOG 控制
 
 extern mr_socket_struct mr_soc;
 
@@ -70,7 +59,5 @@ void emu_finish();
 
 extern int32 mr_start_dsmC(char *start_file, const char *entry);
 
-#define isAddrValid(p) \
-    ((void *)p >= (void *)gEmuEnv.vm_mem_base && (void *)p < (void *)gEmuEnv.vm_mem_end)
 
 #endif

@@ -89,7 +89,7 @@ enum {
     MR_DIALOG_EVENT,   /*6*/
     MR_SMS_INDICATION, /*7*/
     MR_EVENT_EXIT,     /*8*/
-    MR_EXIT_EVENT = 8,     /*8*/
+    MR_EXIT_EVENT = 8, /*8*/
     MR_SMS_RESULT,     /*9*/
     MR_LOCALUI_EVENT,  /*10*/
     MR_OSD_EVENT,      /*11*/
@@ -158,7 +158,6 @@ enum {
     MR_ENCODE_UNICODE
 };
 
-
 typedef enum {
     IMG_BMP,  //BMP 图片
     IMG_JPG,  //jpg 图片
@@ -189,7 +188,7 @@ typedef struct
 {
     int32 scene;
     int32 type;
-    char *path;  //gb
+    char* path;  //gb
 } T_DSM_RING_SET;
 
 #define DSM_ARTIST_LEN 100
@@ -257,7 +256,7 @@ typedef int32 (*MR_ASYN_FS_CB)(int32 result, uint32 cb_param);
 
 typedef struct
 {
-    void *buf;         //文件缓存地址
+    void* buf;         //文件缓存地址
     uint32 buf_len;    //缓冲长度，即要读取/写入的长度
     uint32 offset;     //文件读取/写入偏移
     MR_ASYN_FS_CB cb;  //回调函数
@@ -276,19 +275,19 @@ typedef struct
 
 typedef struct
 {
-    char *src;       //文件名，或是数据流的buf的地址，如果是文件名，是GB格式
+    char* src;       //文件名，或是数据流的buf的地址，如果是文件名，是GB格式
     int32 len;       //src所指的buf的大小
     int32 src_type;  //指明src中存放的是文件名，还是数据流
 } T_DSM_GET_IMG_INFO;
 
 typedef struct
 {
-    char *src;       //文件名，或是数据流的buf的地址，如果是文件名，是GB格式
+    char* src;       //文件名，或是数据流的buf的地址，如果是文件名，是GB格式
     int32 len;       //src所指的buf的大小
     int32 width;     //用户图片显示的区域的宽度
     int32 height;    //用于图片显示的区域的高度
     int32 src_type;  //指明src中存放的是文件名，还是数据流
-    char *dest;      //解码后的图片数据存放的buf
+    char* dest;      //解码后的图片数据存放的buf
 } T_DSM_IMG_DECODE;
 
 typedef struct T_DSM_FRAME_INFO {
@@ -299,8 +298,8 @@ typedef struct T_DSM_FRAME_INFO {
     int32 transparent_flag;         //是否需要透明显示
     int32 transparent_color;        //透明显示的颜色
     int32 delay_time;               //本帧显示的时间
-    char *pdata;                    //解压好的图片数据
-    struct T_DSM_FRAME_INFO *next;  //指向下一帧的数据结构
+    char* pdata;                    //解压好的图片数据
+    struct T_DSM_FRAME_INFO* next;  //指向下一帧的数据结构
 } T_DSM_FRAME_INFO;
 
 typedef struct
@@ -310,7 +309,7 @@ typedef struct
     int32 height;    //gif的高度
     int32 bg_color;  //gif的背景色
     int32 frame_count;
-    T_DSM_FRAME_INFO *first;  //指向gif的第一帧的数据结构
+    T_DSM_FRAME_INFO* first;  //指向gif的第一帧的数据结构
 } T_DSM_GIF_HEADER;
 
 typedef struct
@@ -318,7 +317,7 @@ typedef struct
     int32 width;   //gif的宽度
     int32 height;  //gif的高度
     int bg_color;  //gif的背景色
-    char *pdata;   //解压好的图片数据
+    char* pdata;   //解压好的图片数据
 } T_DSM_PNG_HEADER;
 
 typedef struct
@@ -569,7 +568,7 @@ extern int32 mr_getNetworkID(void);
 extern void mr_connectWAP(char* wap);
 
 extern int32 mr_sleep(uint32 ms);
-extern int32 mr_getScreenInfo(mr_screeninfo *screeninfo);
+extern int32 mr_getScreenInfo(mr_screeninfo* screeninfo);
 
 /*GUI 接口*/
 extern int32 mr_menuCreate(const char* title, int16 num);
@@ -920,8 +919,8 @@ enum {
 
 typedef struct
 {
-    uint8 *src;
-    uint8 *dest;
+    uint8* src;
+    uint8* dest;
     uint16 src_width;
     uint16 src_height;
     uint16 src_pitch;
@@ -937,7 +936,7 @@ typedef struct
 {
     int32 appid;         //app id
     uint8 describe[20];  //应用标志符 - "ipqq"
-    uint8 *param;        //预留扩展用
+    uint8* param;        //预留扩展用
 } mr_backstage_st;
 
 typedef enum {
@@ -954,7 +953,7 @@ typedef struct
     int32 width;
     int32 height;
     uint16 color;
-    uint8 *buff;
+    uint8* buff;
     uint8 destId;
 } mr_pic_req;
 
@@ -972,7 +971,7 @@ typedef struct
 
 typedef struct
 {
-    void *callBack;
+    void* callBack;
 } mr_socket_struct;
 
 typedef struct
@@ -1001,7 +1000,7 @@ typedef struct
 
 typedef struct
 {
-    char *src;
+    char* src;
     int32 len;
     int32 src_type;  // MRAPP_SRC_TYPE
 } MRAPP_IMAGE_ORIGIN_T;
@@ -1014,7 +1013,7 @@ typedef struct
 
 typedef struct
 {
-    char *src;
+    char* src;
     int32 src_len;
     int32 src_type;
     int32 ox;
@@ -1082,12 +1081,19 @@ typedef struct
     int result;
 } mr_socket_event_struct;
 
-typedef int32 (*startSkyLapp)(uint8 *param);
-void mr_registerLappEntry(void *entry);
+typedef int32 (*startSkyLapp)(uint8* param);
+void mr_registerLappEntry(void* entry);
 
+int32 mr_cacheSync(void* addr, int32 len);
 
-int32 mr_cacheSync(void *addr, int32 len);
-
-
+void mr_tm_init(void);
+void mr_baselib_init(void);
+void mr_tablib_init(void);
+void mr_pluto_init(void);
+void mythroad_init(void);
+void mr_strlib_init(void);
+void mr_iolib_target_init(void);
+void mr_tcp_target_init(void);
+void mr_socket_target_init(void);
 
 #endif
