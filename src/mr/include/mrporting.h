@@ -1096,4 +1096,6 @@ void mr_iolib_target_init(void);
 void mr_tcp_target_init(void);
 void mr_socket_target_init(void);
 
+extern int32 mr_rand(void);
+
 #endif

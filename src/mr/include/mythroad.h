@@ -22,7 +22,8 @@
 文件、网络等资源得不到释放*/
 #define MR_EXIT_RELEASE_ALL
 
-#define MR_SECOND_BUF
+
+// #define MR_SECOND_BUF
 
 /*MR_SCREEN_CACHE，使用虚拟机本地缓存*/
 #ifdef WIN32

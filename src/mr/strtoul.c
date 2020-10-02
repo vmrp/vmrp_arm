@@ -62,7 +62,7 @@
  * alphabets and digits are each contiguous.
  */
 unsigned long
-strtoul(const char *nptr, char **endptr, register int base)
+strtoul2(const char *nptr, char **endptr, register int base)
 {
 	register const char *s = nptr;
 	register unsigned long acc;

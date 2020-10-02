@@ -1,11 +1,7 @@
 #include "other.h"
 
-#include <stdlib.h>
 
 
-int rand2(void) {
-    return rand();
-}
 
 static long atol2(const char *s) {
     unsigned long ret = 0;

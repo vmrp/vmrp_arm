@@ -1,19 +1,8 @@
-#include <dirent.h>
-#include <fcntl.h>
-#include <malloc.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <time.h>
-#include <unistd.h>
+#include "dsm.h"
 
 #include "./mr/include/encode.h"
-#include "./mr/include/mrporting.h"
 #include "./mr/include/printf.h"
 #include "./mr/include/string.h"
-#include "./mr/include/type.h"
-#include "main.h"
-
-//------------------------------------------------
 
 #define MT6235
 
@@ -52,14 +41,27 @@
 #define DSM_FAE_VERSION (182) /*由平台组统一分配版本号，有需求请联系平台组*/
 #endif
 
-static uint16 *screenBuf;
+static DSM_IN_FUNCS *dsmInFuncs;
 static int64 dsmStartTime;  //虚拟机初始化时间，用来计算系统运行时间
 
-#define DSM_MEM_SIZE (5 * 1024 * 1024)  //DSM内存大小
+//////////////////////////////////////////////////////////////////
 
-#define PRINTF_BUF_LEN 1024
-static char printfBuf[PRINTF_BUF_LEN + 2] = {0};
-static char utf8Buf[PRINTF_BUF_LEN * 2 + 2] = {0};
+void mr_printf(const char *format, ...) {
+    char printfBuf[512] = {0};
+    char utf8Buf[1024] = {0};
+    va_list params;
+
+    va_start(params, format);
+    vsnprintf_(printfBuf, sizeof(printfBuf), format, params);
+    va_end(params);
+    GBToUTF8String((uint8 *)printfBuf, (uint8 *)utf8Buf, sizeof(utf8Buf));
+    dsmInFuncs->log(utf8Buf);
+}
+
+#define LOGI(fmt, ...) mr_printf("[INFO]" fmt "\n", ##__VA_ARGS__)
+#define LOGW(fmt, ...) mr_printf("[WARN]" fmt "\n", ##__VA_ARGS__)
+#define LOGE(fmt, ...) mr_printf("[ERROR]" fmt "\n", ##__VA_ARGS__)
+#define LOGD(fmt, ...) mr_printf("[DEBUG]" fmt "\n", ##__VA_ARGS__)
 
 ///////////////////////////////////////////////////////////////////
 #define EN_CHAR_H 16
@@ -71,19 +73,13 @@ static char utf8Buf[PRINTF_BUF_LEN * 2 + 2] = {0};
 static char font_sky16_bitbuf[32];
 static int font_sky16_f;
 
-static void dpoint(int x, int y, int color) {
-    if (x < 0 || x >= SCRW || y < 0 || y >= SCRH)
-        return;
-    *(screenBuf + y * SCRW + x) = color;
-}
-
 static int xl_font_sky16_init() {  //字体初始化，打开字体文件
     font_sky16_f = mr_open("system/gb16.uc2", 0);
     if (font_sky16_f <= 0) {
-        LOGW("字体加载失败");
+        LOGW("font load fail");
         return -1;
     }
-    LOGI("字体加载成功 fd=%d", font_sky16_f);
+    LOGI("font load suc fd=%d", font_sky16_f);
     return 0;
 }
 
@@ -107,6 +103,7 @@ static char *xl_font_sky16_getChar(uint16 id) {
 
 //画一个字
 static char *xl_font_sky16_drawChar(uint16 id, int x, int y, uint16 color) {
+    extern void _DrawPoint(int16 x, int16 y, uint16 nativecolor);
     mr_seek(font_sky16_f, id * 32, 0);
     mr_read(font_sky16_f, font_sky16_bitbuf, 32);
     int y2 = y + 16;
@@ -118,7 +115,7 @@ static char *xl_font_sky16_drawChar(uint16 id, int x, int y, uint16 color) {
         ix = x;
         for (count = 0; count < 16; count++) {
             if (getfontpix(font_sky16_bitbuf, n))
-                dpoint(ix, iy, color);
+                _DrawPoint(ix, iy, color);
             n++, ix++;
         }
     }
@@ -152,48 +149,10 @@ void xl_font_sky16_textWidthHeight(char *text, int32 *width, int32 *height) {
 }
 */
 
-/////////////////////////////////////////////////////////////////
-#define HANDLE_NUM 64
-
-// 因为系统句柄转成int32可能是负数，导致mrp编程不规范只判断是否大于0时出现遍历文件夹为空的bug，需要有一种转换机制避免返回负数
-// 0号下标不使用，下标作为mrp使用的句柄，值为系统的句柄，值为-1时表示未使用
-static uint32 handles[HANDLE_NUM + 1];
-
-static void handleInit() {
-    for (int i = 1; i <= HANDLE_NUM; i++) {
-        handles[i] = -1;
-    }
-}
-// 注意： mrc_open需要返回0表示失败， mrc_findStart需要返回-1表示失败，这里没做区分
-static int32 handle2int32(uint32 v) {
-    for (int i = 1; i <= HANDLE_NUM; i++) {
-        if (handles[i] == -1) {
-            handles[i] = v;
-            return i;
-        }
-    }
-    return -1;  // 失败
-}
-
-static uint32 int32ToHandle(int32 v) {
-    if (v <= 0 || v > HANDLE_NUM) {
-        return -1;
-    }
-    return handles[v];
-}
-
-static void handleDel(int32 v) {
-    if (v <= 0 || v > HANDLE_NUM) {
-        return;
-    }
-    handles[v] = -1;
-}
-/////////////////////////////////////////////////////////////////
-
 int32 mr_exit(void) {
     LOGD("mr_exit() called by mythroad!");
     xl_font_sky16_close();
-    emu_finish();
+    dsmInFuncs->exit();
     return MR_SUCCESS;
 }
 
@@ -240,94 +199,33 @@ int32 mr_cacheSync(void *addr, int32 len) {
 }
 
 int32 mr_mem_get(char **mem_base, uint32 *mem_len) {
-    char *buffer;
-    int pagesize, pagecount, len = DSM_MEM_SIZE;
-
-    pagesize = sysconf(_SC_PAGE_SIZE);
-    if (pagesize == -1)
-        panic("sysconf");
-
-    pagecount = len / pagesize;
-    len = pagesize * pagecount;
-    buffer = memalign(pagesize, len);
-    if (buffer == NULL)
-        panic("memalign");
-
-    //设置内存可执行权限
-    if (mprotect(buffer, len, PROT_EXEC | PROT_WRITE | PROT_READ) == -1) {
-        free(buffer);
-        panic("mprotect");
-    }
-
-    *mem_base = buffer;
-    *mem_len = len;
-    LOGE("mr_mem_get base=%p len=%x =================", buffer, len);
-    return MR_SUCCESS;
+    return dsmInFuncs->mem_get(mem_base, mem_len);
 }
 
 int32 mr_mem_free(char *mem, uint32 mem_len) {
-    LOGE("mr_mem_free!!!!");
-    free(mem);
-    return MR_SUCCESS;
-}
-
-void mr_printf(const char *format, ...) {
-    if (!format) {
-        panic("mr_printf null");
-        return;
-    }
-
-    va_list params;
-
-    va_start(params, format);
-    vsnprintf_(printfBuf, PRINTF_BUF_LEN, format, params);
-    va_end(params);
-
-    GBToUTF8String((uint8 *)printfBuf, (uint8 *)utf8Buf, sizeof(utf8Buf));
-    LOGI("mr_printf(): %s", utf8Buf);
+    return dsmInFuncs->mem_free(mem, mem_len);
 }
 
 int32 mr_timerStart(uint16 t) {
-    emu_timerStart(t);
-    return MR_SUCCESS;
+    return dsmInFuncs->timerStart(t);
 }
 
 int32 mr_timerStop(void) {
-    emu_timerStop();
-    return MR_SUCCESS;
+    return dsmInFuncs->timerStop();
 }
 
 uint32 mr_getTime(void) {
-    uint32 s = get_time_ms() - dsmStartTime;
+    uint32 s = dsmInFuncs->get_time_ms() - dsmStartTime;
     LOGI("mr_getTime():%d", s);
     return s;
 }
 
 int32 mr_getDatetime(mr_datetime *datetime) {
-    if (!datetime)
-        return MR_FAILED;
-
-    time_t now;
-    struct tm *t;
-
-    time(&now);
-    t = localtime(&now);
-
-    datetime->year = t->tm_year + 1900;
-    datetime->month = t->tm_mon + 1;
-    datetime->day = t->tm_mday;
-    datetime->hour = t->tm_hour;
-    datetime->minute = t->tm_min;
-    datetime->second = t->tm_sec;
-
-    LOGI("mr_getDatetime [%d/%d/%d %d:%d:%d]", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-    return MR_SUCCESS;
+    return dsmInFuncs->getDatetime(datetime);
 }
 
 int32 mr_sleep(uint32 ms) {
-    LOGI("mr_sleep(%d)", ms);
-    usleep(ms * 1000);  //注意 usleep 传的是 微秒 ，所以要 *1000
-    return MR_SUCCESS;
+    return dsmInFuncs->sleep(ms);
 }
 
 ///////////////////////// 文件操作接口 //////////////////////////////////////
@@ -364,7 +262,7 @@ static char *formatPathString(char *path, char sep) {
     return path;
 }
 
-static void SetDsmWorkPath_inner(const char *path) {
+static void SetDsmWorkPath(const char *path) {
     strncpy2(dsmWorkPath, path, sizeof(dsmWorkPath) - 1);
     formatPathString(dsmWorkPath, '/');
 
@@ -373,7 +271,7 @@ static void SetDsmWorkPath_inner(const char *path) {
         dsmWorkPath[l] = '/';
         dsmWorkPath[l + 1] = '\0';
     }
-    LOGW("SetDsmWorkPath_inner():'%s'", dsmWorkPath);
+    LOGW("SetDsmWorkPath():'%s'", dsmWorkPath);
 }
 
 static char dsmSwitchPathBuf[DSM_MAX_FILE_LEN + 10];
@@ -400,7 +298,7 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
                     else
                         snprintf_(dsmSwitchPathBuf, sizeof(dsmSwitchPathBuf), "%c:/", *p);
                 } else {
-                    panic("dsmWorkPath y ERROR!");
+                    dsmInFuncs->panic("dsmWorkPath y ERROR!");
                 }
             } else {
                 snprintf_(dsmSwitchPathBuf, sizeof(dsmSwitchPathBuf), "c:/%s", dsmWorkPath);
@@ -423,7 +321,7 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
             } else {
                 sprintf_(dsmSwitchPathBuf, "%s", DSM_DRIVE_A);
             }
-            SetDsmWorkPath_inner(dsmSwitchPathBuf);
+            SetDsmWorkPath(dsmSwitchPathBuf);
             break;
         }
         case 'b':
@@ -433,15 +331,15 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
             } else {
                 sprintf_(dsmSwitchPathBuf, "%s", DSM_DRIVE_B);
             }
-            SetDsmWorkPath_inner(dsmSwitchPathBuf);
+            SetDsmWorkPath(dsmSwitchPathBuf);
             break;
         }
         case 'c':
         case 'C':  // 外插存储设备，如mmc，sd，t-flash等；
             if (input_len > 3) {
-                SetDsmWorkPath_inner((char*)(input + 3));
+                SetDsmWorkPath((char *)(input + 3));
             } else {
-                panic("dsmWorkPath c ERROR!");
+                dsmInFuncs->panic("dsmWorkPath c ERROR!");
             }
             break;
 
@@ -457,203 +355,101 @@ char *get_filename(char *outputbuf, const char *filename) {
     char dsmFullPath[DSM_MAX_FILE_LEN + 10];
     snprintf_(dsmFullPath, sizeof(dsmFullPath), "%s%s", dsmWorkPath, filename);
     formatPathString(dsmFullPath, '/');
-    GBToUTF8String((uint8*)dsmFullPath, (uint8*)outputbuf, DSM_MAX_FILE_LEN);
+    GBToUTF8String((uint8 *)dsmFullPath, (uint8 *)outputbuf, DSM_MAX_FILE_LEN);
     return outputbuf;
 }
 
 MR_FILE_HANDLE mr_open(const char *filename, uint32 mode) {
-    int f;
-    int new_mode = 0;
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
-
-    if (mode & MR_FILE_RDONLY)
-        new_mode = O_RDONLY;
-    if (mode & MR_FILE_WRONLY)
-        new_mode = O_WRONLY;
-    if (mode & MR_FILE_RDWR)
-        new_mode = O_RDWR;
-
-    //如果文件存在 带此标志会导致错误
-    if ((mode & MR_FILE_CREATE) && (0 != access(fullpathname, F_OK)))
-        new_mode |= O_CREAT;
-
-    f = open(get_filename(fullpathname, filename), new_mode, 0777);
-    if (f == -1) {
-        return (MR_FILE_HANDLE)NULL;
-    }
-    int32 ret = handle2int32(f);
-    LOGI("mr_open(%s,%d) fd is: %d", fullpathname, new_mode, ret);
+    MR_FILE_HANDLE ret = dsmInFuncs->open(get_filename(fullpathname, filename), mode);
+    LOGI("mr_open(%s,%d) fd is: %d", fullpathname, mode, ret);
     return ret;
 }
 
 int32 mr_close(MR_FILE_HANDLE f) {
-    if (f == 0)
-        return MR_FAILED;
-
-    int ret = close(int32ToHandle(f));
-    handleDel(f);
-    if (ret != 0) {
-        LOGE("mr_close(%d) err", f);
-        return MR_FAILED;
-    }
-    LOGI("mr_close(%d) suc", f);
-    return MR_SUCCESS;
+    int32 ret = dsmInFuncs->close(f);
+    LOGI("mr_close(%d): ret:%d", f, ret);
+    return ret;
 }
 
 int32 mr_read(MR_FILE_HANDLE f, void *p, uint32 l) {
     if (f != font_sky16_f) {
         LOGI("mr_read %d,%p,%d", f, p, l);
     }
-    int32 fd = int32ToHandle(f);
-    if (fd == -1) {
-        LOGE("mr_read(%d) err", f);
-        return MR_FAILED;
-    }
-    int32 readnum = read(fd, p, (size_t)l);
-    if (readnum < 0) {
-        LOGE("mr_read(%d) err", f);
-        return MR_FAILED;
-    }
-    return readnum;
+    return dsmInFuncs->read(f, p, l);
 }
 
 int32 mr_write(MR_FILE_HANDLE f, void *p, uint32 l) {
     LOGI("mr_write %d,%p,%d", f, p, l);
-    int32 writenum = write(int32ToHandle(f), p, (size_t)l);
-    if (writenum < 0) {
-        LOGE("mr_write(%d) err", f);
-        return MR_FAILED;
-    }
-    return writenum;
+    return dsmInFuncs->write(f, p, l);
 }
 
 int32 mr_seek(MR_FILE_HANDLE f, int32 pos, int method) {
-    off_t ret = lseek(int32ToHandle(f), (off_t)pos, method);
-    if (ret < 0) {
-        LOGE("mr_seek(%d,%d) err", f, pos);
-        return MR_FAILED;
-    }
-    return MR_SUCCESS;
+    return dsmInFuncs->seek(f, pos, method);
 }
 
 int32 mr_info(const char *filename) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
-    struct stat s1;
-    int ret = stat(get_filename(fullpathname, filename), &s1);
-
-    LOGI("mr_info(%s)", fullpathname);
-
-    if (ret != 0) {
-        return MR_IS_INVALID;
-    }
-    if (s1.st_mode & S_IFDIR) {
-        return MR_IS_DIR;
-    } else if (s1.st_mode & S_IFREG) {
-        return MR_IS_FILE;
-    }
-    return MR_IS_INVALID;
+    return dsmInFuncs->info(get_filename(fullpathname, filename));
 }
 
 int32 mr_remove(const char *filename) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
-    int ret;
-
-    ret = remove(get_filename(fullpathname, filename));
-    if (ret != 0) {
-        LOGE("mr_remove(%s) err, ret=%d", fullpathname, ret);
-        return MR_FAILED;
-    }
-    LOGI("mr_remove(%s) suc", fullpathname);
-    return MR_SUCCESS;
+    int32 ret = dsmInFuncs->remove(get_filename(fullpathname, filename));
+    LOGI("mr_remove(%s) ret:%d", fullpathname, ret);
+    return ret;
 }
 
 int32 mr_rename(const char *oldname, const char *newname) {
     char fullpathname_1[DSM_MAX_FILE_LEN] = {0};
     char fullpathname_2[DSM_MAX_FILE_LEN] = {0};
-    int ret;
-
-    LOGI("mr_rename(%s to %s)", oldname, newname);
-
     get_filename(fullpathname_1, oldname);
     get_filename(fullpathname_2, newname);
-    ret = rename(fullpathname_1, fullpathname_2);
-    if (ret != 0) {
-        LOGE("mr_rename(%s to %s) err!", fullpathname_1, fullpathname_2);
-        return MR_FAILED;
-    }
-    return MR_SUCCESS;
+    LOGI("mr_rename(%s to %s)", fullpathname_1, fullpathname_2);
+    return dsmInFuncs->rename(fullpathname_1, fullpathname_2);
 }
 
 int32 mr_mkDir(const char *name) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
-    int ret;
-
     get_filename(fullpathname, name);
-    if (access(fullpathname, F_OK) == 0) {  //检测是否已存在
-        goto ok;
-    }
-
-    ret = mkdir(fullpathname, S_IRWXU | S_IRWXG | S_IRWXO);
-    if (ret != 0) {
-        LOGE("mr_mkDir(%s) err!", fullpathname);
-        return MR_FAILED;
-    }
-ok:
-    LOGI("mr_mkDir(%s) suc!", fullpathname);
-    return MR_SUCCESS;
+    LOGI("mr_mkDir(%s)", fullpathname);
+    return dsmInFuncs->mkDir(fullpathname);
 }
 
 int32 mr_rmDir(const char *name) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
-    int ret;
-
     get_filename(fullpathname, name);
+    LOGI("mr_rmDir(%s)", fullpathname);
+    return dsmInFuncs->rmDir(fullpathname);
+}
 
-    //删除权限
-    if (strcmp2(fullpathname, "./") == 0) {
-        LOGE("Has no right to delete this directory:%s ", fullpathname);
-        return MR_FAILED;
+int32 mr_findGetNext(MR_FILE_HANDLE search_handle, char *buffer, uint32 len) {
+    char *d_name = dsmInFuncs->readdir(search_handle);
+    if (d_name != NULL) {
+        memset2(buffer, 0, len);
+        UTF8ToGBString((uint8 *)d_name, (uint8 *)buffer, (int)len);
+        LOGI("mr_findGetNext %d %s", search_handle, buffer);
+        return MR_SUCCESS;
+    } else {
+        LOGI("mr_findGetNext %d end", search_handle);
     }
+    return MR_FAILED;
+}
 
-    if (strcmp2(fullpathname, "./mythroad/") == 0) {
-        LOGE("Has no right to delete this directory:%s ", fullpathname);
-        return MR_FAILED;
-    }
-
-    ret = rmdir(fullpathname);
-    if (ret != 0) {
-        LOGE("mr_rmDir(%s) err!", fullpathname);
-        return MR_FAILED;
-    }
-
-    LOGI("mr_rmDir(%s) suc!", fullpathname);
-    return MR_SUCCESS;
+int32 mr_findStop(MR_SEARCH_HANDLE search_handle) {
+    return dsmInFuncs->closedir(search_handle);
 }
 
 MR_FILE_HANDLE mr_findStart(const char *name, char *buffer, uint32 len) {
-    if (!name || !buffer || len == 0)
-        return MR_FAILED;
-
-    DIR *pDir;
-    struct dirent *pDt;
-    char fullpathname[DSM_MAX_FILE_LEN] = {0};
     int32 ret;
+    char fullpathname[DSM_MAX_FILE_LEN] = {0};
 
     get_filename(fullpathname, name);
+    LOGI("mr_findStart(%s)", fullpathname);
 
-    LOGI("mr_findStart %s", fullpathname);
-
-    if ((pDir = opendir(fullpathname)) != NULL) {
-        ret = handle2int32((uint32)pDir);
-        LOGI("mr_findStart readdir %d", ret);
-        if ((pDt = readdir(pDir)) != NULL) {
-            LOGI("mr_findStart readdir %s", pDt->d_name);
-            memset2(buffer, 0, len);
-            UTF8ToGBString((uint8*)pDt->d_name, (uint8*)buffer, len);
-        } else {
-            LOGW("mr_findStart: readdir FAIL!");
-        }
-
+    ret = dsmInFuncs->opendir(fullpathname);
+    if (ret != MR_FAILED) {
+        mr_findGetNext(ret, buffer, len);
         return ret;
     } else {
         LOGE("mr_findStart %s: opendir FAIL!", fullpathname);
@@ -662,53 +458,20 @@ MR_FILE_HANDLE mr_findStart(const char *name, char *buffer, uint32 len) {
     return MR_FAILED;
 }
 
-int32 mr_findGetNext(MR_FILE_HANDLE search_handle, char *buffer, uint32 len) {
-    if (!search_handle || search_handle == MR_FAILED || !buffer || len == 0)
-        return MR_FAILED;
-    LOGI("mr_findGetNext %d", search_handle);
-
-    DIR *pDir = (DIR *)int32ToHandle(search_handle);
-    struct dirent *pDt;
-
-    memset2(buffer, 0, len);
-    if ((pDt = readdir(pDir)) != NULL) {
-        LOGI("mr_findGetNext %d %s", search_handle, pDt->d_name);
-        UTF8ToGBString((uint8 *)pDt->d_name, (uint8 *)buffer, (int)len);
-        return MR_SUCCESS;
-    } else {
-        LOGI("mr_findGetNext end");
-    }
-    return MR_FAILED;
-}
-
-int32 mr_findStop(MR_SEARCH_HANDLE search_handle) {
-    if (!search_handle || search_handle == MR_FAILED)
-        return MR_FAILED;
-
-    DIR *pDir = (DIR *)int32ToHandle(search_handle);
-    closedir(pDir);
-    handleDel(search_handle);
-    return MR_SUCCESS;
-}
-
 int32 mr_ferrno(void) {
     return MR_FAILED;
 }
 
 int32 mr_getLen(const char *filename) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
-    struct stat s1;
-    int ret = stat(get_filename(fullpathname, filename), &s1);
-    if (ret != 0)
-        return -1;
-    return s1.st_size;
+    return dsmInFuncs->getLen(get_filename(fullpathname, filename));
 }
 
 int32 mr_getScreenInfo(mr_screeninfo *s) {
     LOGI("mr_getScreenInfo()");
     if (s) {
-        s->width = SCRW;
-        s->height = SCRH;
+        s->width = SCREEN_WIDTH;
+        s->height = SCREEN_HEIGHT;
         s->bit = 16;
     }
     return MR_SUCCESS;
@@ -822,10 +585,14 @@ const char *mr_editGetText(int32 edit) {
 int32 mr_winCreate(void) {
     return MR_IGNORE;
 }
+
 int32 mr_winRelease(int32 win) {
     return MR_IGNORE;
 }
 
+int32 mr_rand(void) {
+    return dsmInFuncs->rand();
+}
 //----------------------------------------------------
 /*平台扩展接口*/
 int32 mr_plat(int32 code, int32 param) {
@@ -836,8 +603,8 @@ int32 mr_plat(int32 code, int32 param) {
             return mr_getSocketState(param);
         }
         case MR_GET_RAND: {  //1211
-            srand(mr_getTime());
-            return (MR_PLAT_VALUE_BASE + rand() % param);
+            dsmInFuncs->srand(mr_getTime());
+            return (MR_PLAT_VALUE_BASE + dsmInFuncs->rand() % param);
         }
         case MR_CHECK_TOUCH:  //1205是否支持触屏
             return MR_TOUCH_SCREEN;
@@ -858,15 +625,6 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
     LOGI("mr_platEx code=%d in=%p inlen=%d out=%p outlen=%p cb=%p", code, input, input_len, output, output_len, cb);
 
     switch (code) {
-        case MR_MALLOC_EX: {  //1001申请屏幕缓冲区，这里给的值即 VM 的屏幕缓冲区
-            *output = (uint8 *)screenBuf;
-            *output_len = SCRW * SCRH * 2;
-            LOGD("MR_MALLOC_EX ram2 addr=%p l=%d", output, *output_len);
-            return MR_SUCCESS;
-        }
-        case MR_MFREE_EX: {  //1002
-            return MR_SUCCESS;
-        }
         case 1012:  //申请内部cache
         case 1013:  //释放内部cache
             return MR_IGNORE;
@@ -890,43 +648,6 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
         case MR_SWITCHPATH:  //切换跟目录 1204
             return dsmSwitchPath(input, input_len, output, output_len);
             // case MR_GET_FREE_SPACE:
-
-        case MR_UCS2GB: {  //1207
-            if (!input || input_len == 0) {
-                LOGE("mr_platEx(1207) input err");
-                return MR_FAILED;
-            }
-
-            if (!*output) {
-                LOGE("mr_platEx(1207) ouput err");
-                return MR_FAILED;
-            }
-
-            int len = UCS2_strlen((char *)input);
-            char *buf = malloc(len + 2);
-
-            int gbBufLen = len + 1;
-            char *gbBuf = malloc(gbBufLen);
-
-            memcpy2(buf, input, len + 2);
-            UCS2ByteRev(buf);
-            UCS2ToGBString((uint16 *)buf, (uint8 *)gbBuf, gbBufLen);
-
-            strcpy2((char *)(*output), gbBuf);
-            /**
-				 * output_len 返回的GB字符串缓冲的长度。
-				 *
-				 * output   	转换成功以后的bg2312编码字符串存放缓冲区指针，缓冲区的内存由应用调用者提供并管理、释放。
-				 * output_len   output缓冲区的长度，单位字节数
-				 *
-				 * 2013-3-25 16:29:21 2013-3-25 16:51:44
-				 */
-            //				if(output_len)
-            //					*output_len = strlen(gbBuf);
-
-            free(buf);
-            return MR_SUCCESS;
-        }
 
         case MR_CHARACTER_HEIGHT: {  // 1201
             static int32 wordInfo = (EN_CHAR_H << 24) | (EN_CHAR_W << 16) | (CN_CHAR_H << 8) | (CN_CHAR_W);
@@ -1041,13 +762,12 @@ int32 mr_sendto(int32 s, const char *buf, int len, int32 ip, uint16 port) {
 }
 
 void dsm_init(uint16 *scrBuf) {
-    screenBuf = scrBuf;
-    dsmStartTime = get_time_ms();
-    MKDIR(MYTHROAD_PATH);
-    MKDIR(DSM_HIDE_DRIVE);
-    MKDIR(DSM_DRIVE_A);
-    MKDIR(DSM_DRIVE_B);
-    MKDIR(DSM_DRIVE_X);
+    dsmStartTime = dsmInFuncs->get_time_ms();
+    dsmInFuncs->mkDir(MYTHROAD_PATH);
+    dsmInFuncs->mkDir(DSM_HIDE_DRIVE);
+    dsmInFuncs->mkDir(DSM_DRIVE_A);
+    dsmInFuncs->mkDir(DSM_DRIVE_B);
+    dsmInFuncs->mkDir(DSM_DRIVE_X);
     mr_tm_init();
     mr_baselib_init();
     mr_tablib_init();
@@ -1057,6 +777,5 @@ void dsm_init(uint16 *scrBuf) {
     mr_strlib_init();
     mythroad_init();
     mr_pluto_init();
-    handleInit();
     xl_font_sky16_init();
 }

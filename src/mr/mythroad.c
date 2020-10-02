@@ -241,7 +241,7 @@ void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b);
 static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font);
 int _BitmapCheck(uint16*p, int16 x, int16 y, uint16 w, uint16 h, uint32 transcoler, uint32 color_check);
 #else
-static void _DrawPoint(int16 x, int16 y, uint16 nativecolor);
+void _DrawPoint(int16 x, int16 y, uint16 nativecolor);
 //static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw);
 void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw);
 static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler);
@@ -407,7 +407,7 @@ static void _mr_c_function_table_init() {
    _mr_c_function_table[17] = (void*)sprintf_;
    _mr_c_function_table[18] = (void*)atoi2;
    _mr_c_function_table[19] = (void*)strtoul2;  // 20
-   _mr_c_function_table[20] = (void*)rand2;
+   _mr_c_function_table[20] = (void*)mr_rand;
 
    _mr_c_function_table[21] = (void*)NULL;
    _mr_c_function_table[22] = (void*)mr_stop_ex;  //V1939
@@ -782,7 +782,7 @@ typedef struct
 }mr_drawCharSt;
 */
 
-static void _DrawPoint(int16 x, int16 y, uint16 nativecolor)
+void _DrawPoint(int16 x, int16 y, uint16 nativecolor)
 {
    if (x < 0 || y < 0 || x >= MR_SCREEN_W || y >= MR_SCREEN_H)
        return;
@@ -4961,7 +4961,7 @@ static int MRF_GetRand(mrp_State* L)
 {
     int32 n = ((int32)  mrp_tonumber(L,1));
    {
-    int32 to_mr_ret = (int32)  rand2() % n;
+    int32 to_mr_ret = (int32)  mr_rand() % n;
    to_mr_pushnumber(L,(mrp_Number)to_mr_ret);
    }
    return 1;
