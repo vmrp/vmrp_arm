@@ -42,6 +42,7 @@ typedef struct {
 
 // 平台可以调用的函数
 typedef struct {
+    int32 version;
     int32 (*mr_start_dsm)(const char *entry);
     int32 (*mr_pauseApp)(void);
     int32 (*mr_resumeApp)(void);
