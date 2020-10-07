@@ -1,4 +1,5 @@
 #include "./include/dsm.h"
+
 #include "./include/encode.h"
 #include "./include/printf.h"
 #include "./include/string.h"
@@ -75,7 +76,7 @@ static int font_sky16_f;
 static int xl_font_sky16_init() {  //字体初始化，打开字体文件
     font_sky16_f = mr_open("system/gb16.uc2", 0);
     if (font_sky16_f <= 0) {
-        LOGW("font load fail");
+        LOGW("%s", "font load fail");
         return -1;
     }
     LOGI("font load suc fd=%d", font_sky16_f);
@@ -102,14 +103,14 @@ static char *xl_font_sky16_getChar(uint16 id) {
 
 //画一个字
 static char *xl_font_sky16_drawChar(uint16 id, int x, int y, uint16 color) {
-    extern void _DrawPoint(int16 x, int16 y, uint16 nativecolor);
-    mr_seek(font_sky16_f, id * 32, 0);
-    mr_read(font_sky16_f, font_sky16_bitbuf, 32);
     int y2 = y + 16;
     int n = 0, count;
-
     int ix = x;
     int iy;
+    extern void _DrawPoint(int16 x, int16 y, uint16 nativecolor);
+
+    mr_seek(font_sky16_f, id * 32, 0);
+    mr_read(font_sky16_f, font_sky16_bitbuf, 32);
     for (iy = y; iy < y2; iy++) {
         ix = x;
         for (count = 0; count < 16; count++) {
@@ -149,7 +150,7 @@ void xl_font_sky16_textWidthHeight(char *text, int32 *width, int32 *height) {
 */
 
 int32 mr_exit(void) {
-    LOGD("mr_exit() called by mythroad!");
+    LOGD("%s", "mr_exit() called by mythroad!");
     xl_font_sky16_close();
     dsmInFuncs->exit();
     return MR_SUCCESS;
@@ -162,7 +163,7 @@ int32 mr_getUserInfo(mr_userinfo *info) {
     if (info == NULL)
         return MR_FAILED;
 
-    LOGI("mr_getUserInfo");
+    LOGI("%s", "mr_getUserInfo");
 
     memset2(info, 0, sizeof(mr_userinfo));
     strcpy2((char *)info->IMEI, "864086040622841");
@@ -184,7 +185,7 @@ int32 mr_getUserInfo(mr_userinfo *info) {
     LOGI("ver = %d", info->ver);
 #endif
 
-    LOGI("mr_getUserInfo suc!");
+    LOGI("%s", "mr_getUserInfo suc!");
 
     return MR_SUCCESS;
 }
@@ -262,10 +263,11 @@ static char *formatPathString(char *path, char sep) {
 }
 
 static void SetDsmWorkPath(const char *path) {
+    int l;
     strncpy2(dsmWorkPath, path, sizeof(dsmWorkPath) - 1);
     formatPathString(dsmWorkPath, '/');
 
-    int l = strlen2(dsmWorkPath);
+    l = strlen2(dsmWorkPath);
     if (dsmWorkPath[l - 1] != '/') {
         dsmWorkPath[l] = '/';
         dsmWorkPath[l + 1] = '\0';
@@ -343,7 +345,7 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
             break;
 
         default:
-            LOGE("dsmSwitchPath() default");
+            LOGE("%s", "dsmSwitchPath() default");
             return MR_IGNORE;
     }
 
@@ -467,7 +469,7 @@ int32 mr_getLen(const char *filename) {
 }
 
 int32 mr_getScreenInfo(mr_screeninfo *s) {
-    LOGI("mr_getScreenInfo()");
+    LOGI("%s", "mr_getScreenInfo()");
     if (s) {
         s->width = SCREEN_WIDTH;
         s->height = SCREEN_HEIGHT;
@@ -712,7 +714,7 @@ int32 mr_initNetwork(MR_INIT_NETWORK_CB cb, const char *mode) {
 }
 
 int32 mr_closeNetwork() {
-    LOGI("mr_closeNetwork");
+    LOGI("%s", "mr_closeNetwork");
     return MR_FAILED;
 }
 

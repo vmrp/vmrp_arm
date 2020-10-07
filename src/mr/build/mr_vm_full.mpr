@@ -59,12 +59,16 @@ file32=..\mr_inflate.c
 file33=..\string.c	
 file34=..\printf.c	
 file35=..\other.c	
+file36=..\encode.c
+file37=..\strtol.c
+file38=..\strtoul.c
+file39=..\dsm.c
 
-file36=..\tomr\tomr_event.c 
-file37=..\tomr\tomr_is.c   
-file38=..\tomr\tomr_map.c        
-file39=..\tomr\tomr_push.c     
-file40=..\tomr\tomr_to.c
+file306=..\tomr\tomr_event.c 
+file307=..\tomr\tomr_is.c   
+file308=..\tomr\tomr_map.c        
+file309=..\tomr\tomr_push.c     
+file400=..\tomr\tomr_to.c
 
 
 
