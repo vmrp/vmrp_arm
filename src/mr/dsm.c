@@ -1,8 +1,7 @@
-#include "dsm.h"
-
-#include "./mr/include/encode.h"
-#include "./mr/include/printf.h"
-#include "./mr/include/string.h"
+#include "./include/dsm.h"
+#include "./include/encode.h"
+#include "./include/printf.h"
+#include "./include/string.h"
 
 #define MT6235
 
@@ -41,7 +40,7 @@
 #define DSM_FAE_VERSION (182) /*由平台组统一分配版本号，有需求请联系平台组*/
 #endif
 
-static DSM_IN_FUNCS *dsmInFuncs;
+static DSM_REQUIRE_FUNCS *dsmInFuncs;
 static int64 dsmStartTime;  //虚拟机初始化时间，用来计算系统运行时间
 
 //////////////////////////////////////////////////////////////////
@@ -478,7 +477,7 @@ int32 mr_getScreenInfo(mr_screeninfo *s) {
 }
 
 void mr_drawBitmap(uint16 *bmp, int16 x, int16 y, uint16 w, uint16 h) {
-    emu_bitmapToscreen(bmp, x, y, w, h);
+    dsmInFuncs->drawBitmap(bmp, x, y, w, h);
 }
 
 const char *mr_getCharBitmap(uint16 ch, uint16 fontSize, int *width, int *height) {
@@ -761,7 +760,11 @@ int32 mr_sendto(int32 s, const char *buf, int len, int32 ip, uint16 port) {
     return MR_FAILED;
 }
 
-void dsm_init(uint16 *scrBuf) {
+//////////////////////////////////////////////////////////////////////////////////////////////////
+static DSM_EXPORT_FUNCS dsm_export_funcs;
+
+DSM_EXPORT_FUNCS *dsm_init(DSM_REQUIRE_FUNCS *inFuncs) {
+    dsmInFuncs = inFuncs;
     dsmStartTime = dsmInFuncs->get_time_ms();
     dsmInFuncs->mkDir(MYTHROAD_PATH);
     dsmInFuncs->mkDir(DSM_HIDE_DRIVE);
@@ -778,4 +781,11 @@ void dsm_init(uint16 *scrBuf) {
     mythroad_init();
     mr_pluto_init();
     xl_font_sky16_init();
+
+    dsm_export_funcs.mr_start_dsm = mr_start_dsm;
+    dsm_export_funcs.mr_pauseApp = mr_pauseApp;
+    dsm_export_funcs.mr_resumeApp = mr_resumeApp;
+    dsm_export_funcs.mr_timer = mr_timer;
+    dsm_export_funcs.mr_event = mr_event;
+    return &dsm_export_funcs;
 }

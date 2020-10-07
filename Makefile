@@ -1,9 +1,6 @@
 #编译完整虚拟机
 mrpoid2:
-	gcc -o ../mrpoid2 -g -Wall -DDSM_FULL \
-		main.c \
-		dsm.c \
-		-L./mr -lmr_vm_full -lSDL2 -lm -lz \
+	gcc -o ./mrpoid2 -g -Wall -DDSM_FULL main.c  -L./src -lmr_vm_full -lSDL2 -lm -lz 
 
 
 #编译精简虚拟机
