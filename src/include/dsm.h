@@ -11,7 +11,7 @@
 // 需要平台实现的函数
 typedef struct {
     void (*panic)(char *msg);
-    void (*log)(char *msg);
+    void (*log)(char *msg); // msg末尾不带\n
     void (*exit)(void);
     void (*srand)(uint32 seed);
     int32 (*rand)(void);

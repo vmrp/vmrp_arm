@@ -183,8 +183,7 @@ typedef struct {
 
 #define realLGmemSize(x) (((x)+7)&(0xfffffff8))
 
-typedef struct                         
-{
+typedef struct {
     uint32 next; 
     uint32 len;
 } LG_mem_free_t;

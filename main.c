@@ -15,7 +15,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "./src/mr/include/dsm.h"
+#include "./src/include/dsm.h"
 
 static DSM_EXPORT_FUNCS *mythroad;
 
@@ -273,7 +273,7 @@ int32 br_mem_get(char **mem_base, uint32 *mem_len) {
 
     *mem_base = buffer;
     *mem_len = len;
-    printf("br_mem_get base=%p len=%x =================\n", buffer, len);
+    printf("br_mem_get base=%p len=0x%X =================\n", buffer, len);
     return MR_SUCCESS;
 }
 
@@ -381,8 +381,8 @@ int32 br_timerStop() {
 }
 
 void br_log(char *msg) {
-    // puts(msg);
-    printf(msg);
+    puts(msg);
+    // printf(msg);
 }
 
 void br_exit(void) {

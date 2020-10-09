@@ -58,10 +58,10 @@ void mr_printf(const char *format, ...) {
     dsmInFuncs->log(utf8Buf);
 }
 
-#define LOGI(fmt, ...) mr_printf("[INFO]" fmt "\n", ##__VA_ARGS__)
-#define LOGW(fmt, ...) mr_printf("[WARN]" fmt "\n", ##__VA_ARGS__)
-#define LOGE(fmt, ...) mr_printf("[ERROR]" fmt "\n", ##__VA_ARGS__)
-#define LOGD(fmt, ...) mr_printf("[DEBUG]" fmt "\n", ##__VA_ARGS__)
+#define LOGI(fmt, ...) mr_printf("[INFO]" fmt, ##__VA_ARGS__)
+#define LOGW(fmt, ...) mr_printf("[WARN]" fmt, ##__VA_ARGS__)
+#define LOGE(fmt, ...) mr_printf("[ERROR]" fmt, ##__VA_ARGS__)
+#define LOGD(fmt, ...) mr_printf("[DEBUG]" fmt, ##__VA_ARGS__)
 
 ///////////////////////////////////////////////////////////////////
 #define EN_CHAR_H 16

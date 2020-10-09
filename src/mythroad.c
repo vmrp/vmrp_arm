@@ -354,184 +354,183 @@ static void _mr_c_internal_table_init() {
 static void* _mr_c_port_table[4];
 
 #ifdef SDK_MOD
-void* sdk_mr_c_function_table;
-
-const void* _mr_c_function_table[] = {
+    void* sdk_mr_c_function_table;
+    const void* _mr_c_function_table[150];
 #else
-static const void* _mr_c_function_table[150];
+    static const void* _mr_c_function_table[150];
 #endif
 
-    static void _mr_c_function_table_init(){
-        _mr_c_function_table[0] = (void*)mr_malloc;
-_mr_c_function_table[1] = (void*)mr_free;
-_mr_c_function_table[2] = (void*)mr_realloc;  // 3
+static void _mr_c_function_table_init(){
+    _mr_c_function_table[0] = (void*)mr_malloc;
+    _mr_c_function_table[1] = (void*)mr_free;
+    _mr_c_function_table[2] = (void*)mr_realloc;  // 3
 
-_mr_c_function_table[3] = (void*)memcpy2;
-_mr_c_function_table[4] = (void*)memmove2;
-_mr_c_function_table[5] = (void*)strcpy2;
-_mr_c_function_table[6] = (void*)strncpy2;
-_mr_c_function_table[7] = (void*)strcat2;
-_mr_c_function_table[8] = (void*)strncat2;
-_mr_c_function_table[9] = (void*)memcmp2;
-_mr_c_function_table[10] = (void*)strcmp2;
-_mr_c_function_table[11] = (void*)strncmp2;
-_mr_c_function_table[12] = (void*)STRCOLL;
-_mr_c_function_table[13] = (void*)memchr2;
-_mr_c_function_table[14] = (void*)memset2;
-_mr_c_function_table[15] = (void*)strlen2;
-_mr_c_function_table[16] = (void*)strstr2;
-_mr_c_function_table[17] = (void*)sprintf_;
-_mr_c_function_table[18] = (void*)atoi2;
-_mr_c_function_table[19] = (void*)strtoul2;  // 20
-_mr_c_function_table[20] = (void*)mr_rand;
+    _mr_c_function_table[3] = (void*)memcpy2;
+    _mr_c_function_table[4] = (void*)memmove2;
+    _mr_c_function_table[5] = (void*)strcpy2;
+    _mr_c_function_table[6] = (void*)strncpy2;
+    _mr_c_function_table[7] = (void*)strcat2;
+    _mr_c_function_table[8] = (void*)strncat2;
+    _mr_c_function_table[9] = (void*)memcmp2;
+    _mr_c_function_table[10] = (void*)strcmp2;
+    _mr_c_function_table[11] = (void*)strncmp2;
+    _mr_c_function_table[12] = (void*)STRCOLL;
+    _mr_c_function_table[13] = (void*)memchr2;
+    _mr_c_function_table[14] = (void*)memset2;
+    _mr_c_function_table[15] = (void*)strlen2;
+    _mr_c_function_table[16] = (void*)strstr2;
+    _mr_c_function_table[17] = (void*)sprintf_;
+    _mr_c_function_table[18] = (void*)atoi2;
+    _mr_c_function_table[19] = (void*)strtoul2;  // 20
+    _mr_c_function_table[20] = (void*)mr_rand;
 
-_mr_c_function_table[21] = (void*)NULL;
-_mr_c_function_table[22] = (void*)mr_stop_ex;  //V1939
-_mr_c_function_table[23] = (void*)_mr_c_internal_table;
+    _mr_c_function_table[21] = (void*)NULL;
+    _mr_c_function_table[22] = (void*)mr_stop_ex;  //V1939
+    _mr_c_function_table[23] = (void*)_mr_c_internal_table;
 
-_mr_c_function_table[24] = (void*)_mr_c_port_table;
-_mr_c_function_table[25] = (void*)_mr_c_function_new;  //26
+    _mr_c_function_table[24] = (void*)_mr_c_port_table;
+    _mr_c_function_table[25] = (void*)_mr_c_function_new;  //26
 
-_mr_c_function_table[26] = (void*)mr_printf;
-_mr_c_function_table[27] = (void*)mr_mem_get;
-_mr_c_function_table[28] = (void*)mr_mem_free;
-_mr_c_function_table[29] = (void*)mr_drawBitmap;
-_mr_c_function_table[30] = (void*)mr_getCharBitmap;
-_mr_c_function_table[31] = (void*)mr_timerStart;
-_mr_c_function_table[32] = (void*)mr_timerStop;
-_mr_c_function_table[33] = (void*)mr_getTime;
-_mr_c_function_table[34] = (void*)mr_getDatetime;
-_mr_c_function_table[35] = (void*)mr_getUserInfo;
-_mr_c_function_table[36] = (void*)mr_sleep;  //37
+    _mr_c_function_table[26] = (void*)mr_printf;
+    _mr_c_function_table[27] = (void*)mr_mem_get;
+    _mr_c_function_table[28] = (void*)mr_mem_free;
+    _mr_c_function_table[29] = (void*)mr_drawBitmap;
+    _mr_c_function_table[30] = (void*)mr_getCharBitmap;
+    _mr_c_function_table[31] = (void*)mr_timerStart;
+    _mr_c_function_table[32] = (void*)mr_timerStop;
+    _mr_c_function_table[33] = (void*)mr_getTime;
+    _mr_c_function_table[34] = (void*)mr_getDatetime;
+    _mr_c_function_table[35] = (void*)mr_getUserInfo;
+    _mr_c_function_table[36] = (void*)mr_sleep;  //37
 
-_mr_c_function_table[37] = (void*)mr_plat;
-_mr_c_function_table[38] = (void*)mr_platEx;  //39
+    _mr_c_function_table[37] = (void*)mr_plat;
+    _mr_c_function_table[38] = (void*)mr_platEx;  //39
 
-_mr_c_function_table[39] = (void*)mr_ferrno;
-_mr_c_function_table[40] = (void*)mr_open;
-_mr_c_function_table[41] = (void*)mr_close;
-_mr_c_function_table[42] = (void*)mr_info;
-_mr_c_function_table[43] = (void*)mr_write;
-_mr_c_function_table[44] = (void*)mr_read;
-_mr_c_function_table[45] = (void*)mr_seek;
-_mr_c_function_table[46] = (void*)mr_getLen;
-_mr_c_function_table[47] = (void*)mr_remove;
-_mr_c_function_table[48] = (void*)mr_rename;
-_mr_c_function_table[49] = (void*)mr_mkDir;
-_mr_c_function_table[50] = (void*)mr_rmDir;
-_mr_c_function_table[51] = (void*)mr_findStart;
-_mr_c_function_table[52] = (void*)mr_findGetNext;
-_mr_c_function_table[53] = (void*)mr_findStop;  //54
+    _mr_c_function_table[39] = (void*)mr_ferrno;
+    _mr_c_function_table[40] = (void*)mr_open;
+    _mr_c_function_table[41] = (void*)mr_close;
+    _mr_c_function_table[42] = (void*)mr_info;
+    _mr_c_function_table[43] = (void*)mr_write;
+    _mr_c_function_table[44] = (void*)mr_read;
+    _mr_c_function_table[45] = (void*)mr_seek;
+    _mr_c_function_table[46] = (void*)mr_getLen;
+    _mr_c_function_table[47] = (void*)mr_remove;
+    _mr_c_function_table[48] = (void*)mr_rename;
+    _mr_c_function_table[49] = (void*)mr_mkDir;
+    _mr_c_function_table[50] = (void*)mr_rmDir;
+    _mr_c_function_table[51] = (void*)mr_findStart;
+    _mr_c_function_table[52] = (void*)mr_findGetNext;
+    _mr_c_function_table[53] = (void*)mr_findStop;  //54
 
-_mr_c_function_table[54] = (void*)mr_exit;
-_mr_c_function_table[55] = (void*)mr_startShake;
-_mr_c_function_table[56] = (void*)mr_stopShake;
-_mr_c_function_table[57] = (void*)mr_playSound;
-_mr_c_function_table[58] = (void*)mr_stopSound;  //59
+    _mr_c_function_table[54] = (void*)mr_exit;
+    _mr_c_function_table[55] = (void*)mr_startShake;
+    _mr_c_function_table[56] = (void*)mr_stopShake;
+    _mr_c_function_table[57] = (void*)mr_playSound;
+    _mr_c_function_table[58] = (void*)mr_stopSound;  //59
 
-_mr_c_function_table[59] = (void*)mr_sendSms;
-_mr_c_function_table[60] = (void*)mr_call;
-_mr_c_function_table[61] = (void*)mr_getNetworkID;
-_mr_c_function_table[62] = (void*)mr_connectWAP;
+    _mr_c_function_table[59] = (void*)mr_sendSms;
+    _mr_c_function_table[60] = (void*)mr_call;
+    _mr_c_function_table[61] = (void*)mr_getNetworkID;
+    _mr_c_function_table[62] = (void*)mr_connectWAP;
 
-_mr_c_function_table[63] = (void*)mr_menuCreate;
-_mr_c_function_table[64] = (void*)mr_menuSetItem;
-_mr_c_function_table[65] = (void*)mr_menuShow;
-_mr_c_function_table[66] = (void*)NULL;  //mr_menuSetFocus,
-_mr_c_function_table[67] = (void*)mr_menuRelease;
-_mr_c_function_table[68] = (void*)mr_menuRefresh;
-_mr_c_function_table[69] = (void*)mr_dialogCreate;
-_mr_c_function_table[70] = (void*)mr_dialogRelease;
-_mr_c_function_table[71] = (void*)mr_dialogRefresh;
-_mr_c_function_table[72] = (void*)mr_textCreate;
-_mr_c_function_table[73] = (void*)mr_textRelease;
-_mr_c_function_table[74] = (void*)mr_textRefresh;
-_mr_c_function_table[75] = (void*)mr_editCreate;
-_mr_c_function_table[76] = (void*)mr_editRelease;
-_mr_c_function_table[77] = (void*)mr_editGetText;
-_mr_c_function_table[78] = (void*)mr_winCreate;
-_mr_c_function_table[79] = (void*)mr_winRelease;
+    _mr_c_function_table[63] = (void*)mr_menuCreate;
+    _mr_c_function_table[64] = (void*)mr_menuSetItem;
+    _mr_c_function_table[65] = (void*)mr_menuShow;
+    _mr_c_function_table[66] = (void*)NULL;  //mr_menuSetFocus,
+    _mr_c_function_table[67] = (void*)mr_menuRelease;
+    _mr_c_function_table[68] = (void*)mr_menuRefresh;
+    _mr_c_function_table[69] = (void*)mr_dialogCreate;
+    _mr_c_function_table[70] = (void*)mr_dialogRelease;
+    _mr_c_function_table[71] = (void*)mr_dialogRefresh;
+    _mr_c_function_table[72] = (void*)mr_textCreate;
+    _mr_c_function_table[73] = (void*)mr_textRelease;
+    _mr_c_function_table[74] = (void*)mr_textRefresh;
+    _mr_c_function_table[75] = (void*)mr_editCreate;
+    _mr_c_function_table[76] = (void*)mr_editRelease;
+    _mr_c_function_table[77] = (void*)mr_editGetText;
+    _mr_c_function_table[78] = (void*)mr_winCreate;
+    _mr_c_function_table[79] = (void*)mr_winRelease;
 
-_mr_c_function_table[80] = (void*)mr_getScreenInfo;
+    _mr_c_function_table[80] = (void*)mr_getScreenInfo;
 
-_mr_c_function_table[81] = (void*)mr_initNetwork;
-_mr_c_function_table[82] = (void*)mr_closeNetwork;
-_mr_c_function_table[83] = (void*)mr_getHostByName;
-_mr_c_function_table[84] = (void*)mr_socket;
-_mr_c_function_table[85] = (void*)mr_connect;
-_mr_c_function_table[86] = (void*)mr_closeSocket;
-_mr_c_function_table[87] = (void*)mr_recv;
-_mr_c_function_table[88] = (void*)mr_recvfrom;
-_mr_c_function_table[89] = (void*)mr_send;
-_mr_c_function_table[90] = (void*)mr_sendto;
+    _mr_c_function_table[81] = (void*)mr_initNetwork;
+    _mr_c_function_table[82] = (void*)mr_closeNetwork;
+    _mr_c_function_table[83] = (void*)mr_getHostByName;
+    _mr_c_function_table[84] = (void*)mr_socket;
+    _mr_c_function_table[85] = (void*)mr_connect;
+    _mr_c_function_table[86] = (void*)mr_closeSocket;
+    _mr_c_function_table[87] = (void*)mr_recv;
+    _mr_c_function_table[88] = (void*)mr_recvfrom;
+    _mr_c_function_table[89] = (void*)mr_send;
+    _mr_c_function_table[90] = (void*)mr_sendto;
 
-_mr_c_function_table[91] = (void*)&mr_screenBuf;
-_mr_c_function_table[92] = (void*)&mr_screen_w;
-_mr_c_function_table[93] = (void*)&mr_screen_h;
-_mr_c_function_table[94] = (void*)&mr_screen_bit;
-_mr_c_function_table[95] = (void*)mr_bitmap;
-_mr_c_function_table[96] = (void*)mr_tile;
-_mr_c_function_table[97] = (void*)mr_map;
-_mr_c_function_table[98] = (void*)mr_sound;
-_mr_c_function_table[99] = (void*)mr_sprite;
+    _mr_c_function_table[91] = (void*)&mr_screenBuf;
+    _mr_c_function_table[92] = (void*)&mr_screen_w;
+    _mr_c_function_table[93] = (void*)&mr_screen_h;
+    _mr_c_function_table[94] = (void*)&mr_screen_bit;
+    _mr_c_function_table[95] = (void*)mr_bitmap;
+    _mr_c_function_table[96] = (void*)mr_tile;
+    _mr_c_function_table[97] = (void*)mr_map;
+    _mr_c_function_table[98] = (void*)mr_sound;
+    _mr_c_function_table[99] = (void*)mr_sprite;
 
-_mr_c_function_table[100] = (void*)pack_filename;
-_mr_c_function_table[101] = (void*)start_filename;
-_mr_c_function_table[102] = (void*)old_pack_filename;
-_mr_c_function_table[103] = (void*)old_start_filename;
+    _mr_c_function_table[100] = (void*)pack_filename;
+    _mr_c_function_table[101] = (void*)start_filename;
+    _mr_c_function_table[102] = (void*)old_pack_filename;
+    _mr_c_function_table[103] = (void*)old_start_filename;
 
-_mr_c_function_table[104] = (void*)&mr_ram_file;
-_mr_c_function_table[105] = (void*)&mr_ram_file_len;
+    _mr_c_function_table[104] = (void*)&mr_ram_file;
+    _mr_c_function_table[105] = (void*)&mr_ram_file_len;
 
-_mr_c_function_table[106] = (void*)&mr_soundOn;
-_mr_c_function_table[107] = (void*)&mr_shakeOn;
+    _mr_c_function_table[106] = (void*)&mr_soundOn;
+    _mr_c_function_table[107] = (void*)&mr_shakeOn;
 
-_mr_c_function_table[108] = (void*)&LG_mem_base;
-_mr_c_function_table[109] = (void*)&LG_mem_len;
-_mr_c_function_table[110] = (void*)&LG_mem_end;
-_mr_c_function_table[111] = (void*)&LG_mem_left;
+    _mr_c_function_table[108] = (void*)&LG_mem_base;
+    _mr_c_function_table[109] = (void*)&LG_mem_len;
+    _mr_c_function_table[110] = (void*)&LG_mem_end;
+    _mr_c_function_table[111] = (void*)&LG_mem_left;
 
-_mr_c_function_table[112] = (void*)&mr_sms_cfg_buf;
-_mr_c_function_table[113] = (void*)mr_md5_init;
-_mr_c_function_table[114] = (void*)mr_md5_append;
-_mr_c_function_table[115] = (void*)mr_md5_finish;
-_mr_c_function_table[116] = (void*)_mr_load_sms_cfg;
-_mr_c_function_table[117] = (void*)_mr_save_sms_cfg;
-_mr_c_function_table[118] = (void*)_DispUpEx;
+    _mr_c_function_table[112] = (void*)&mr_sms_cfg_buf;
+    _mr_c_function_table[113] = (void*)mr_md5_init;
+    _mr_c_function_table[114] = (void*)mr_md5_append;
+    _mr_c_function_table[115] = (void*)mr_md5_finish;
+    _mr_c_function_table[116] = (void*)_mr_load_sms_cfg;
+    _mr_c_function_table[117] = (void*)_mr_save_sms_cfg;
+    _mr_c_function_table[118] = (void*)_DispUpEx;
 
-_mr_c_function_table[119] = (void*)_DrawPoint;
-_mr_c_function_table[120] = (void*)_DrawBitmap;
-_mr_c_function_table[121] = (void*)_DrawBitmapEx;
-_mr_c_function_table[122] = (void*)DrawRect;
-_mr_c_function_table[123] = (void*)_DrawText;
-_mr_c_function_table[124] = (void*)_BitmapCheck;
-_mr_c_function_table[125] = (void*)_mr_readFile;
-_mr_c_function_table[126] = (void*)mr_wstrlen;
-_mr_c_function_table[127] = (void*)mr_registerAPP;
-_mr_c_function_table[128] = (void*)_DrawTextEx;  //1936
-_mr_c_function_table[129] = (void*)_mr_EffSetCon;
-_mr_c_function_table[130] = (void*)_mr_TestCom;
-_mr_c_function_table[131] = (void*)_mr_TestCom1;  //1938
-_mr_c_function_table[132] = (void*)c2u;           //1939
-_mr_c_function_table[133] = (void*)_mr_div;       //1941
-_mr_c_function_table[134] = (void*)_mr_mod;
+    _mr_c_function_table[119] = (void*)_DrawPoint;
+    _mr_c_function_table[120] = (void*)_DrawBitmap;
+    _mr_c_function_table[121] = (void*)_DrawBitmapEx;
+    _mr_c_function_table[122] = (void*)DrawRect;
+    _mr_c_function_table[123] = (void*)_DrawText;
+    _mr_c_function_table[124] = (void*)_BitmapCheck;
+    _mr_c_function_table[125] = (void*)_mr_readFile;
+    _mr_c_function_table[126] = (void*)mr_wstrlen;
+    _mr_c_function_table[127] = (void*)mr_registerAPP;
+    _mr_c_function_table[128] = (void*)_DrawTextEx;  //1936
+    _mr_c_function_table[129] = (void*)_mr_EffSetCon;
+    _mr_c_function_table[130] = (void*)_mr_TestCom;
+    _mr_c_function_table[131] = (void*)_mr_TestCom1;  //1938
+    _mr_c_function_table[132] = (void*)c2u;           //1939
+    _mr_c_function_table[133] = (void*)_mr_div;       //1941
+    _mr_c_function_table[134] = (void*)_mr_mod;
 
-_mr_c_function_table[135] = (void*)&LG_mem_min;
-_mr_c_function_table[136] = (void*)&LG_mem_top;
-_mr_c_function_table[137] = (void*)mr_updcrc;            //1943
-_mr_c_function_table[138] = (void*)start_fileparameter;  //1945
-_mr_c_function_table[139] = (void*)&mr_sms_return_flag;  //1949
-_mr_c_function_table[140] = (void*)&mr_sms_return_val;
-_mr_c_function_table[141] = (void*)mr_unzip;          //1950
-_mr_c_function_table[142] = (void*)&mr_exit_cb;       //1951
-_mr_c_function_table[143] = (void*)&mr_exit_cb_data;  //1951
-_mr_c_function_table[144] = (void*)mr_entry;          //1952
-_mr_c_function_table[145] = (void*)mr_platDrawChar;   //1961
-_mr_c_function_table[146] = (void*)&LG_mem_free;      //1967,2009
+    _mr_c_function_table[135] = (void*)&LG_mem_min;
+    _mr_c_function_table[136] = (void*)&LG_mem_top;
+    _mr_c_function_table[137] = (void*)mr_updcrc;            //1943
+    _mr_c_function_table[138] = (void*)start_fileparameter;  //1945
+    _mr_c_function_table[139] = (void*)&mr_sms_return_flag;  //1949
+    _mr_c_function_table[140] = (void*)&mr_sms_return_val;
+    _mr_c_function_table[141] = (void*)mr_unzip;          //1950
+    _mr_c_function_table[142] = (void*)&mr_exit_cb;       //1951
+    _mr_c_function_table[143] = (void*)&mr_exit_cb_data;  //1951
+    _mr_c_function_table[144] = (void*)mr_entry;          //1952
+    _mr_c_function_table[145] = (void*)mr_platDrawChar;   //1961
+    _mr_c_function_table[146] = (void*)&LG_mem_free;      //1967,2009
 
-_mr_c_function_table[147] = (void*)mr_transbitmapDraw;
-_mr_c_function_table[148] = (void*)mr_drawRegion;
-_mr_c_function_table[149] = NULL;
+    _mr_c_function_table[147] = (void*)mr_transbitmapDraw;
+    _mr_c_function_table[148] = (void*)mr_drawRegion;
+    _mr_c_function_table[149] = NULL;
 }
 
 static int32 _mr_div(int32 a, int32 b) {
@@ -564,8 +563,7 @@ static int32 _mr_mem_init(void) {
     LG_mem_min = LG_mem_len;
     LG_mem_top = 0;
 #endif
-    //memset(LG_mem_base+sizeof(LG_mem_free_t),0,
-    //                           mem_len-sizeof(LG_mem_free_t));
+    // memset(LG_mem_base+sizeof(LG_mem_free_t),0, mem_len-sizeof(LG_mem_free_t));
     return MR_SUCCESS;
 }
 
@@ -1630,7 +1628,7 @@ static int MRF_SpriteCheck(mrp_State* L) {
     return 1;
 }
 
-#else
+#else // 从716行开始
 
 static void _DrawPoint(int16 x, int16 y, uint32 nativecolor) {
     uint8* dstp;
@@ -2376,7 +2374,7 @@ static int MRF_SpriteCheck(mrp_State* L) {
     return 1;
 }
 
-#endif
+#endif  // 从716行开始
 
 void _mr_showErrorInfo(const char* errstr) {
     int32 i;

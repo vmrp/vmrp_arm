@@ -1,11 +1,11 @@
 #编译完整虚拟机
 mrpoid2:
-	gcc -o ./mrpoid2 -g -Wall -DDSM_FULL main.c  -L./src -lmr_vm_full -lSDL2 -lm -lz 
+	gcc -o $@ -g -Wall -DDSM_FULL main.c  -L. -lmr_vm_full -lSDL2 -lm -lz 
 
 
 #编译精简虚拟机
 mrpoid:
-	gcc -o ../mrpoid -O2 -g -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-unused-variable -Wno-unused-but-set-variable -Wno-pointer-sign -Wno-stringop-truncation -Wno-implicit-function-declaration\
+	gcc -o $@ -O2 -g -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-unused-variable -Wno-unused-but-set-variable -Wno-pointer-sign -Wno-stringop-truncation -Wno-implicit-function-declaration\
 		-Wno-unused-function -Wno-uninitialized \
 		-DDSM_MINI \
 		main.c \
