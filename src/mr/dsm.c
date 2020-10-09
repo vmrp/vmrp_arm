@@ -230,10 +230,10 @@ int32 mr_sleep(uint32 ms) {
 
 ///////////////////////// 文件操作接口 //////////////////////////////////////
 #define MYTHROAD_PATH "mythroad/"
-#define DSM_HIDE_DRIVE "mythroad/.disk/"
-#define DSM_DRIVE_A "mythroad/.disk/a/"
-#define DSM_DRIVE_B "mythroad/.disk/b/"
-#define DSM_DRIVE_X "mythroad/.disk/x/"
+#define DSM_HIDE_DRIVE "mythroad/disk/"
+#define DSM_DRIVE_A "mythroad/disk/a/"
+#define DSM_DRIVE_B "mythroad/disk/b/"
+#define DSM_DRIVE_X "mythroad/disk/x/"
 
 static char dsmWorkPath[DSM_MAX_FILE_LEN] = MYTHROAD_PATH; /*当前工作路径 gb 编码*/
 

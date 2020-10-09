@@ -477,7 +477,7 @@ int main(int argc, char *args[]) {
     funcs->open = br_open;
     funcs->close = br_close;
     funcs->read = br_read;
-    funcs->write = br_read;
+    funcs->write = br_write;
     funcs->seek = br_seek;
     funcs->info = br_info;
     funcs->remove = br_remove;
