@@ -3,7 +3,7 @@ MINI_VM_VERSION := 2011
 VM_VERSION := 1968
 MINI_TARGETDIR :=
 
-LOCAL_CFLAGS_FULL := -c -littleend -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(VM_VERSION) -DMR_PLAT_DRAWTEXT
+LOCAL_CFLAGS_FULL := -g -Wall -c -littleend -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(VM_VERSION) -DMR_PLAT_DRAWTEXT
 
 LOCAL_SRC_FILES_FULL := src/mr_api.c \
                   src/mr_debug.c  \
@@ -65,28 +65,28 @@ LOCAL_SRC_FILES_FULL += tomr/tomr_event.c \
                 tomr/tomr_to.c
 
 mr_vm_full:
-	gcc -g -Wall $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL) -I./src -I./tomr -I./include
+	gcc $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL) -I./src -I./tomr -I./include
 	ar crv ../libmr_vm_full.a *.o
 	rm *.o
 
 #####################################################################
 
-LOCAL_CFLAGS := -c -littleend -O2 -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(MINI_VM_VERSION) -DMR_PLAT_DRAWTEXT
-LOCAL_SRC_FILES := mythroad_mini.c \
-                    mr_gb2312.c     \
-                    mr_unzip.c	\
-                    mr_util.c	\
-                    mr_encode.c	\
-                    mr_inflate.c \
-                    mr_graphics.c \
-                    string.c \
+# LOCAL_CFLAGS := -c -littleend -O2 -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(MINI_VM_VERSION) -DMR_PLAT_DRAWTEXT
+# LOCAL_SRC_FILES := mythroad_mini.c \
+#                     mr_gb2312.c     \
+#                     mr_unzip.c	\
+#                     mr_util.c	\
+#                     mr_encode.c	\
+#                     mr_inflate.c \
+#                     mr_graphics.c \
+#                     string.c \
 
-mr_vm_mini:
-	gcc -g -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-unused-variable -Wno-unused-but-set-variable \
-                $(LOCAL_CFLAGS) $(LOCAL_SRC_FILES)\
-                -I./include -I.
+# mr_vm_mini:
+# 	gcc -g -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-unused-variable -Wno-unused-but-set-variable \
+#                 $(LOCAL_CFLAGS) $(LOCAL_SRC_FILES)\
+#                 -I./include -I.
 
-	ar crv ./libmr_vm_mini.a *.o
+# 	ar crv ./libmr_vm_mini.a *.o
 
 
 .PHONY: clean
