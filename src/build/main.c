@@ -1,5 +1,5 @@
 #include "../include/dsm.h"
-#define VMRP
+// #define VMRP
 
 extern int32 mr_c_function_load(int32 code);
 
@@ -114,17 +114,32 @@ int32 br_seek(int32 f, int32 pos, int method) {
 int32 mrc_init(void) {
     uint32 baseAddr = (uint32)mr_c_function_load;
     uint32 addr = (uint32)dsm_init;
+    int16 y = 0;
 
     mrc_clearScreen(0, 0, 0);
 
+    mrc_sprintf(buf, "VMRP_VER:%d", VMRP_VER);
+    mrc_drawText(buf, 0, y, 255, 255, 255, 0, 1);
+
+    y+=20;
     mrc_sprintf(buf, "entry addr:0x%X", baseAddr);
-    mrc_drawText(buf, 0, 0, 255, 255, 255, 0, 1);
+    mrc_drawText(buf, 0, y, 255, 255, 255, 0, 1);
 
+    y+=20;
     mrc_sprintf(buf, "dsm_init addr:0x%X", addr);
-    mrc_drawText(buf, 0, 20, 255, 255, 255, 0, 1);
+    mrc_drawText(buf, 0, y, 255, 255, 255, 0, 1);
 
+    y+=20;
     mrc_sprintf(buf, "dsm_init pos:0x%X", addr - baseAddr);
-    mrc_drawText(buf, 0, 40, 255, 255, 255, 0, 1);
+    mrc_drawText(buf, 0, y, 255, 255, 255, 0, 1);
+
+    y+=20;
+    mrc_sprintf(buf, "DSM_REQUIRE_FUNCS:0x%X", sizeof(DSM_REQUIRE_FUNCS));
+    mrc_drawText(buf, 0, y, 255, 255, 255, 0, 1);
+
+    y+=20;
+    mrc_sprintf(buf, "DSM_EXPORT_FUNCS:0x%X", sizeof(DSM_EXPORT_FUNCS));
+    mrc_drawText(buf, 0, y, 255, 255, 255, 0, 1);
 
     mrc_refreshScreen(0, 0, 240, 320);
 

@@ -251,6 +251,8 @@ int32 br_getDatetime(mr_datetime *datetime) {
     return MR_SUCCESS;
 }
 
+#define DSM_MEM_SIZE (5 * 1024 * 1024)  //DSM内存大小
+
 int32 br_mem_get(char **mem_base, uint32 *mem_len) {
     char *buffer;
     int pagesize, pagecount, len = DSM_MEM_SIZE;

@@ -4,6 +4,9 @@
 #include "./include/printf.h"
 #include "./include/string.h"
 
+#define DSM_MAX_FILE_LEN 256
+
+
 #define MT6235
 
 /*请不要修改这些值*/
@@ -784,7 +787,7 @@ DSM_EXPORT_FUNCS *dsm_init(DSM_REQUIRE_FUNCS *inFuncs) {
     mr_pluto_init();
     xl_font_sky16_init();
 
-    dsm_export_funcs.version = 20201007;
+    dsm_export_funcs.version = VMRP_VER;
     dsm_export_funcs.mr_start_dsm = mr_start_dsm;
     dsm_export_funcs.mr_pauseApp = mr_pauseApp;
     dsm_export_funcs.mr_resumeApp = mr_resumeApp;

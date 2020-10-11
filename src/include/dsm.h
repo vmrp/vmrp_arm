@@ -3,15 +3,15 @@
 
 #include "mrporting.h"
 
-#define DSM_MAX_FILE_LEN 256
-#define DSM_MEM_SIZE (5 * 1024 * 1024)  //DSM内存大小
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 320
+
+#define VMRP_VER 20201011
 
 // 需要平台实现的函数
 typedef struct {
     void (*panic)(char *msg);
-    void (*log)(char *msg); // msg末尾不带\n
+    void (*log)(char *msg);  // msg末尾不带\n
     void (*exit)(void);
     void (*srand)(uint32 seed);
     int32 (*rand)(void);
