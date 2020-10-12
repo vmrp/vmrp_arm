@@ -302,6 +302,11 @@ int64 get_uptime_ms(void) {
     return (uint64)ts.tv_sec * 1000 + (ts.tv_nsec / 1000000);
 }
 
+static int64 uptime_ms;
+uint32 br_get_uptime_ms(void) {
+    return get_uptime_ms() - uptime_ms;
+}
+
 int64 get_time_ms(void) {
     struct timeval tv;
     if (-1 == gettimeofday(&tv, NULL)) {
@@ -462,6 +467,7 @@ int main(int argc, char *args[]) {
 #endif
 
     handleInit();
+    uptime_ms = get_uptime_ms();
 
     DSM_REQUIRE_FUNCS *funcs = malloc(sizeof(DSM_REQUIRE_FUNCS));
     funcs->panic = panic;
@@ -473,7 +479,7 @@ int main(int argc, char *args[]) {
     funcs->mem_free = br_mem_free;
     funcs->timerStart = br_timerStart;
     funcs->timerStop = br_timerStop;
-    funcs->get_uptime_ms = get_uptime_ms;
+    funcs->get_uptime_ms = br_get_uptime_ms;
     funcs->getDatetime = br_getDatetime;
     funcs->sleep = br_sleep;
     funcs->open = br_open;
