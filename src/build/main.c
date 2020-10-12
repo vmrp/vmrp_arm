@@ -1,5 +1,5 @@
 #include "../include/dsm.h"
-#define VMRP
+// #define VMRP
 
 extern int32 mr_c_function_load(int32 code);
 
