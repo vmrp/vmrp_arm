@@ -45,7 +45,7 @@
 #endif
 
 static DSM_REQUIRE_FUNCS *dsmInFuncs;
-static int64 dsmStartTime;  //虚拟机初始化时间，用来计算系统运行时间
+static uint32 dsmStartTime;  //虚拟机初始化时间，用来计算系统运行时间
 
 //////////////////////////////////////////////////////////////////
 
@@ -218,7 +218,7 @@ int32 mr_timerStop(void) {
 }
 
 uint32 mr_getTime(void) {
-    uint32 s = dsmInFuncs->get_time_ms() - dsmStartTime;
+    uint32 s = dsmInFuncs->get_uptime_ms() - dsmStartTime;
     LOGI("mr_getTime():%d", s);
     return s;
 }
@@ -770,7 +770,7 @@ static DSM_EXPORT_FUNCS dsm_export_funcs;
 
 DSM_EXPORT_FUNCS *dsm_init(DSM_REQUIRE_FUNCS *inFuncs) {
     dsmInFuncs = inFuncs;
-    dsmStartTime = dsmInFuncs->get_time_ms();
+    dsmStartTime = dsmInFuncs->get_uptime_ms();
     dsmInFuncs->mkDir(MYTHROAD_PATH);
     dsmInFuncs->mkDir(DSM_HIDE_DRIVE);
     dsmInFuncs->mkDir(DSM_DRIVE_A);

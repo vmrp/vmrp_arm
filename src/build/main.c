@@ -1,5 +1,5 @@
 #include "../include/dsm.h"
-// #define VMRP
+#define VMRP
 
 extern int32 mr_c_function_load(int32 code);
 
@@ -75,7 +75,7 @@ void br_drawBitmap(uint16 *data, int16 x, int16 y, uint16 w, uint16 h) {
     }
 }
 
-int64 get_time_ms(void) {
+uint32 get_uptime_ms(void) {
     return 0;
 }
 
@@ -154,7 +154,7 @@ int32 mrc_init(void) {
     funcs->mem_free = br_mem_free;
     // funcs->timerStart = br_timerStart;
     // funcs->timerStop = br_timerStop;
-    funcs->get_time_ms = get_time_ms;
+    funcs->get_uptime_ms = get_uptime_ms;
     // funcs->getDatetime = br_getDatetime;
     // funcs->sleep = br_sleep;
     funcs->open = br_open;

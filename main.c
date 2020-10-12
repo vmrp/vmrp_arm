@@ -473,7 +473,7 @@ int main(int argc, char *args[]) {
     funcs->mem_free = br_mem_free;
     funcs->timerStart = br_timerStart;
     funcs->timerStop = br_timerStop;
-    funcs->get_time_ms = get_time_ms;
+    funcs->get_uptime_ms = get_uptime_ms;
     funcs->getDatetime = br_getDatetime;
     funcs->sleep = br_sleep;
     funcs->open = br_open;
