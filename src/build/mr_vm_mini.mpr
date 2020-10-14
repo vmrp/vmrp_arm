@@ -1,21 +1,21 @@
 [information]
-projectname=mr_vm_mini
-filename=mr_vm_mini.mrp
-appname=mr_vm_mini
+projectname=mr_vm
+filename=mr_vm.mrp
+appname=mr_vm
 appid=1
 version=1
 visible=1
 cpu=3
 vendor=1
 description=1
-include= ${MRPBUILDER_HOME}\..\include,${MRPBUILDER_HOME}\..\include\plugins,..\
+include= ${MRPBUILDER_HOME}\..\include,${MRPBUILDER_HOME}\..\include\plugins,..\,..\include
 config=mtk240
 output_format=lib
 
 
 [config_mtk240]
 define=TARGET_MOD,MTK_MOD,MR_VERSION=2011,MR_PLAT_DRAWTEXT
-output=mr_vm_mini.lib
+output=mr_vm.lib
 bmp_mode=normal
 plat=mtk
 
@@ -29,6 +29,12 @@ file10 = ..\mr_encode.c
 file11 = ..\mr_inflate.c
 file12 = ..\mr_graphics.c
 file13 = ..\string.c
+file34 = ..\printf.c	
+file35 = ..\other.c	
+file36 = ..\encode.c
+file37 = ..\strtol.c
+file38 = ..\strtoul.c
+file39 = ..\dsm.c
 
 
 

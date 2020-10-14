@@ -20,7 +20,7 @@ plat=mtk
 
 [files]
 file01 = main.c
-file06 = .\mr_vm_full.lib
+file06 = .\mr_vm.lib
 
 
 
