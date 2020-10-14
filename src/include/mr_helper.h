@@ -779,11 +779,6 @@ void spreadtrum_patch_load(int32 gr9, int32 gr8);
 extern MR_INIT_NETWORK_CB mrc_initNetworkCbFunc;
 extern MR_GET_HOST_CB mr_getHostByNameCbFunc;
 
-void mr_helper_set_sb(int32 sb);
-
-#ifdef MR_MSTAR_MOD
-int32 mr_getR9(void);
-#endif
 
 #if 1
 #define MRC_MALLOC(size) mrc_malloc(size)

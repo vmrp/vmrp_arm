@@ -165,8 +165,6 @@ MR_C_FUNCTION mr_c_function;
 void* mr_c_function_P;
 int32 mr_c_function_P_len;
 
-static int32* mr_c_function_fix_p;
-
 MR_EVENT_FUNCTION mr_event_function = NULL;
 MR_TIMER_FUNCTION mr_timer_function = NULL;
 MR_STOP_FUNCTION mr_stop_function = NULL;
@@ -1159,7 +1157,6 @@ static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b
                     };
 #endif
 #else  // MR_PLAT_DRAWTEXT
-                //MRDBGPRINTF("mr_platDrawChar 1!");
                 mr_platDrawChar(ch, chx, chy, MAKERGB(r, g, b));
 #endif
                 chx = chx + width;
@@ -1423,50 +1420,6 @@ int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transco
     return nResult;
 }
 
-#if 0
-static int MRF_BmGetScr(mrp_State* L)
-{
-	uint16 i = ((uint16)  to_mr_tonumber(L,1,0));
-	uint16 *srcp,*dstp;
-	uint16 dx,dy;
-	if(i>=BITMAPMAX){
-		mrp_pushfstring(L, "BmGetScr:index %d invalid!", i);
-		mrp_error(L);
-		return 0;
-	}
-	if(mr_bitmap[i].p)
-	{
-		MR_FREE(mr_bitmap[i].p, mr_bitmap[i].buflen);
-		mr_bitmap[i].p = NULL;
-	}
-
-	mr_bitmap[i].p = MR_MALLOC(MR_SCREEN_W*MR_SCREEN_H*MR_SCREEN_DEEP);
-	if(!mr_bitmap[i].p)
-	{
-		mrp_pushfstring(L, "BmGetScr %d :No memory!", i);
-		mrp_error(L);
-		return 0;
-	}
-
-	mr_bitmap[i].w = (int16)MR_SCREEN_W;
-	mr_bitmap[i].h = (int16)MR_SCREEN_H;
-	mr_bitmap[i].buflen = MR_SCREEN_W*MR_SCREEN_H*MR_SCREEN_DEEP;
-	dstp = mr_bitmap[i].p;
-	for (dy=0; dy < MR_SCREEN_H; dy++)
-	{
-		//srcp = mr_screenBuf + dy * MR_SCREEN_MAX_W;
-		srcp = MR_SCREEN_CACHE_POINT(0, dy);
-		for (dx=0; dx < MR_SCREEN_W; dx++)
-		{
-			*dstp = *srcp;
-			dstp++;
-			srcp++;
-		}
-	}
-	return 0;
-}
-#endif
-
 //effect
 static int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb) {
     uint16* dstp;
@@ -1498,53 +1451,6 @@ static int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 p
     return 0;
 }
 //effect
-
-#if 0
-static int MRF_SpriteCheck(mrp_State* L)
-{
-	uint16 i = ((uint16)  to_mr_tonumber(L,1,0));
-	uint16 spriteindex = ((uint16)  to_mr_tonumber(L,2,0));
-	int16 x = ((int16)  to_mr_tonumber(L,3,0));
-	int16 y = ((int16)  to_mr_tonumber(L,4,0));
-	uint32 color_check = ((uint32)  to_mr_tonumber(L,5,0));
-	uint32 color;
-	uint16 r,g,b;
-#ifdef MYTHROAD_DEBUG
-	if(i>=SPRITEMAX){
-		mrp_pushfstring(L, "SpriteCheck:index %d invalid!", i);
-		mrp_error(L);
-		return 0;
-	}
-	if (!mr_bitmap[i].p)
-	{
-		mrp_pushfstring(L, "SpriteCheck:Sprite %d is nil!",i);
-		mrp_error(L);
-		return 0;
-	}
-#endif
-	r = (uint16)((color_check&0xff0000)>>16);
-	g = (uint16)((color_check&0xff00)>>8);
-	b = (uint16)(color_check&0xff);
-
-	/*
-	color = (r/8)<<11;
-	color |=(g/4)<<5;
-	color |=(b/8);     
-	*/
-	color = MAKERGB(r, g, b);
-	//   return mr_check(mr_bitmap[i].p + spriteindex*mr_bitmap[i].w*mr_sprite[i].h,
-	//      x, y, mr_bitmap[i].w, mr_sprite[i].h, *(mr_bitmap[i].p), color);
-	{
-		int to_mr_ret = (int)  _BitmapCheck(mr_bitmap[i].p + 
-			spriteindex*mr_bitmap[i].w*mr_sprite[i].h,
-			(uint16)x, (uint16)y, (uint16)mr_bitmap[i].w, (uint16)mr_sprite[i].h, 
-			(uint16)*(mr_bitmap[i].p), (uint16)color);
-		to_mr_pushnumber(L,(mrp_Number)to_mr_ret);
-	}
-
-	return 1;
-}
-#endif
 
 void _mr_showErrorInfo(const char* errstr) {
     int32 i;
@@ -1578,7 +1484,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
     char TempName[MR_MAX_FILENAME_SIZE];
     char* mr_m0_file;
     int is_rom_file = FALSE;
-
 
     if ((pack_filename[0] == '*') || (pack_filename[0] == '$')) /*m0 file or ram file?*/
     {                                                           /*read file from m0*/
@@ -1841,24 +1746,16 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
     reallen |= (uint32)(((uch*)filebuf)[*filelen - 2]) << 16;
     reallen |= (uint32)(((uch*)filebuf)[*filelen - 1]) << 24;
 
-    //MRDBGPRINTF("Debug:_mr_readFile:filelen = %d",reallen);
-    //MRDBGPRINTF("Debug:_mr_readFile:mem left = %d",LG_mem_left);
-
-    //MRDBGPRINTF("1base=%d,end=%d",  (int32)LG_mem_base, (int32)LG_mem_end);
-    //MRDBGPRINTF("is_rom_file = %d",is_rom_file);
-    mr_gzOutBuf = MR_MALLOC(reallen);
-    //MRDBGPRINTF("mr_gzOutBuf = %d",mr_gzOutBuf);
     oldlen = *filelen;
     *filelen = reallen;
-    //MRDBGPRINTF("2base=%d,end=%d",  (int32)LG_mem_base, (int32)LG_mem_end);
+
+    mr_gzOutBuf = MR_MALLOC(reallen);
     if (mr_gzOutBuf == NULL) {
         if (!is_rom_file)
             MR_FREE(mr_gzInBuf, oldlen);
-        //MRDBGPRINTF("_mr_readFile  \"%s\" Not memory unzip!", filename);
         return 0;
     }
 
-    //MRDBGPRINTF("3base=%d,end=%d",  (int32)LG_mem_base, (int32)LG_mem_end);
     if (mr_unzip() != 0) {
         if (!is_rom_file)
             MR_FREE(mr_gzInBuf, oldlen);
@@ -1867,13 +1764,9 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
         return 0;
     }
 
-    //MRDBGPRINTF("4base=%d,end=%d",  (int32)LG_mem_base, (int32)LG_mem_end);
-    //MRDBGPRINTF("is_rom_file = %d",is_rom_file);
     if (!is_rom_file)
         MR_FREE(mr_gzInBuf, oldlen);
 
-    //MRDBGPRINTF("is_rom_file = %d",is_rom_file);
-    //MRDBGPRINTF("5base=%d,end=%d",  (int32)LG_mem_base, (int32)LG_mem_end);
     return mr_gzOutBuf;
 }
 
@@ -2309,10 +2202,6 @@ int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len) {
     }
     mr_c_function_P = MR_MALLOC(len);
     if (!mr_c_function_P) {
-#if 0
-		mrp_pushfstring(vm_state, "c_function:No memory!");
-		mrp_error(vm_state);
-#endif
         mr_state = MR_STATE_ERROR;
         return MR_FAILED;
     }
@@ -2322,11 +2211,7 @@ int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len) {
 #ifdef SDK_MOD
     *((void**)(sdk_mr_c_function_table)-1) = mr_c_function_P;
 #else
-    if (mr_c_function_fix_p) {
-        *((void**)(mr_c_function_fix_p) + 1) = mr_c_function_P;
-    } else {
-        *((void**)(mr_load_c_function)-1) = mr_c_function_P;
-    }
+    *((void**)(mr_load_c_function)-1) = mr_c_function_P;
 #endif
 
     return MR_SUCCESS;
@@ -2348,16 +2233,6 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             mr_ram_file_len = len;
             break;
         case 3: {
-#if 0
-			uint8* start_filename = ((uint8*)  mr_L_optstring(L,3,MR_START_FILE));
-			MEMSET(old_pack_filename,0,sizeof(old_pack_filename));
-			if(input1){
-				STRNCPY(old_pack_filename,input1, sizeof(old_pack_filename) - 1);
-			}
-			MEMSET(old_start_filename,0,sizeof(old_start_filename));
-			STRNCPY(old_start_filename,start_filename,sizeof(old_start_filename)-1);
-			break;
-#else
             MEMSET(old_pack_filename, 0, sizeof(old_pack_filename));
             if (input1) {
                 STRNCPY(old_pack_filename, input1, sizeof(old_pack_filename) - 1);
@@ -2365,8 +2240,6 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             MEMSET(old_start_filename, 0, sizeof(old_start_filename));
             STRNCPY(old_start_filename, MR_START_FILE, sizeof(old_start_filename) - 1);
             break;
-
-#endif
         }
         case 4: {
             MEMSET(start_fileparameter, 0, sizeof(start_fileparameter));
@@ -2383,355 +2256,38 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             mr_exception_str = NULL;
             break;
             //1948 add exception set
-        case 9:
-#ifdef MR_MSTAR_MOD
-        {
-            //extern void sys_Invalidate_data_cache(void);
+        case 9: {
+            // extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
+            // extern int32 invalidate_arm9_icache(int32 addr, int32 len);
 
-            //sys_Invalidate_data_cache();
-            mr_cacheSync((void*)input1, len);
-        }
-#endif
-
-#ifndef MR_MSTAR_MOD
-#ifndef MR_BREW_MOD
-#ifdef MTK_MOD
-            {
-                //extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
-                //extern int32 invalidate_arm9_icache(int32 addr, int32 len);
-
-                //clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)),
-                //                                          ((len+0x0000001F*3)&(~0x0000001F)));
-                //invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)),
-                //                                          ((len+0x0000001F*3)&(~0x0000001F)));
-                mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)),
-                             ((len + 0x0000001F * 3) & (~0x0000001F)));
-            }
-#endif
-#endif
-#endif
-
-#ifdef MR_SPREADTRUM_MOD
-            {
-                // 移植层提供的函数， 用来同步Cache的。
-                mr_cacheSync(NULL, 0);
-            }
-#endif
-
-#ifdef MR_HT_MOD
-            {
-                mr_cacheSync(NULL, 0);
-            }
-#endif
-
-#ifdef MR_BREW_MOD
-            mr_cacheSync(NULL, 0);
-#endif
-
+            // clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
+            // invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
+            mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
             return 0;
-
+        }
         case 200:
             mr_updcrc(NULL, 0); /* initialize crc */
             mr_updcrc((unsigned char*)input1, len);
             ret = mr_updcrc((unsigned char*)input1, 0);
             break;
         case 300: {
-#if 0
-			uint32 unzip_len;
-			mr_gzInBuf = (uint8*)input1;
-			LG_gzoutcnt = 0;
-			LG_gzinptr = 0;
-
-			ret = mr_get_method(len);
-			if (ret < 0) 
-			{
-				mrp_pushlstring(L, input1, len);
-				return 1;             
-			}
-
-#ifdef MR_PKZIP_MAGIC
-			if (mr_zipType == PACKED){
-				unzip_len = LG(mr_gzInBuf + LOCLEN);
-				mr_gzOutBuf = MR_MALLOC(unzip_len);
-			}else{
-				//unzip_len  = *(uint32*)(input1 + len - 4);
-				MEMCPY(&unzip_len, (input1 + len - 4), 4);
-				//MRDBGPRINTF("unzip_len1 = %d", unzip_len);
-#ifdef MR_BIG_ENDIAN
-				unzip_len  = ntohl(unzip_len);
-#endif
-				//MRDBGPRINTF("unzip_len2 = %d", unzip_len);
-
-				mr_gzOutBuf = MR_MALLOC(unzip_len);
-			}
-#else
-			//unzip_len  = *(uint32*)(input1 + len - 4);
-			MEMCPY(&unzip_len, (input1 + len - 4), 4);
-			//MRDBGPRINTF("unzip_len1 = %d", unzip_len);
-#ifdef MR_BIG_ENDIAN
-			unzip_len  = ntohl(unzip_len);
-#endif
-			//MRDBGPRINTF("unzip_len2 = %d", unzip_len);
-
-			mr_gzOutBuf = MR_MALLOC(unzip_len);
-#endif
-
-
-
-			if(mr_gzOutBuf == NULL)
-			{
-				//MR_FREE(mr_gzInBuf, oldlen);
-				//MR_FREE(mr_gzOutBuf, ret);
-				MRDBGPRINTF("unzip  Not memory unzip!");
-				return 0;
-			}
-			if (mr_unzip() != 0) {
-				MR_FREE(mr_gzOutBuf, unzip_len);
-				MRDBGPRINTF("unzip:  Unzip err1!");
-				return 0;
-			}
-
-			mrp_pushlstring(L, (const char*)mr_gzOutBuf, unzip_len);
-			MR_FREE(mr_gzOutBuf, unzip_len);
-			return 1;
-#endif
             break;
         }
-#if 0
-	case 500:
-		{
-			md5_state_t state;
-			md5_byte_t digest[16];
-
-			mr_md5_init(&state);
-			mr_md5_append(&state, (const md5_byte_t *)input1, len);
-			mr_md5_finish(&state, digest);
-			mrp_pushlstring(L, (const char*)digest, 16);
-			return 1;             
-		}
-		break;
-	case 501:
-		{
-			int32 outlen = len * 4  / 3 + 8;
-			uint8 *buf = MR_MALLOC(outlen);
-			if(!buf){
-				return 0;
-			}
-			ret = _mr_encode((uint8*)input1, (uint32)len, (uint8*)buf);
-			if(ret == MR_FAILED){
-				MR_FREE(buf, outlen);
-				return 0;
-			}
-			mrp_pushlstring(L, (const char*)buf, ret);
-			MR_FREE(buf, outlen);
-			return 1;             
-		}
-		break;
-	case 502:
-		{
-			uint8 *buf = MR_MALLOC(len);
-			if(!buf){
-				return 0;
-			}
-			ret = _mr_decode((uint8*)input1, (uint32)len, (uint8*)buf);
-			if(ret == MR_FAILED){
-				MR_FREE(buf, len);
-				return 0;
-			}
-			mrp_pushlstring(L, (const char*)buf, ret);
-			MR_FREE(buf, len);
-			return 1;             
-		}
-		break;
-	case 600:
-		{
-			char* mr_m0_file;
-			if (input1[0] == '*'){/*m0 file?*/
-				int32 index = input1[1]-0x41;
-				if ((index >= 0) && (index < (sizeof(mr_m0_files)/sizeof(const unsigned char *)))){
-					mr_m0_file = (char*)mr_m0_files[index]; //这里定义文件名为*A即是第一个m0文件
-					//*B是第二个.........
-				}else{
-					mr_m0_file = NULL;
-				}
-			}else{
-				mr_m0_file = mr_ram_file;
-			}
-
-			if (mr_m0_file){
-				int32 offset = ((int32)  to_mr_tonumber(L,3,0));
-				int32 buflen = ((int32)  to_mr_tonumber(L,4,0));
-				if((buflen == -1) && (input1[0] == '$')){
-					buflen = mr_ram_file_len;
-				}
-				mrp_pushlstring(L, (const char*)mr_m0_file + offset, buflen);
-				return 1;
-			}else{
-				return 0;
-			}
-		}
-		break;
-
-	case 601:
-		{
-			char* filebuf;
-			filebuf = _mr_readFile((const char *)input1, &ret, 0);
-			//MRDBGPRINTF("1base=%d,end=%d",  (int32)LG_mem_base, (int32)LG_mem_end);   
-			//MRDBGPRINTF( "filebuf  =%d", filebuf);
-			if(filebuf)
-			{
-				mrp_pushlstring(L, filebuf, ret);
-				//MRDBGPRINTF( "filebuf  =%d", filebuf);
-				//MRDBGPRINTF( "filelen  =%d", ret);
-				MR_FREE(filebuf, ret);
-				//MRDBGPRINTF("100base=%d,end=%d",  (int32)LG_mem_base, (int32)LG_mem_end);   
-				//MRDBGPRINTF( "601 free ok");
-			}else{
-				mrp_pushnil(L);
-			}
-			return 1;
-		}
-		break;
-	case 602:
-		{
-			if(_mr_readFile((const char *)input1, &ret, 1)==NULL)
-			{
-				mrp_pushnil(L);
-			}else{
-				mrp_pushnumber(L, MR_SUCCESS);
-			}
-			return 1;
-		}
-		break;
-	case 603:
-		{
-			char* filebuf;
-			filebuf = _mr_readFile((const char *)input1, &ret, 2);
-			if(filebuf)
-			{
-				mrp_pushnumber(L, (mrp_Number)filebuf);
-				mrp_pushnumber(L, (mrp_Number)ret);
-				return 2;
-			}else{
-				mrp_pushnil(L);
-				return 1;
-			}
-		}
-		break;
-#endif
         case 700: {
-#if 0
-			int type = ((int)  to_mr_tonumber(L,3,0));
-			ret = mr_newSIMInd(type, (uint8*)input1);
-#else
             int type = len;
             ret = mr_newSIMInd(type, (uint8*)input1);
-#endif
             break;
         }
         case 701: {
-#if 0
-			uint8* pNum = ((uint8*)  mrp_tostring(L,3));
-			int32 type = ((int32)  mr_L_optnumber(L, 4, MR_ENCODE_ASCII));
-			ret = mr_smsIndiaction((uint8*)input1, len, pNum, type);
-#else
             uint8* pNum = ((uint8*)(input1 + 1));
             int32 type = *((int32*)(input1 + 2));
             ret = mr_smsIndiaction((uint8*)input1, len, pNum, type);
-#endif
             break;
         }
-#if 0
-#ifdef SDK_MOD
-	case 800:
-		{
-			int32 input_len,output_len, ret;
-			int code = ((int)  mr_L_optint(L,3,0));
-			mr_load_c_function = mr_c_function_load;
-			*((void**)(input1)) = _mr_c_function_table;
-			sdk_mr_c_function_table = input1 + 8;
-
-			ret = mr_load_c_function(code);
-
-			mrp_pushnumber(L, ret);
-			return 1;
-		}
-		break;
-	case 801:
-		{
-			int32 input_len,output_len, ret;
-			int code = ((int)  to_mr_tonumber(L,3,0));
-			//uint8* input = (uint8*)mr_L_checklstring(L,4,(size_t*)&input_len);
-			uint8* output = NULL;
-			output_len = 0;
-
-			ret = mr_c_function(mr_c_function_P, code, input1, len, &output, &output_len);
-
-			if(output&&output_len){
-				mrp_pushlstring(L, (const char *)output, output_len);
-			}else{
-				mrp_pushstring(L, "");
-			}
-
-			mrp_pushnumber(L, ret);
-			return 2;
-		}
-		break;
-#else
-	case 800:
-		{
-			int32 input_len,output_len, ret;
-			int code = ((int)  mr_L_optint(L,3,0));
-			mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1+8);
-			*((void**)(input1)) = (void*)_mr_c_function_table;
-
-			ret = mr_load_c_function(code);
-
-			mrp_pushnumber(L, ret);
-			return 1;
-		}
-		break;
-	case 801:
-		{
-			int32 input_len,output_len, ret;
-			int code = ((int)  to_mr_tonumber(L,3,0));
-			//uint8* input = (uint8*)mr_L_checklstring(L,4,(size_t*)&input_len);
-			uint8* output = NULL;
-			output_len = 0;
-
-			ret = mr_c_function(mr_c_function_P, code, (uint8*)input1, len, (uint8**)&output, &output_len);
-
-			if(output&&output_len){
-				mrp_pushlstring(L, (const char *)output, output_len);
-			}else{
-				mrp_pushstring(L, "");
-			}
-
-			mrp_pushnumber(L, ret);
-			return 2;
-		}
-		break;
-	case 802:
-		{
-			int32 input_len,output_len, ret;
-			int code = ((int)  mr_L_optint(L,3,0));
-			mr_c_function_fix_p = ((int32*)  mr_L_optint(L,4,0));
-			mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1+8);
-			*((void**)(mr_c_function_fix_p)) = (void*)_mr_c_function_table;
-
-			ret = mr_load_c_function(code);
-
-			mrp_pushnumber(L, ret);
-			return 1;
-		}
-		break;
-#endif
-#endif
         case 900:
             ret = mr_platEx(200001, (uint8*)_mr_c_port_table, sizeof(_mr_c_port_table), NULL, NULL, NULL);
             break;
     }
-
     return ret;
 }
 
@@ -2780,69 +2336,26 @@ static int _mr_TestComC(int input0, char* input1, int32 len, int32 code) {
 			return 2;
 #endif
         } break;
-#else
+#else  // #ifdef SDK_MOD
         case 800: {
-            //int code = ((int)  mr_L_optint(L,3,0));
             mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1 + 8);
             *((void**)(input1)) = (void*)_mr_c_function_table;
-
-#ifdef MR_MSTAR_MOD
-            {
-                //extern void sys_Invalidate_data_cache(void);
-
-                //mr_printf("load addr:%x", (int)mr_load_c_function);
-
-                //sys_Invalidate_data_cache();
-                mr_cacheSync((void*)input1, len);
-            }
-#endif
-
-#ifndef MR_MSTAR_MOD
-#ifndef MR_BREW_MOD
-#ifdef MTK_MOD
-            {
-                //extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
-                //extern int32 invalidate_arm9_icache(int32 addr, int32 len);
-
-                //clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)),
-                //                                          ((len+0x0000001F*3)&(~0x0000001F)));
-                //invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)),
-                //                                          ((len+0x0000001F*3)&(~0x0000001F)));
-                mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)),
-                             ((len + 0x0000001F * 3) & (~0x0000001F)));
-            }
-#endif
-#endif
-#endif
-
-#ifdef MR_SPREADTRUM_MOD
-            {
-                // 移植层提供的函数， 用来同步Cache的。
-                mr_cacheSync(NULL, 0);
-            }
-#endif
-
-#ifdef MR_BREW_MOD
-            mr_cacheSync(NULL, 0);
-#endif
-
+            // extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
+            // extern int32 invalidate_arm9_icache(int32 addr, int32 len);
+            // clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
+            // invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
+            mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
             ret = mr_load_c_function(code);
-
         } break;
         case 801: {
-            int32 output_len;
-            //int code = ((int)  to_mr_tonumber(L,3,0));
+            int32 output_len = 0;
             uint8* output = NULL;
-            output_len = 0;
-
             ret = mr_c_function(mr_c_function_P, code, (uint8*)input1, len, (uint8**)&output, &output_len);
         } break;
 #endif
     }
     return ret;
 }
-
-//other
 
 typedef enum {
     MRP_ORICODING,    //直接读取编码。只有斯凯的特权用户方可执行该类型操作。
@@ -3126,7 +2639,6 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
 
     mr_c_function_P = NULL;
     mr_c_function_P_len = 0;
-    mr_c_function_fix_p = NULL;
 
     mr_exception_str = NULL;
 
@@ -3578,8 +3090,6 @@ int mr_wstrlen(char* txt) {
     }
     return lenth;
 }
-
-
 
 #ifdef SDK_MOD
 
