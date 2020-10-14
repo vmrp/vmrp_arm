@@ -2809,16 +2809,8 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
         // 从这里开始是新版的mrp处理
         {
             uint32 headbuf[4];
-            //uint32 infohead_len, mrp_tag;
-            //headbuf = (uint32 *)MR_MALLOC(16);
             MEMSET(headbuf, 0, sizeof(headbuf));
             nTmp = mr_read(f, &headbuf, sizeof(headbuf));
-#ifdef MR_BIG_ENDIAN
-            headbuf[0] = ntohl(headbuf[0]);
-            headbuf[1] = ntohl(headbuf[1]);
-            headbuf[2] = ntohl(headbuf[2]);
-            headbuf[3] = ntohl(headbuf[3]);
-#endif
             if ((nTmp != 16) || (headbuf[0] != 1196446285)) {
                 mr_close(f);
                 _mr_readFileShowInfo(filename, 3001);
@@ -7014,9 +7006,6 @@ int mr_wstrlen(char* txt) {
     return lenth;
 }
 
-int mr_transBMP(int check) {
-    return (check * 11) + 0x1234abc;
-}
 
 #ifdef SDK_MOD
 

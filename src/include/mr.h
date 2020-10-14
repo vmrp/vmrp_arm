@@ -9,14 +9,8 @@
 
 
 
-#ifdef MR_START_FILE
-#undef MR_START_FILE
-#define MR_START_FILE "in.ct"
-#define MR_ERROR_WAP "http://wap.flymobi.net/vmMain.jsp"
-#else
 #define MR_START_FILE "start.mr"
-#define MR_ERROR_WAP "http://wap.skmeg.com/dsmWap/error.jsp"
-#endif
+#define MR_ERROR_WAP "https://github.com/zengming00/vmrp"
 
 
 #define MR_OFFSET_FORM_FILEHEAD 16
