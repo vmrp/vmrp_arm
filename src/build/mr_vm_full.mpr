@@ -1,7 +1,7 @@
 [information]
-projectname=mr_vm_full
-filename=mr_vm_full.mrp
-appname=mr_vm_full
+projectname=mr_vm
+filename=mr_vm.mrp
+appname=mr_vm
 appid=1
 version=1
 visible=1
@@ -15,7 +15,7 @@ output_format=lib
 
 [config_mtk240]
 define=TARGET_MOD,MTK_MOD,MR_VERSION=1968,MR_PLAT_DRAWTEXT
-output=mr_vm_full.lib
+output=mr_vm.lib
 bmp_mode=normal
 plat=mtk
 
