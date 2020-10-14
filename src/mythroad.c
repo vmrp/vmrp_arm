@@ -6579,17 +6579,6 @@ int32 mr_start_dsm(const char* entry) {
     mr_screen_h = screeninfo.height;
     mr_screen_bit = screeninfo.bit;
 
-    /*
-  MRF_ClearScreen(255, 255, 255);
-  MRF_DrawText("如长时间停", 2, 2, 0, 0,0);
-  MRF_DrawText("留在这个界", 2, 20, 0, 0,0);
-  MRF_DrawText("面上，可能", 2, 38, 0, 0,0);
-  MRF_DrawText("下载的应用", 2, 56, 0, 0,0);
-  MRF_DrawText("受损，请按", 2, 74, 0, 0,0);
-  MRF_DrawText("挂机键退出", 2, 92, 0, 0,0);
-*/
-    //MRF_DrawText("并重新下载", 2, 110, 0, 0,0);
-
     MEMSET(pack_filename, 0, sizeof(pack_filename));
     if (entry && (*entry == '*')) {
         STRCPY(pack_filename, entry);
@@ -6622,17 +6611,6 @@ int32 mr_start_dsmC(char* start_file, const char* entry) {
     mr_screen_h = screeninfo.height;
     mr_screen_bit = screeninfo.bit;
 
-    /*
-  MRF_ClearScreen(255, 255, 255);
-  MRF_DrawText("如长时间停", 2, 2, 0, 0,0);
-  MRF_DrawText("留在这个界", 2, 20, 0, 0,0);
-  MRF_DrawText("面上，可能", 2, 38, 0, 0,0);
-  MRF_DrawText("下载的应用", 2, 56, 0, 0,0);
-  MRF_DrawText("受损，请按", 2, 74, 0, 0,0);
-  MRF_DrawText("挂机键退出", 2, 92, 0, 0,0);
-*/
-    //MRF_DrawText("并重新下载", 2, 110, 0, 0,0);
-
     MEMSET(pack_filename, 0, sizeof(pack_filename));
     if (entry && (*entry == '*')) {
         STRCPY(pack_filename, entry);
@@ -6652,7 +6630,6 @@ int32 mr_start_dsmC(char* start_file, const char* entry) {
     MEMSET(old_start_filename, 0, sizeof(old_start_filename));
 
     MEMSET(start_fileparameter, 0, sizeof(start_fileparameter));
-    //   mrc_appInfo_st.ram = 0;
 
     return _mr_intra_start(start_file, entry);
 }

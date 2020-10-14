@@ -6,7 +6,6 @@
 
 #define DSM_MAX_FILE_LEN 256
 
-
 #define MT6235
 
 /*请不要修改这些值*/
@@ -776,6 +775,8 @@ DSM_EXPORT_FUNCS *dsm_init(DSM_REQUIRE_FUNCS *inFuncs) {
     dsmInFuncs->mkDir(DSM_DRIVE_A);
     dsmInFuncs->mkDir(DSM_DRIVE_B);
     dsmInFuncs->mkDir(DSM_DRIVE_X);
+
+#ifdef DSM_FULL
     mr_tm_init();
     mr_baselib_init();
     mr_tablib_init();
@@ -783,8 +784,9 @@ DSM_EXPORT_FUNCS *dsm_init(DSM_REQUIRE_FUNCS *inFuncs) {
     mr_tcp_target_init();
     mr_iolib_target_init();
     mr_strlib_init();
-    mythroad_init();
     mr_pluto_init();
+#endif
+    mythroad_init();
     xl_font_sky16_init();
 
     dsm_export_funcs.version = VMRP_VER;

@@ -32,6 +32,8 @@
 #include "./include/mr.h"
 #include "./include/other.h"
 
+#define ISSPACE(ch) ((ch == ' ') || (ch == '\t') || (ch == '\r') || (ch == '\n') || (ch == '\f') || (ch == '\v'))
+
 // #ifdef HAVE_CONFIG_H
 // #include "config.h"
 // #endif
@@ -75,7 +77,7 @@ strtoul2(const char *nptr, char **endptr, register int base)
 	 */
 	do {
 		c = *s++;
-	} while (mr_isspace(c));
+	} while (ISSPACE(c));
 	if (c == '-') {
 		neg = 1;
 		c = *s++;
@@ -92,10 +94,10 @@ strtoul2(const char *nptr, char **endptr, register int base)
 	cutoff = (unsigned long)ULONG_MAX / (unsigned long)base;
 	cutlim = (unsigned long)ULONG_MAX % (unsigned long)base;
 	for (acc = 0, any = 0;; c = *s++) {
-		if (mr_isdigit(c))
+		if ((c >= '0') && (c <= '9'))
 			c -= '0';
-		else if (mr_isalpha(c))
-			c -= mr_isupper(c) ? 'A' - 10 : 'a' - 10;
+		else if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
+			c -= ((unsigned int)(c - 'A') < 26u) ? 'A' - 10 : 'a' - 10;
 		else
 			break;
 		if (c >= base)

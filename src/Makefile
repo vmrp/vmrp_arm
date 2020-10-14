@@ -3,7 +3,7 @@ MINI_VM_VERSION := 2011
 VM_VERSION := 1968
 MINI_TARGETDIR :=
 
-LOCAL_CFLAGS_FULL := -g -Wall -c -littleend -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(VM_VERSION) -DMR_PLAT_DRAWTEXT
+LOCAL_CFLAGS_FULL := -g -Wall -c -littleend -DDSM_FULL -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(VM_VERSION) -DMR_PLAT_DRAWTEXT
 
 LOCAL_SRC_FILES_FULL := src/mr_api.c \
                   src/mr_debug.c  \
@@ -64,9 +64,9 @@ LOCAL_SRC_FILES_FULL += tomr/tomr_event.c \
                 tomr/tomr_push.c     \
                 tomr/tomr_to.c
 
-mr_vm_full:
+full:
 	gcc $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL) -I./src -I./tomr -I./include
-	ar crv ../libmr_vm_full.a *.o
+	ar crv ../libmr_vm.a *.o
 	rm *.o
 
 #####################################################################
@@ -80,10 +80,16 @@ LOCAL_SRC_FILES := mythroad_mini.c \
                     mr_inflate.c \
                     mr_graphics.c \
                     string.c \
+                    printf.c	\
+                    other.c	\
+                    encode.c	\
+                    strtol.c	\
+                    strtoul.c	\
+                    dsm.c	\
 
-mr_vm_mini:
+mini:
 	gcc $(LOCAL_CFLAGS) $(LOCAL_SRC_FILES) -I./include -I.
-	ar crv ./libmr_vm_mini.a *.o
+	ar crv ../libmr_vm.a *.o
 	rm *.o
 
 

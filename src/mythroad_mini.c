@@ -34,8 +34,8 @@ const unsigned char* mr_m0_files[] = {
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-//#endif
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+};
 
 typedef struct _mini_mr_c_event_st {
     int32 code;
@@ -177,8 +177,7 @@ MR_RESUMEAPP_FUNCTION mr_resumeApp_function = NULL;
 static mrc_timerCB mr_exit_cb = NULL;
 static int32 mr_exit_cb_data;
 
-typedef struct
-{
+typedef struct {
     int32 id;
     int32 ver;
     char* sidName;
@@ -216,14 +215,14 @@ static int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h);
 static int _mr_isMr(char* input);
 
 #ifdef MR_ANYKA_MOD
-static void _DrawPoint(int16 x, int16 y, uint32 nativecolor);
+void _DrawPoint(int16 x, int16 y, uint32 nativecolor);
 static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint32 transcoler, int16 sx, int16 sy, int16 mw);
 static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint32 transcoler);
 static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b);
 static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font);
 int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint32 transcoler, uint32 color_check);
 #else
-static void _DrawPoint(int16 x, int16 y, uint16 nativecolor);
+void _DrawPoint(int16 x, int16 y, uint16 nativecolor);
 static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw);
 static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler);
 static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b);
@@ -257,19 +256,10 @@ static int32 _mr_getMetaMemLimit(void);
 static const void* _mr_c_internal_table[17];
 
 static void* _mr_c_port_table[] = {
-    NULL, NULL, NULL, NULL};
+    NULL, NULL, NULL, NULL
+};
 
-#if defined(MR_BREW_MOD) || defined(MR_MSTAR_MOD)
-int mr_strlen(const char* s) {
-    if (s) {
-        return strlen(s);
-    } else {
-        return 0;
-    }
-}
-#endif
 
-extern int mr_sprintf(char* buf, const char* fmt, ...);
 
 #ifdef SDK_MOD
 void* sdk_mr_c_function_table;
@@ -279,65 +269,6 @@ const void* _mr_c_function_table[];
 static const void* _mr_c_function_table[150];
 #endif
 
-void* mr_memset(void* dst, int ch, uint32 n) {
-    return memset(dst, ch, n);
-}
-
-int mr_memcmp(const void* lhs, const void* rhs, uint32 n) {
-    return memcmp(lhs, rhs, n);
-}
-
-void* mr_memchr(const void* s, int ch, uint32 n) {
-    return memchr(s, ch, n);
-}
-
-void* mr_strcpy(char* dst, const char* src) {
-    return strcpy(dst, src);
-}
-
-char* mr_strncpy(char* dst, const char* src, uint32 n) {
-    return strncpy(dst, src, n);
-}
-
-char* mr_strcat(char* dst, const char* src) {
-    return strcat(dst, src);
-}
-
-char* mr_strncat(char* dst, const char* src, uint32 n) {
-    return strncat(dst, src, n);
-}
-
-int mr_strcmp(const char* lhs, const char* rhs) {
-    return strcmp(lhs, rhs);
-}
-
-int mr_strncmp(const char* lhs, const char* rhs, uint32 n) {
-    return strncmp(lhs, rhs, n);
-}
-
-int mr_strcoll(const char* lhs, const char* rhs) {
-    return strcoll(lhs, rhs);
-}
-
-int mr_strlen(const char* s) {
-    return strlen(s);
-}
-
-char* mr_strstr(const char* haystack, const char* needle) {
-    return strstr(haystack, needle);
-}
-
-int mr_atoi(const char* s) {
-    return atoi(s);
-}
-
-unsigned long mr_strtoul(const char* s, char** end_ptr, int base) {
-    return strtoul(s, end_ptr, base);
-}
-
-int mr_rand(void) {
-    return rand();
-}
 
 void mythroad_init(void) {
     ///////////////////////////////////////////////////////////////////////
@@ -371,25 +302,21 @@ void mythroad_init(void) {
 
     _mr_c_function_table[3] = (void*)memcpy2;
     _mr_c_function_table[4] = (void*)memmove2;
-    _mr_c_function_table[5] = (void*)mr_strcpy;
-    _mr_c_function_table[6] = (void*)mr_strncpy;
-    _mr_c_function_table[7] = (void*)mr_strcat;
-    _mr_c_function_table[8] = (void*)mr_strncat;
-    _mr_c_function_table[9] = (void*)mr_memcmp;
-    _mr_c_function_table[10] = (void*)mr_strcmp;
-    _mr_c_function_table[11] = (void*)mr_strncmp;
-    _mr_c_function_table[12] = (void*)mr_strcoll;
-    _mr_c_function_table[13] = (void*)mr_memchr;
-    _mr_c_function_table[14] = (void*)mr_memset;
-#if (!defined(MR_BREW_MOD) && !defined(MR_MSTAR_MOD))
-    _mr_c_function_table[15] = (void*)mr_strlen;
-#else
-    _mr_c_function_table[15] = (void*)mr_strlen;
-#endif
-    _mr_c_function_table[16] = (void*)mr_strstr;
-    _mr_c_function_table[17] = (void*)mr_sprintf;
-    _mr_c_function_table[18] = (void*)mr_atoi;
-    _mr_c_function_table[19] = (void*)mr_strtoul;  // 20
+    _mr_c_function_table[5] = (void*)strcpy2;
+    _mr_c_function_table[6] = (void*)strncpy2;
+    _mr_c_function_table[7] = (void*)strcat2;
+    _mr_c_function_table[8] = (void*)strncat2;
+    _mr_c_function_table[9] = (void*)memcmp2;
+    _mr_c_function_table[10] = (void*)strcmp2;
+    _mr_c_function_table[11] = (void*)strncmp2;
+    _mr_c_function_table[12] = (void*)STRCOLL;
+    _mr_c_function_table[13] = (void*)memchr2;
+    _mr_c_function_table[14] = (void*)memset2;
+    _mr_c_function_table[15] = (void*)strlen2;
+    _mr_c_function_table[16] = (void*)strstr2;
+    _mr_c_function_table[17] = (void*)sprintf_;
+    _mr_c_function_table[18] = (void*)atoi2;
+    _mr_c_function_table[19] = (void*)strtoul2;  // 20
     _mr_c_function_table[20] = (void*)mr_rand;
 
     _mr_c_function_table[21] = (void*)NULL;
@@ -726,7 +653,7 @@ int32 color;
 }mr_drawCharSt;
 */
 
-static void _DrawPoint(int16 x, int16 y, uint16 nativecolor) {
+void _DrawPoint(int16 x, int16 y, uint16 nativecolor) {
     if (x < 0 || y < 0 || x >= MR_SCREEN_W || y >= MR_SCREEN_H)
         return;
     //*(mr_screenBuf + y * MR_SCREEN_MAX_W + x) = nativecolor;
@@ -1246,7 +1173,7 @@ static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b
                             _DrawPoint((int16)(chx + X1), (int16)(chy + Y1), color);
                     };
 #endif
-#else  // MR_PLAT_DRAWTEXT \
+#else  // MR_PLAT_DRAWTEXT 
     //MRDBGPRINTF("mr_platDrawChar 1!");
                 mr_platDrawChar(ch, chx, chy, MAKERGB(r, g, b));
 #endif
@@ -1475,6 +1402,7 @@ static int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, m
                 }
             }
         }
+		Y1 = X1; // 避免 warning: variable ‘X1’ set but not used
     }
 
     if (!(flag & DRAW_TEXT_EX_IS_UNICODE)) {
@@ -4661,7 +4589,6 @@ static int _mr_TestComC(int input0, char* input1, int32 len, int32 code) {
         } break;
 #else
         case 800: {
-            int32 ret;
             //int code = ((int)  mr_L_optint(L,3,0));
             mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1 + 8);
             *((void**)(input1)) = (void*)_mr_c_function_table;
@@ -4710,7 +4637,7 @@ static int _mr_TestComC(int input0, char* input1, int32 len, int32 code) {
 
         } break;
         case 801: {
-            int32 output_len, ret;
+            int32 output_len;
             //int code = ((int)  to_mr_tonumber(L,3,0));
             uint8* output = NULL;
             output_len = 0;
@@ -4985,7 +4912,7 @@ uint32 mrp_version(void) {
 
 int32 mr_doExt(char* extName) {
     char* filebuf;
-    int32 filelen, ret;
+    int32 filelen;
 
     filebuf = _mr_readFile((const char*)extName, (int*)&filelen, 0);
     if (!filebuf) {
@@ -4997,7 +4924,7 @@ int32 mr_doExt(char* extName) {
     if (_mr_TestComC(800, filebuf, filelen, 0) == 0) {
         _mr_TestComC(801, filebuf, MR_VERSION, 6);
         _mr_TestComC(801, (char*)&mrc_appInfo_st, sizeof(mrc_appInfo_st), 8);
-        ret = _mr_TestComC(801, filebuf, MR_VERSION, 0);
+        _mr_TestComC(801, filebuf, MR_VERSION, 0);
     } else {
         MRDBGPRINTF("mr_doExt err:%d", 11002);
         return MR_FAILED;
@@ -5221,7 +5148,7 @@ int32 mr_start_dsm(const char* entry) {
     } else if (entry && (*entry == '#') && (*(entry + 1) == '<')) {
         STRCPY(pack_filename, entry + 2);
     } else {
-        STRCPY(pack_filename, MR_DEFAULT_PACK_NAME);
+        STRCPY(pack_filename, entry);
     }
     MRDBGPRINTF(pack_filename);
 
@@ -5231,43 +5158,7 @@ int32 mr_start_dsm(const char* entry) {
     MEMSET(start_fileparameter, 0, sizeof(start_fileparameter));
 
     mrc_appInfo_st.ram = 0;
-#ifdef SDK_MOD
     return _mr_intra_start("cfunction.ext", entry);
-#else
-    return _mr_intra_start("logo.ext", entry);
-#endif
-}
-
-int32 mr_start_dsmC(char* start_file, const char* entry) {
-    mr_screeninfo screeninfo;
-    if (mr_getScreenInfo(&screeninfo) != MR_SUCCESS) {
-        return MR_FAILED;
-    }
-    mr_screen_w = screeninfo.width;
-    mr_screen_h = screeninfo.height;
-    mr_screen_bit = screeninfo.bit;
-
-    MEMSET(pack_filename, 0, sizeof(pack_filename));
-    if (entry && (*entry == '*')) {
-        STRCPY(pack_filename, entry);
-        //以后%的方式要从VM 中去掉
-    } else if (entry && (*entry == '%')) {
-        STRCPY(pack_filename, entry + 1);
-    } else if (entry && (*entry == '#') && (*(entry + 1) == '<')) {
-        STRCPY(pack_filename, entry + 2);
-    } else {
-        // STRCPY(pack_filename,MR_DEFAULT_PACK_NAME);
-        STRCPY(pack_filename, entry);
-    }
-    MRDBGPRINTF("pack_filename:%s", pack_filename);
-
-    MEMSET(old_pack_filename, 0, sizeof(old_pack_filename));
-    MEMSET(old_start_filename, 0, sizeof(old_start_filename));
-
-    MEMSET(start_fileparameter, 0, sizeof(start_fileparameter));
-    mrc_appInfo_st.ram = 0;
-
-    return _mr_intra_start(start_file, entry);
 }
 
 int32 mr_stop_ex(int16 freemem) {
@@ -6656,22 +6547,6 @@ int FF_Divide(int dividend, int divisor) {
 
     return result;
 }
-
-#ifdef MR_MSTAR_MOD
-
-#undef strncpy
-//extern char *strncpy(char * s1, const char * s2, int n);
-
-char* mr_strncpy(char* s1, const char* s2, int n) {
-    if (s1 && s2 && n) {
-        return strncpy(s1, s2, n);
-    } else {
-        MRDBGPRINTF("mr_strncpy %x,%x,%x", s1, s2, n);
-        return NULL;
-    }
-}
-#define strncpy mr_strncpy
-#endif
 
 #if defined(MR_BREW_OTA_MOD)
 int mrp_sprintf(char* s, const char* format, ...) {
