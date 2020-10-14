@@ -1627,7 +1627,7 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                 uint32 indexlen = headbuf[1] + 8 - headbuf[3];
                 uint8* indexbuf = MR_MALLOC(indexlen);
                 uint32 pos = 0;
-                uint32 file_pos, file_len;
+                uint32 file_pos = 0, file_len = 0;
                 if (!indexbuf) {
                     mr_close(f);
                     _mr_readFileShowInfo(filename, 3003);
