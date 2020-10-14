@@ -1,5 +1,6 @@
 #编译完整虚拟机
-mrpoid2:
+.PHONY: vmrp
+vmrp:
 	gcc -o $@ -g -Wall -DDSM_FULL main.c  -L. -lmr_vm_full -lSDL2 -lm -lz 
 
 

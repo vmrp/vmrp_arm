@@ -435,7 +435,7 @@ int32 mr_findGetNext(MR_FILE_HANDLE search_handle, char *buffer, uint32 len) {
         LOGI("mr_findGetNext %d %s", search_handle, buffer);
         return MR_SUCCESS;
     } else {
-        LOGI("mr_findGetNext %d end", search_handle);
+        LOGI("mr_findGetNext %d (NULL)", search_handle);
     }
     return MR_FAILED;
 }

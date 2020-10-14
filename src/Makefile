@@ -71,22 +71,20 @@ mr_vm_full:
 
 #####################################################################
 
-# LOCAL_CFLAGS := -c -littleend -O2 -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(MINI_VM_VERSION) -DMR_PLAT_DRAWTEXT
-# LOCAL_SRC_FILES := mythroad_mini.c \
-#                     mr_gb2312.c     \
-#                     mr_unzip.c	\
-#                     mr_util.c	\
-#                     mr_encode.c	\
-#                     mr_inflate.c \
-#                     mr_graphics.c \
-#                     string.c \
+LOCAL_CFLAGS :=  -g -Wall -c -littleend  -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(MINI_VM_VERSION) -DMR_PLAT_DRAWTEXT
+LOCAL_SRC_FILES := mythroad_mini.c \
+                    mr_gb2312.c     \
+                    mr_unzip.c	\
+                    mr_util.c	\
+                    mr_encode.c	\
+                    mr_inflate.c \
+                    mr_graphics.c \
+                    string.c \
 
-# mr_vm_mini:
-# 	gcc -g -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-unused-variable -Wno-unused-but-set-variable \
-#                 $(LOCAL_CFLAGS) $(LOCAL_SRC_FILES)\
-#                 -I./include -I.
-
-# 	ar crv ./libmr_vm_mini.a *.o
+mr_vm_mini:
+	gcc $(LOCAL_CFLAGS) $(LOCAL_SRC_FILES) -I./include -I.
+	ar crv ./libmr_vm_mini.a *.o
+	rm *.o
 
 
 .PHONY: clean
