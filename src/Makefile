@@ -71,7 +71,7 @@ full:
 
 #####################################################################
 
-LOCAL_CFLAGS :=  -g -Wall -c -littleend  -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(MINI_VM_VERSION) -DMR_PLAT_DRAWTEXT
+LOCAL_CFLAGS :=  -fPIC -march=armv5te -marm -g -Wall -c -littleend  -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(MINI_VM_VERSION) -DMR_PLAT_DRAWTEXT
 LOCAL_SRC_FILES := mythroad_mini.c \
                     mr_gb2312.c     \
                     mr_unzip.c	\
