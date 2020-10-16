@@ -517,6 +517,7 @@ void* mr_malloc(uint32 len) {
         MRDBGPRINTF("mr_malloc corrupted memory");
         return 0;
     }
+    MRDBGPRINTF("LG_mem_base:0x%X  LG_mem_free.next:0x%X  LG_mem_end:0x%X", LG_mem_base, LG_mem_free.next, LG_mem_end);
 
     previous = &LG_mem_free;
     nextfree = (LG_mem_free_t*)(LG_mem_base + previous->next);
@@ -2208,6 +2209,7 @@ int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len) {
     mr_c_function_P_len = len;
     MEMSET(mr_c_function_P, 0, mr_c_function_P_len);
     mr_c_function = f;
+    MRDBGPRINTF("mr_c_function: 0x%X, mr_c_function_P: 0x%X, len: %d", mr_c_function, mr_c_function_P, len);
 #ifdef SDK_MOD
     *((void**)(sdk_mr_c_function_table)-1) = mr_c_function_P;
 #else
@@ -2345,6 +2347,7 @@ static int _mr_TestComC(int input0, char* input1, int32 len, int32 code) {
             // clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
             // invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
+            MRDBGPRINTF("mr_load_c_function: 0x%X", mr_load_c_function);
             ret = mr_load_c_function(code);
         } break;
         case 801: {
@@ -2594,7 +2597,7 @@ int32 mr_doExt(char* extName) {
     if (_mr_TestComC(800, filebuf, filelen, 0) == 0) {
         _mr_TestComC(801, filebuf, MR_VERSION, 6);
         _mr_TestComC(801, (char*)&mrc_appInfo_st, sizeof(mrc_appInfo_st), 8);
-        _mr_TestComC(801, filebuf, MR_VERSION, 0);
+        _mr_TestComC(801, filebuf, MR_VERSION, 0); // 这一步会最终会进入mrc_init函数
     } else {
         MRDBGPRINTF("mr_doExt err:%d", 11002);
         return MR_FAILED;
