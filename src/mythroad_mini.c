@@ -231,6 +231,7 @@ static const void* _mr_c_function_table[150];
 #endif
 
 void mythroad_init(void) {
+    fixR9_init();
     memset2(_mr_c_port_table, 0, sizeof(_mr_c_port_table));
     memset2(mr_m0_files, 0, sizeof(mr_m0_files));
 
@@ -463,31 +464,30 @@ static int32 _mr_mem_init_ex(int32 ram) {
 }
 
 void* mr_malloc(uint32 len) {
-#if 0
-	//#ifdef SDK_MOD
-	int32 *t;
-	t = malloc(len + 4);
-	*t = len;
-	return (void*)(t+1);
-#else
+	// int32 *t;
+	// t = malloc(len + 4);
+	// *t = len;
+	// return (void*)(t+1);
 
     LG_mem_free_t *previous, *nextfree, *l;
+
+    fixR9_begin();
 
     len = (uint32)realLGmemSize(len);
     if (len >= LG_mem_left) {
         MRDBGPRINTF("mr_malloc no memory");
-        return 0;
+        goto err;
     }
 
     if (!len) {
         MRDBGPRINTF("mr_malloc invalid memory request");
-        return 0;
+        goto err;
     }
     if (LG_mem_base + LG_mem_free.next > LG_mem_end) {
         MRDBGPRINTF("mr_malloc corrupted memory");
-        return 0;
+        goto err;
     }
-    MRDBGPRINTF("LG_mem_base:0x%X  LG_mem_free.next:0x%X  LG_mem_end:0x%X", LG_mem_base, LG_mem_free.next, LG_mem_end);
+    MRDBGPRINTF("R9:%X malloc(0x%X[%d]) LG_mem_base:0x%X  LG_mem_free.next:0x%X  LG_mem_end:0x%X", getR9(), len, len, LG_mem_base, LG_mem_free.next, LG_mem_end);
 
     previous = &LG_mem_free;
     nextfree = (LG_mem_free_t*)(LG_mem_base + previous->next);
@@ -500,8 +500,8 @@ void* mr_malloc(uint32 len) {
                 LG_mem_min = LG_mem_left;
             if (LG_mem_top < previous->next)
                 LG_mem_top = previous->next;
-                //memset(nextfree,0,len); //ouli
 #endif
+            fixR9_end();
             return (void*)nextfree;
         }
         if (nextfree->len > len) {
@@ -515,32 +515,34 @@ void* mr_malloc(uint32 len) {
                 LG_mem_min = LG_mem_left;
             if (LG_mem_top < previous->next)
                 LG_mem_top = previous->next;
-                //memset(nextfree,0,len);
 #endif
+            fixR9_end();
             return (void*)nextfree;
         }
         previous = nextfree;
         nextfree = (LG_mem_free_t*)(LG_mem_base + nextfree->next);
     }
     MRDBGPRINTF("mr_malloc no memory");
-
+err:
+    fixR9_end();
     return 0;
-#endif
 }
 
 void mr_free(void* p, uint32 len) {
-#if 0
-	//#ifdef SDK_MOD
-	int32 *t = (int32 *)p;
-	t = t - 1;
-	if(*t == len){
-		free(t);
-	}else{
-		assert(0);
-	}
-#else
-
+	// int32 *t = (int32 *)p;
+	// t = t - 1;
+	// if(*t == len){
+	// 	free(t);
+	// }else{
+	// 	assert(0);
+	// }
     LG_mem_free_t *free, *n;
+
+    fixR9_begin();
+    if (fixR9_checkFree(p)) {
+        mr_panic("!!!fixR9_checkFree() return true!!!");
+        goto err;
+    }
 
     len = (uint32)realLGmemSize(len);
 #ifdef MYTHROAD_DEBUG
@@ -548,7 +550,7 @@ void mr_free(void* p, uint32 len) {
         MRDBGPRINTF("mr_free invalid");
         MRDBGPRINTF("p=%d,l=%d,base=%d,LG_mem_end=%d", (int32)p, len,
                     (int32)LG_mem_base, (int32)LG_mem_end);
-        return;
+        goto err;
     }
 #endif
 
@@ -561,9 +563,8 @@ void mr_free(void* p, uint32 len) {
 #ifdef MYTHROAD_DEBUG
     if (p == (void*)free || p == (void*)n) {
         MRDBGPRINTF("mr_free:already free");
-        return;
+        goto err;
     }
-    //memset(p,0,len);  //ouli
 #endif
     if ((free != &LG_mem_free) && ((char*)free + free->len == p)) {
         free->len += len;
@@ -578,8 +579,8 @@ void mr_free(void* p, uint32 len) {
         free->len += n->len;
     }
     LG_mem_left += len;
-
-#endif
+err:
+    fixR9_end();
 }
 
 void* mr_realloc(void* p, uint32 oldlen, uint32 len) {
@@ -2304,12 +2305,17 @@ static int _mr_TestComC(int input0, char* input1, int32 len, int32 code) {
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
             MRDBGPRINTF("mr_load_c_function: 0x%X", mr_load_c_function);
             ret = mr_load_c_function(code);
-            fixR9_init(mr_c_function_P);
+            if (ret == MR_SUCCESS) {
+                ret = fixR9_hack(mr_c_function_P);
+            }
         } break;
         case 801: {
             int32 output_len = 0;
             uint8* output = NULL;
+            fixR9_save();
+            fixR9_setIsInMythroad(FALSE);
             ret = mr_c_function(mr_c_function_P, code, (uint8*)input1, len, (uint8**)&output, &output_len);
+            fixR9_setIsInMythroad(TRUE);
         } break;
 #endif
     }

@@ -48,6 +48,10 @@ static uint32 dsmStartTime;  //虚拟机初始化时间，用来计算系统运�
 
 //////////////////////////////////////////////////////////////////
 
+void mr_panic(char *msg) {
+    dsmInFuncs->panic(msg);
+}
+
 void mr_printf(const char *format, ...) {
     char printfBuf[512] = {0};
     char utf8Buf[1024] = {0};

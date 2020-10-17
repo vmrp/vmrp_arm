@@ -56,10 +56,173 @@ ext调用mythroad时在mythroad空间通过r9 恢复 r9 r10
 
 #define MRDBGPRINTF mr_printf
 
-extern void* mr_malloc(uint32 len);
-extern void mr_free(void* p, uint32 len);
+extern void *mr_malloc(uint32 len);
+extern void mr_free(void *p, uint32 len);
 
-int32 fixR9_init(mr_c_function_P_st* mr_c_function_P) {
-    MRDBGPRINTF("fixR9_init-----------------start_of_ER_RW:%X, len:%X", mr_c_function_P->start_of_ER_RW, mr_c_function_P->ER_RW_Length);
-    return 0;
+void *mr_malloc2(uint32 len) {
+    uint32 *p = mr_malloc(len + sizeof(uint32));
+    if (p) {
+        *p = len;
+        return (void *)(p + 1);
+    }
+    return p;
+}
+
+void mr_free2(void *p) {
+    if (p) {
+        uint32 *t = (uint32 *)p - 1;
+        mr_free(t, *t);
+    }
+}
+
+typedef struct fixR9_st {
+    BOOL isInMythroad;
+    void *r9Mythroad;
+    void *r10Mythroad;
+    void *r9Ext;
+    void *r10Ext;
+    void *rwMemCheck;
+    void *rwMem;
+    uint32 rwLen;  // 保持在最后一个
+} fixR9_st;
+
+static fixR9_st *context;
+
+int32 fixR9_init() {
+    context = NULL;
+    return MR_SUCCESS;
+}
+
+int32 fixR9_hack(mr_c_function_P_st *mr_c_function_P) {
+    char *mem, *newRw;
+
+    MRDBGPRINTF("fixR9_init-----------------start_of_ER_RW:0x%X, len:0x%X", mr_c_function_P->start_of_ER_RW, mr_c_function_P->ER_RW_Length);
+    if (context) {
+        return MR_FAILED;
+    }
+
+    mem = mr_malloc2(mr_c_function_P->ER_RW_Length + sizeof(fixR9_st));
+    if (!mem) {
+        return MR_FAILED;
+    }
+    newRw = mem + sizeof(fixR9_st);
+    memcpy2(newRw, mr_c_function_P->start_of_ER_RW, mr_c_function_P->ER_RW_Length);
+    mr_free2(mr_c_function_P->start_of_ER_RW);
+
+    // 不用管mr_c_function_P->ER_RW_Length
+    mr_c_function_P->start_of_ER_RW = newRw;
+
+    context = (fixR9_st *)mem;
+    context->rwMemCheck = (uint32 *)mr_c_function_P->start_of_ER_RW - 1;
+    context->rwMem = mr_c_function_P->start_of_ER_RW;
+    context->rwLen = mr_c_function_P->ER_RW_Length;
+    context->isInMythroad = TRUE;
+    // MRDBGPRINTF("test:---%X %X", context->rwMemCheck, &context->rwLen); // 两个值应该是相等的
+    return MR_SUCCESS;
+}
+
+// 检测是否对mr_c_function_P->start_of_ER_RW进行了free()操作，目前还不知道什么时候会free()，也许并不会在ext中free()
+BOOL fixR9_checkFree(void *p) {
+    return (context && (p == context->rwMemCheck));
+}
+
+void *getR9() {
+    register void *ret;
+#ifdef __GNUC__
+    asm("MOV %[result], r9"
+        : [ result ] "=r"(ret));
+#else
+    __asm {
+      mov ret, r9;
+    }
+#endif
+    return ret;
+}
+
+void setR9(void *value) {
+#ifdef __GNUC__
+    asm("MOV r9, %[input_value]"
+        :
+        : [ input_value ] "r"(value));
+#else
+    __asm {
+      mov r9, value;
+    }
+#endif
+}
+
+void *getR10() {
+    register void *ret;
+#ifdef __GNUC__
+    asm("MOV %[result], r10"
+        : [ result ] "=r"(ret));
+#else
+    __asm {
+      mov ret, r10;
+    }
+#endif
+    return ret;
+}
+
+void setR10(void *value) {
+#ifdef __GNUC__
+    asm("MOV r10, %[input_value]"
+        :
+        : [ input_value ] "r"(value));
+#else
+    __asm {
+      mov r10, value;
+    }
+#endif
+}
+
+void fixR9_save() {
+    if (context) {
+        context->r9Mythroad = getR9();
+        context->r10Mythroad = getR10();
+    }
+}
+
+void fixR9_setIsInMythroad(BOOL v) {
+    if (context) {
+        context->isInMythroad = v;
+    }
+}
+
+BOOL isInExt() {
+    void *r9v = getR9();
+    if ((uint32)r9v > sizeof(fixR9_st)) {
+        fixR9_st *ctx = (fixR9_st *)(r9v - sizeof(fixR9_st));
+        if (ctx && (r9v == ctx->rwMem)) { // 注意，ctx有可能会是个无效的内存地址，目前还不知道怎样获得有效地址的范围
+            if (ctx->isInMythroad == FALSE) {  // 加多一层，避免误判
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
+int32 fixR9_begin() {
+    if (isInExt()) {
+        void *r9v = getR9();
+        fixR9_st *ctx = (fixR9_st *)(r9v - sizeof(fixR9_st));
+        register void *newR9v = ctx->r9Mythroad;  // 必需先用寄存器保存
+        register void *newR10v = ctx->r10Mythroad;
+        // 注意，这里在ext空间，不能直接使用context
+        ctx->r9Ext = r9v;
+        ctx->r10Ext = getR10();
+        setR9(newR9v);
+        setR10(newR10v);
+    }
+    return MR_SUCCESS;
+}
+
+int32 fixR9_end() {
+    if (context && (context->isInMythroad == FALSE)) {
+        register void *newR9v = context->r9Ext;  // 必需先用寄存器保存
+        register void *newR10v = context->r10Ext;
+        setR9(newR9v);
+        setR10(newR10v);
+    }
+    return MR_SUCCESS;
 }

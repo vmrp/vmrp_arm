@@ -548,6 +548,8 @@ extern int32 mr_findStop(MR_SEARCH_HANDLE search_handle);
 /*退出平台*/
 extern int32 mr_exit(void);
 
+extern void mr_panic(char* msg);
+
 /*开始手机震动*/
 extern int32 mr_startShake(int32 ms);
 /*结束手机震动*/

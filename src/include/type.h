@@ -39,6 +39,12 @@ typedef int BOOL;
 // typedef DWORD* DWORD_PTR;
 
 
+#ifndef offsetof
+#define offsetof(type, field) ((size_t) & ((type *)0)->field)
+#endif
+#ifndef countof
+#define countof(x) (sizeof(x) / sizeof((x)[0]))
+#endif
 
 
 

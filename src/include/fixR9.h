@@ -10,6 +10,13 @@ typedef struct {
     uint32 ER_RW_Length;
 } mr_c_function_P_st;
 
-int32 fixR9_init(mr_c_function_P_st* mr_c_function_P);
+int32 fixR9_init();
+int32 fixR9_hack(mr_c_function_P_st* mr_c_function_P);
+void fixR9_save();
+void fixR9_setIsInMythroad(BOOL v);
+BOOL fixR9_checkFree(void* p);
+void* getR9();
 
+int32 fixR9_begin();
+int32 fixR9_end();
 #endif
