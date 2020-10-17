@@ -628,31 +628,18 @@ unicode_char *c2u(const char *cp, int *err, int *size) {
                 dest[1] = 0;
 
                 gbToUCS2((uint8 *)&a_ch[0], (uint8 *)&dest[1]);
-#ifdef MR_BIG_ENDIAN
-                uc[cnt++] = (unicode_char)(dest[1] >> 16);
-#else
                 uc[cnt++] = ((dest[1] & 0xff) << 8) + (dest[1] >> 8);
-#endif
             } else if (err) {
                 LUADBGPRINTF("c2u:err   1");
                 *err = i;
                 MR_FREE(uc, (cnt + 1) * sizeof(unicode_char));
                 return NULL;
             } else {
-#ifdef MR_BIG_ENDIAN
-                uc[cnt++] = 0xFFFD;  //TI
-#else
                 uc[cnt++] = 0xFDFF;
-#endif
             }
             i += 2;
         } else if (cp[i] < (unsigned)0x80) {
-#ifdef MR_BIG_ENDIAN
-            uc[cnt++] = (unicode_char)cp[i];
-#else
             uc[cnt++] = ((unicode_char)cp[i]) << 8;
-#endif
-
             i += 1;
         } else if (err) {
             LUADBGPRINTF("c2u:err   2");
@@ -660,16 +647,11 @@ unicode_char *c2u(const char *cp, int *err, int *size) {
             MR_FREE(uc, (cnt + 1) * sizeof(unicode_char));
             return (NULL);
         } else {
-#ifdef MR_BIG_ENDIAN
-            uc[cnt++] = 0xFFFD;
-#else
             uc[cnt++] = 0xFDFF;
-#endif
             i += 2;
         }
     }
     uc[cnt] = 0;
-
     return (uc);
 }
 

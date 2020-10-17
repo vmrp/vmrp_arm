@@ -13,6 +13,7 @@ output_format=mrp
 config=mtk176
 
 [config_mtk176]
+optimiza=0
 output=.\vmrp.mrp
 bmp_mode=normal
 plat=mtk

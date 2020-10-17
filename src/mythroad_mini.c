@@ -176,16 +176,13 @@ int8 mr_flagReadFileForPlat = FALSE;
 #endif
 
 //************read file form mrp plat
-void mr_md5_init(md5_state_t* pms);
-void mr_md5_append(md5_state_t* pms, const md5_byte_t* data, int nbytes);
-void mr_md5_finish(md5_state_t* pms, md5_byte_t digest[16]);
 //int32 _mr_decode(unsigned char *in, unsigned int len, unsigned char *out);
 //int32 _mr_encode(unsigned char *in, unsigned int len, unsigned char *out);
 
 static int32 _mr_smsSetBytes(int32 pos, char* p, int32 len);
 static int32 _mr_smsAddNum(int32 index, char* pNum);
 static int32 _mr_load_sms_cfg(void);
-static int32 _mr_save_sms_cfg(MR_FILE_HANDLE f);
+static int32 _mr_save_sms_cfg(int32 f);
 static int32 _mr_newSIMInd(int16 type, uint8* old_IMSI);
 
 static int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h);
@@ -212,23 +209,64 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len);
 static int _mr_TestComC(int input0, char* input1, int32 len, int32 code);
 
 int32 mr_stop_ex(int16 freemem);
-
-static int32 _mr_div(int32 a, int32 b);
-static int32 _mr_mod(int32 a, int32 b);
-
 static int32 _mr_getMetaMemLimit(void);
 
 static const void* _mr_c_internal_table[17];
-
 static void* _mr_c_port_table[4];
 
 #ifdef SDK_MOD
 void* sdk_mr_c_function_table;
-
 const void* _mr_c_function_table[];
 #else
 static const void* _mr_c_function_table[150];
 #endif
+
+unicode_char* mr_c2u(const char* cp, int* err, int* size) {
+    unicode_char* ret;
+    fixR9_begin();
+    ret = c2u(cp, err, size);
+    fixR9_end();
+    return ret;
+}
+
+static int32 _mr_div(int32 a, int32 b) {
+    return a / b;
+}
+
+static int32 _mr_mod(int32 a, int32 b) {
+    return a % b;
+}
+
+static ulg _mr_updcrc(uch* s, unsigned n) {
+    ulg ret;
+    fixR9_begin();
+    ret = mr_updcrc(s, n);
+    fixR9_end();
+    return ret;
+}
+
+static int _mr_unzip(void) {
+    int ret;
+    fixR9_begin();
+    ret = mr_unzip();
+    fixR9_end();
+    return ret;
+}
+static int32 _mr_transbitmapDraw(mr_transBitmap* hTransBmp, uint16* dstBuf, int32 dest_max_w, int32 dest_max_h, int32 sx, int32 sy,
+                                 int32 width, int32 height, int32 dx, int32 dy) {
+    int32 ret;
+    fixR9_begin();
+    ret = mr_transbitmapDraw(hTransBmp, dstBuf, dest_max_w, dest_max_h, sx, sy, width, height, dx, dy);
+    fixR9_end();
+    return ret;
+}
+
+static void _mr_drawRegion(mr_jgraphics_context_t* gContext, mr_jImageSt* src,
+                           int sx, int sy, int w, int h, int transform, int x, int y, int anchor) {
+    fixR9_begin();
+    mr_drawRegion(gContext, src, sx, sy, w, h, transform, x, y, anchor);
+    fixR9_end();
+}
 
 void mythroad_init(void) {
     fixR9_init();
@@ -409,34 +447,26 @@ void mythroad_init(void) {
     _mr_c_function_table[129] = (void*)_mr_EffSetCon;
     _mr_c_function_table[130] = (void*)_mr_TestCom;
     _mr_c_function_table[131] = (void*)_mr_TestCom1;  //1938
-    _mr_c_function_table[132] = (void*)c2u;           //1939
+    _mr_c_function_table[132] = (void*)mr_c2u;        //1939
     _mr_c_function_table[133] = (void*)_mr_div;       //1941
     _mr_c_function_table[134] = (void*)_mr_mod;
 
     _mr_c_function_table[135] = (void*)&LG_mem_min;
     _mr_c_function_table[136] = (void*)&LG_mem_top;
-    _mr_c_function_table[137] = (void*)mr_updcrc;            //1943
+    _mr_c_function_table[137] = (void*)_mr_updcrc;           //1943
     _mr_c_function_table[138] = (void*)start_fileparameter;  //1945
     _mr_c_function_table[139] = (void*)&mr_sms_return_flag;  //1949
     _mr_c_function_table[140] = (void*)&mr_sms_return_val;
-    _mr_c_function_table[141] = (void*)mr_unzip;          //1950
+    _mr_c_function_table[141] = (void*)_mr_unzip;         //1950
     _mr_c_function_table[142] = (void*)&mr_exit_cb;       //1951
     _mr_c_function_table[143] = (void*)&mr_exit_cb_data;  //1951
     _mr_c_function_table[144] = (void*)mr_entry;          //1952
     _mr_c_function_table[145] = (void*)mr_platDrawChar;   //2004
     _mr_c_function_table[146] = (void*)&LG_mem_free;      //1967,2009
 
-    _mr_c_function_table[147] = (void*)mr_transbitmapDraw;
-    _mr_c_function_table[148] = (void*)mr_drawRegion;
+    _mr_c_function_table[147] = (void*)_mr_transbitmapDraw;
+    _mr_c_function_table[148] = (void*)_mr_drawRegion;
     _mr_c_function_table[149] = NULL;
-}
-
-static int32 _mr_div(int32 a, int32 b) {
-    return a / b;
-}
-
-static int32 _mr_mod(int32 a, int32 b) {
-    return a % b;
 }
 
 static int32 _mr_mem_init_ex(int32 ram) {
@@ -464,10 +494,10 @@ static int32 _mr_mem_init_ex(int32 ram) {
 }
 
 void* mr_malloc(uint32 len) {
-	// int32 *t;
-	// t = malloc(len + 4);
-	// *t = len;
-	// return (void*)(t+1);
+    // int32 *t;
+    // t = malloc(len + 4);
+    // *t = len;
+    // return (void*)(t+1);
 
     LG_mem_free_t *previous, *nextfree, *l;
 
@@ -529,13 +559,13 @@ err:
 }
 
 void mr_free(void* p, uint32 len) {
-	// int32 *t = (int32 *)p;
-	// t = t - 1;
-	// if(*t == len){
-	// 	free(t);
-	// }else{
-	// 	assert(0);
-	// }
+    // int32 *t = (int32 *)p;
+    // t = t - 1;
+    // if(*t == len){
+    // 	free(t);
+    // }else{
+    // 	assert(0);
+    // }
     LG_mem_free_t *free, *n;
 
     fixR9_begin();
@@ -605,18 +635,25 @@ void* mr_realloc(void* p, uint32 oldlen, uint32 len) {
 }
 
 void _DrawPoint(int16 x, int16 y, uint16 nativecolor) {
-    if (x < 0 || y < 0 || x >= MR_SCREEN_W || y >= MR_SCREEN_H)
+    fixR9_begin();
+    if (x < 0 || y < 0 || x >= MR_SCREEN_W || y >= MR_SCREEN_H) {
+        fixR9_end();
         return;
+    }
     *MR_SCREEN_CACHE_POINT(x, y) = nativecolor;
+    fixR9_end();
 }
 
 static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw) {
     uint16 *dstp, *srcp;
-    int MaxY = MIN(MR_SCREEN_H, y + h);
-    int MaxX = MIN(MR_SCREEN_W, x + w);
-    int MinY = MAX(0, y);
-    int MinX = MAX(0, x);
     uint16 dx, dy;
+    int MinX, MinY, MaxX, MaxY;
+
+    fixR9_begin();
+    MinY = MAX(0, y);
+    MinX = MAX(0, x);
+    MaxX = MIN(MR_SCREEN_W, x + w);
+    MaxY = MIN(MR_SCREEN_H, y + h);
 
     if (rop > MR_SPRITE_TRANSPARENT) {
         uint16 BitmapRop = rop & MR_SPRITE_INDEX_MASK;
@@ -782,51 +819,10 @@ static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 
                 break;
         }
     }
+    fixR9_end();
 }
 
 static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler) {
-    /*
-	int16 A = pTrans->A;
-	int16 B = pTrans->B;
-	int16 C = pTrans->C;
-	int16 D = pTrans->D;
-	uint16 rop = pTrans->rop;
-	uint16 *dstp,*srcp;
-	int16 CenterX = x + w/2;
-	int16 CenterY = y + h/2;
-	int16 dx,dy;
-	int32 I = A * D - B * C;
-	int16 MaxY = (ABS(C) * w/2 + ABS(D) * h/2)/256;
-	int16 MinY = 0-MaxY;
-
-	MaxY = MIN(MaxY, MR_SCREEN_H - CenterY);
-	MinY = MAX(MinY, 0 - CenterY);
-
-	for(dy=MinY;dy<MaxY;dy++)
-	{
-	int16 MaxX = MIN(D==0? 999:(D>0? (w * I / 2 /256 + B * dy )/D:(B * dy - w * I / 2 /256 )/D), 
-	C==0? 999:(C>0? (A * dy + h * I / 2/256)/C:(A * dy - h * I / 2/256)/C));
-	int16 MinX = MAX(D==0? -999:(D>0? (B * dy - w * I / 2 /256 )/D:(w * I / 2 /256 + B * dy )/D), 
-	C==0? -999:(C>0? (A * dy - h * I / 2/256)/C:(A * dy + h * I / 2/256)/C));
-	MaxX = MIN(MaxX, MR_SCREEN_W - CenterX);
-	MinX = MAX(MinX, 0 - CenterX);
-	dstp = mr_screenBuf + (dy + CenterY) * MR_SCREEN_MAX_W + (MinX + CenterX);
-	for(dx=MinX;dx<MaxX;dx++)
-	{
-	srcp = p + ( (A * dy - C * dx )*256/I + h/2 ) * w + (D * dx - B * dy)*256/I + w/2;
-	if (!((rop == BM_TRANSPARENT) && (*srcp == transcoler)))
-	*dstp = *srcp;
-	dstp++;
-	}
-	}
-	*/
-
-    /*
-	int16 MaxX = MIN(D==0? 999:(D>0? (((w * I)>>9) + B * dy )/D:(B * dy - ((w * I)>>9) )/D), 
-	C==0? 999:(C>0? (A * dy + ((h * I)>>9))/C:(A * dy - ((h * I) >>9))/C));
-	int16 MinX = MAX(D==0? -999:(D>0? (B * dy - ((w * I)>>9) )/D:(((w * I) >>9) + B * dy )/D), 
-	C==0? -999:(C>0? (A * dy - ((h * I)>>9))/C:(A * dy + ((h * I)>>9))/C));
-	*/
     int32 A = pTrans->A;
     int32 B = pTrans->B;
     int32 C = pTrans->C;
@@ -840,6 +836,7 @@ static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint
     int16 MaxY = (ABS(C) * w + ABS(D) * h) >> 9;
     int16 MinY = 0 - MaxY;
 
+    fixR9_begin();
     MaxY = MIN(MaxY, dstbmp->h - CenterY);
     MinY = MAX(MinY, 0 - CenterY);
 
@@ -879,23 +876,20 @@ static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint
                 break;
         }
     }
+    fixR9_end();
 }
 
 static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b) {
-    //   mr_drawRect(x,y,w,h,MAKERGB(r, g, b));
     uint16 *dstp, *srcp;
-    int MaxY = MIN(MR_SCREEN_H, y + h);
-    int MaxX = MIN(MR_SCREEN_W, x + w);
-    int MinY = MAX(0, y);
-    int MinX = MAX(0, x);
+    int MaxY, MaxX, MinY, MinX;
     uint16 dx, dy;
     uint16 nativecolor;
 
-    /*
-	nativecolor = (r/8)<<11;
-	nativecolor |=(g/4)<<5;
-	nativecolor |=(b/8);          
-	*/
+    fixR9_begin();
+    MaxY = MIN(MR_SCREEN_H, y + h);
+    MaxX = MIN(MR_SCREEN_W, x + w);
+    MinY = MAX(0, y);
+    MinX = MAX(0, x);
     nativecolor = MAKERGB(r, g, b);
 
     if ((MaxY > MinY) && (MaxX > MinX)) {
@@ -943,7 +937,6 @@ static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8
 		}
 
 #else
-        //dstp = mr_screenBuf + MinY * MR_SCREEN_MAX_W + MinX;
         dstp = MR_SCREEN_CACHE_POINT(MinX, MinY);
         srcp = dstp;
         for (dx = MinX; dx < MaxX; dx++) {
@@ -955,7 +948,6 @@ static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8
             //srcp = ((srcp+1) & 0xfffffffc);
             srcp++;
             for (dy = MinY + 1; dy < MaxY; dy++) {
-                //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
                 dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
                 *dstp = nativecolor;
                 //dstp = ((dstp+1) & 0xfffffffc);
@@ -971,7 +963,6 @@ static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8
             }
         } else {
             for (dy = MinY + 1; dy < MaxY; dy++) {
-                //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
                 dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
                 MEMCPY(dstp, srcp, (MaxX - MinX) << 1);
                 /*
@@ -985,31 +976,27 @@ static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8
         }
 #endif
     }
-    return;
+    fixR9_end();
 }
 
 static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font) {
     int TextSize;
-    //#endif
     uint16* tempBuf;
-    //int tempret=0;
+
+    fixR9_begin();
 
 #ifdef MYTHROAD_DEBUG
     if (!pcText) {
-        //mrp_pushfstring(vm_state, "DrawText x=%d: txt is nil!",x);
-        //mrp_error(vm_state);
         MRDBGPRINTF("DrawText x=%d: txt is nil!", x);
-        return 0;
+        goto end;
     }
 #endif
 
     if (!is_unicode) {
         tempBuf = c2u((const char*)pcText, NULL, &TextSize);
         if (!tempBuf) {
-            //mrp_pushfstring(vm_state, "DrawText x=%d:c2u err!",x);
-            //mrp_error(vm_state);
             MRDBGPRINTF("DrawText x=%d:c2u err!", x);
-            return 0;
+            goto end;
         }
     } else {
         tempBuf = (uint16*)pcText;
@@ -1130,26 +1117,29 @@ static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b
     if (!is_unicode) {
         MR_FREE((void*)tempBuf, TextSize);
     }
+    fixR9_end();
+end:
     return 0;
 }
 
 static int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, mr_colourSt colorst, int flag, uint16 font) {
     int TextSize, endchar_index;
     uint16* tempBuf;
-    //int tempret=0;
     uint16 ch;
+
+    fixR9_begin();
     endchar_index = 0;
 
     if (!pcText) {
         MRDBGPRINTF("DrawTextEx x=%d: txt is nil!", x);
-        return 0;
+        goto end;
     }
 
     if (!(flag & DRAW_TEXT_EX_IS_UNICODE)) {
         tempBuf = c2u((const char*)pcText, NULL, &TextSize);
         if (!tempBuf) {
             MRDBGPRINTF("DrawTextEx x=%d:c2u err!", x);
-            return 0;
+            goto end;
         }
     } else {
         tempBuf = (uint16*)pcText;
@@ -1347,20 +1337,23 @@ static int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, m
     if (!(flag & DRAW_TEXT_EX_IS_UNICODE)) {
         MR_FREE((void*)tempBuf, TextSize);
     }
+end:
+    fixR9_end();
     return endchar_index;
 }
 
 int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transcoler, uint16 color_check) {
     uint16 *dstp, *srcp;
-    int16 MaxY = MIN(MR_SCREEN_H, y + h);
-    int16 MaxX = MIN(MR_SCREEN_W, x + w);
-    int16 MinY = MAX(0, y);
-    int16 MinX = MAX(0, x);
+    int16 MaxY, MaxX, MinY, MinX;
     uint16 dx, dy;
     int nResult = 0;
 
+    fixR9_begin();
+    MaxY = MIN(MR_SCREEN_H, y + h);
+    MaxX = MIN(MR_SCREEN_W, x + w);
+    MinY = MAX(0, y);
+    MinX = MAX(0, x);
     for (dy = MinY; dy < MaxY; dy++) {
-        //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
         dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
         srcp = p + (dy - y) * w + (MinX - x);
         for (dx = MinX; dx < MaxX; dx++) {
@@ -1373,22 +1366,22 @@ int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transco
             srcp++;
         }
     }
-
+    fixR9_end();
     return nResult;
 }
 
-//effect
 static int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb) {
     uint16* dstp;
     uint32 color_old, coloer_new;
-    int MaxY = MIN(MR_SCREEN_H, y + h);
-    int MaxX = MIN(MR_SCREEN_W, x + w);
-    int MinY = MAX(0, y);
-    int MinX = MAX(0, x);
+    int MaxY, MaxX, MinY, MinX;
     uint16 dx, dy;
 
+    fixR9_begin();
+    MaxY = MIN(MR_SCREEN_H, y + h);
+    MaxX = MIN(MR_SCREEN_W, x + w);
+    MinY = MAX(0, y);
+    MinX = MAX(0, x);
     for (dy = MinY; dy < MaxY; dy++) {
-        //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
         dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
         for (dx = MinX; dx < MaxX; dx++) {
             color_old = *dstp;
@@ -1405,9 +1398,9 @@ static int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 p
             dstp++;
         }
     }
+    fixR9_end();
     return 0;
 }
-//effect
 
 void _mr_showErrorInfo(const char* errstr) {
     int32 i;
@@ -1436,20 +1429,19 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
     uint32 reallen, found = 0;
     int32 oldlen, nTmp;
     uint32 len;
-    void* filebuf;
-    MR_FILE_HANDLE f;
+    void *filebuf, *retv;
+    int32 f;
     char TempName[MR_MAX_FILENAME_SIZE];
     char* mr_m0_file;
     int is_rom_file = FALSE;
 
-    if ((pack_filename[0] == '*') || (pack_filename[0] == '$')) /*m0 file or ram file?*/
-    {                                                           /*read file from m0*/
+    fixR9_begin();
+    if ((pack_filename[0] == '*') || (pack_filename[0] == '$')) {
         uint32 pos = 0;
         uint32 m0file_len;
 
         if (pack_filename[0] == '*') {                                /*m0 file?*/
-            mr_m0_file = (char*)mr_m0_files[pack_filename[1] - 'A'];  //这里定义文件名为*A即是第一个m0文件
-                                                                      //*B是第二个.........
+            mr_m0_file = (char*)mr_m0_files[pack_filename[1] - 'A'];  //这里定义文件名为*A即是第一个m0文件 *B是第二个.........
         } else {
             mr_m0_file = mr_ram_file;
         }
@@ -1459,13 +1451,10 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
             if (mr_ram_file == NULL) MRDBGPRINTF("mr_ram_file nil!");
             //MRDBGPRINTF( "_mr_readFile:mr_m0_file nil at \"%s\"!",filename);
             _mr_readFileShowInfo(filename, 1001);
-            return 0;
+            goto err;
         }
         pos = pos + 4;
         MEMCPY(&len, &mr_m0_file[pos], 4);
-#ifdef MR_BIG_ENDIAN
-        len = ntohl(len);
-#endif
         pos = pos + 4;
 
         if ((pack_filename[0] == '$')) {
@@ -1475,41 +1464,27 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
             if (bi & MR_FLAGS_AI) {
                 if (_mr_isMr(&mr_m0_file[52]) != MR_SUCCESS) {
                     _mr_readFileShowInfo("unauthorized", 3);
-                    return 0;
+                    goto err;
                 }
-            } else {
             }
 #endif
         } else {
             MEMCPY(&m0file_len, &mr_m0_file[pos], 4);
-
-#ifdef MR_BIG_ENDIAN
-            m0file_len = ntohl(m0file_len);
-#endif
         }
-
-        //MRDBGPRINTF("readFile 11 len = %d", len);
-        //MRDBGPRINTF("readFile 21 len = %d", m0file_len);
         pos = pos + len;
         while (!found) {
             if (((pos + 4) >= m0file_len) || (len < 1) || (len >= MR_MAX_FILE_SIZE)) {
                 //MRDBGPRINTF( "_mr_readFile:err 4 at \"%s\"!",filename);
                 _mr_readFileShowInfo(filename, 1004);
-                return 0;
+                goto err;
             }
             MEMCPY(&len, &mr_m0_file[pos], 4);
-            //MRDBGPRINTF("readFile 3 len = %d", len);
 
-#ifdef MR_BIG_ENDIAN
-            len = ntohl(len);
-#endif
-
-            //MRDBGPRINTF("readFile 3 len = %d", len);
             pos = pos + 4;
             if (((len + pos) >= m0file_len) || (len < 1) || (len >= MR_MAX_FILENAME_SIZE)) {
                 //MRDBGPRINTF( "_mr_readFile:err 2 at \"%s\"!",filename);
                 _mr_readFileShowInfo(filename, 1002);
-                return 0;
+                goto err;
             }
             MEMSET(TempName, 0, sizeof(TempName));
             MEMCPY(TempName, &mr_m0_file[pos], len);
@@ -1517,28 +1492,18 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
             pos = pos + len;
             if (STRCMP(filename, TempName) == 0) {
                 if (lookfor == 1) {
-                    return (void*)1;
+                    goto ret1;
                 }
                 found = 1;
                 MEMCPY(&len, &mr_m0_file[pos], 4);
-
-#ifdef MR_BIG_ENDIAN
-                len = ntohl(len);
-#endif
-
                 pos = pos + 4;
                 if (((len + pos) > m0file_len) || (len < 1) || (len >= MR_MAX_FILE_SIZE)) {
                     //MRDBGPRINTF( "_mr_readFile:err 4 at \"%s\"!",filename);
                     _mr_readFileShowInfo(filename, 1003);
-                    return 0;
+                    goto err;
                 }
             } else {
                 MEMCPY(&len, &mr_m0_file[pos], 4);
-
-#ifdef MR_BIG_ENDIAN
-                len = ntohl(len);
-#endif
-
                 //MRDBGPRINTF("l = %d,p = %d", len, pos);
                 pos = pos + 4 + len;
             } /*if (STRCMP(filename, TempName)==0)*/
@@ -1548,37 +1513,36 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
         if (*filelen <= 0) {
             //MRDBGPRINTF("_mr_readFile  \"%s\" len err!", filename);
             _mr_readFileShowInfo(filename, 1005);
-            return 0;
+            goto err;
         }
 
         if (lookfor == 2) {
-            return (void*)&mr_m0_file[pos];
+            retv = (void*)&mr_m0_file[pos];
+            goto end;
         }
         filebuf = &mr_m0_file[pos];
         is_rom_file = TRUE;
 
-    } else /*read file from efs , EFS 中的文件*/
-    {
+    } else { /*read file from efs , EFS 中的文件*/
         f = mr_open(pack_filename, MR_FILE_RDONLY);
         if (f == 0) {
             _mr_readFileShowInfo(filename, 2002);
-            return 0;
+            goto err;
         }
 
-        // 从这里开始是新版的mrp处理
-        {
+        {  // 从这里开始是新版的mrp处理
             uint32 headbuf[4];
             MEMSET(headbuf, 0, sizeof(headbuf));
             nTmp = mr_read(f, &headbuf, sizeof(headbuf));
             if ((nTmp != 16) || (headbuf[0] != 1196446285)) {
                 mr_close(f);
                 _mr_readFileShowInfo(filename, 3001);
-                return 0;
+                goto err;
             }
             if (headbuf[1] <= 232) {
                 mr_close(f);
                 _mr_readFileShowInfo(filename, 3051);
-                return 0;
+                goto err;
             }
             {  //新版mrp
                 uint32 indexlen = headbuf[1] + 8 - headbuf[3];
@@ -1588,14 +1552,14 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                 if (!indexbuf) {
                     mr_close(f);
                     _mr_readFileShowInfo(filename, 3003);
-                    return 0;
+                    goto err;
                 }
                 nTmp = mr_seek(f, headbuf[3] - 16, MR_SEEK_CUR);
                 if (nTmp < 0) {
                     mr_close(f);
                     MR_FREE(indexbuf, indexlen);
                     _mr_readFileShowInfo(filename, 3002);
-                    return 0;
+                    goto err;
                 }
 
                 nTmp = mr_read(f, indexbuf, indexlen);
@@ -1604,7 +1568,7 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                     mr_close(f);
                     MR_FREE(indexbuf, indexlen);
                     _mr_readFileShowInfo(filename, 3003);
-                    return 0;
+                    goto err;
                 }
 
                 while (!found) {
@@ -1614,24 +1578,17 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                         mr_close(f);
                         MR_FREE(indexbuf, indexlen);
                         _mr_readFileShowInfo(filename, 3004);
-                        return 0;
+                        goto err;
                     }
                     MEMSET(TempName, 0, sizeof(TempName));
                     MEMCPY(TempName, &indexbuf[pos], len);
                     pos = pos + len;
 
-#if 0
-					MRDBGPRINTF("pos=%d,len=%d",pos,len);
-					MRDBGPRINTF("str2=%s",TempName);
-					MRDBGPRINTF("strcmp=%d",STRCMP(filename, TempName));
-					mr_sleep(50);
-#endif
-
                     if (STRCMP(filename, TempName) == 0) {
                         if (lookfor == 1) {
                             mr_close(f);
                             MR_FREE(indexbuf, indexlen);
-                            return (void*)1;
+                            goto ret1;
                         }
                         found = 1;
                         file_pos = *(uint32*)(&indexbuf[pos]);
@@ -1642,7 +1599,7 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                             mr_close(f);
                             MR_FREE(indexbuf, indexlen);
                             _mr_readFileShowInfo(filename, 3005);
-                            return 0;
+                            goto err;
                         }
                     } else {
                         pos = pos + 12;
@@ -1650,7 +1607,7 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                             mr_close(f);
                             MR_FREE(indexbuf, indexlen);
                             _mr_readFileShowInfo(filename, 3006);
-                            return 0;
+                            goto err;
                         }
                     } /*if (STRCMP(filename, TempName)==0)*/
                 }
@@ -1662,7 +1619,7 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                 if (filebuf == NULL) {
                     mr_close(f);
                     _mr_readFileShowInfo(filename, 3007);
-                    return 0;
+                    goto err;
                 }
 
                 nTmp = mr_seek(f, file_pos, MR_SEEK_SET);
@@ -1670,7 +1627,7 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                     MR_FREE(filebuf, file_len);
                     mr_close(f);
                     _mr_readFileShowInfo(filename, 3008);
-                    return 0;
+                    goto err;
                 }
 
                 oldlen = 0;
@@ -1680,7 +1637,7 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                         MR_FREE(filebuf, file_len);
                         mr_close(f);
                         _mr_readFileShowInfo(filename, 3009);
-                        return 0;
+                        goto err;
                     }
                     oldlen = oldlen + nTmp;
                 }
@@ -1695,7 +1652,8 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
     LG_gzinptr = 0;
 
     if (mr_get_method(*filelen) < 0) {
-        return filebuf;
+        retv = filebuf;
+        goto end;
     }
 
     reallen = (uint32)(((uch*)filebuf)[*filelen - 4]);
@@ -1710,7 +1668,7 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
     if (mr_gzOutBuf == NULL) {
         if (!is_rom_file)
             MR_FREE(mr_gzInBuf, oldlen);
-        return 0;
+        goto err;
     }
 
     if (mr_unzip() != 0) {
@@ -1718,20 +1676,29 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
             MR_FREE(mr_gzInBuf, oldlen);
         MR_FREE(mr_gzOutBuf, reallen);
         MRDBGPRINTF("_mr_readFile: \"%s\" Unzip err!", filename);
-        return 0;
+        goto err;
     }
 
     if (!is_rom_file)
         MR_FREE(mr_gzInBuf, oldlen);
 
-    return mr_gzOutBuf;
+    retv = mr_gzOutBuf;
+end:
+    fixR9_end();
+    return retv;
+err:
+    fixR9_end();
+    return NULL;
+ret1:
+    fixR9_end();
+    return (void*)1;
 }
 
 #ifdef MR_PLAT_READFILE
-extern MR_FILE_HANDLE mr_openForPlat(const char* filename, uint32 mode);
-extern int32 mr_closeForPlat(MR_FILE_HANDLE f);
-extern int32 mr_readForPlat(MR_FILE_HANDLE f, void* p, uint32 l);
-extern int32 mr_seekForPlat(MR_FILE_HANDLE f, int32 pos, int method);
+extern int32 mr_openForPlat(const char* filename, uint32 mode);
+extern int32 mr_closeForPlat(int32 f);
+extern int32 mr_readForPlat(int32 f, void* p, uint32 l);
+extern int32 mr_seekForPlat(int32 f, int32 pos, int method);
 extern void* mr_mallocForPlat(uint32 len);
 extern void mr_freeForPlat(void* p, uint32 len);
 
@@ -1742,7 +1709,7 @@ void* _mr_readFileForPlat(const char* mrpname, const char* filename, int* filele
     int32 oldlen, nTmp;
     uint32 len;
     void* filebuf;
-    MR_FILE_HANDLE f;
+    int32 f;
     char TempName[MR_MAX_FILENAME_SIZE];
     char* mr_m0_file;
     int is_rom_file = FALSE;
@@ -1946,10 +1913,10 @@ void* _mrc_readFile(const char* mrpname, const char* filename, int* filelen, int
 }
 #endif
 
-//display
 static int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h) {
+    fixR9_begin();
     if (!(mr_state == MR_STATE_RUN)) {
-        return 0;
+        goto end;
     }
 #ifdef MR_SCREEN_CACHE
     //mr_drawBitmap(mr_screenBuf,0,0,MR_SCREEN_W,MR_SCREEN_H);
@@ -1957,12 +1924,13 @@ static int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h) {
     //mr_drawBitmap((uint16*)mr_screenBMP,x, y, w, h);
     mr_drawBitmap((uint16*)mr_screenBMP, 0, 0, (uint16)MR_SCREEN_W, (uint16)MR_SCREEN_H);
 #else
-    //mr_drawBitmap(mr_screenBuf,0, 0, (uint16)MR_SCREEN_W,(uint16)MR_SCREEN_H);
     mr_drawBitmap(mr_screenBuf, x, y, (uint16)w, (uint16)h);
 #endif
 #else
     mr_bufToScreen(x, y, w, h);
 #endif
+end:
+    fixR9_end();
     return 0;
 }
 
@@ -1994,7 +1962,7 @@ int mr_sdk(int code, int param) {
 
 static int _mr_TestCom(mrp_State* L, int input0, int input1) {
     int ret = 0;
-
+    fixR9_begin();
     switch (input0) {
         case 1:
             ret = mr_getTime();
@@ -2017,12 +1985,13 @@ static int _mr_TestCom(mrp_State* L, int input0, int input1) {
 
 #ifdef MR_PLAT_DRAWTEXT
         case 7:
-
+            fixR9_end();
             return input1;
 #endif
 
 #ifdef MR_VIA_MOD
         case 8:
+            fixR9_end();
             return input1;
 #endif
         case 9:
@@ -2080,7 +2049,7 @@ static int _mr_TestCom(mrp_State* L, int input0, int input1) {
             MR_SCREEN_MAX_W = input1;
             break;
         case 404:
-            ret = mr_newSIMInd((int16)input1, NULL);
+            ret = _mr_newSIMInd((int16)input1, NULL);
             break;
         case 405:
             ret = mr_closeNetwork();
@@ -2149,7 +2118,7 @@ static int _mr_TestCom(mrp_State* L, int input0, int input1) {
                 bi = bi & (~MR_FLAGS_AI);
             break;
     }
-
+    fixR9_end();
     return ret;
 }
 
@@ -2177,10 +2146,8 @@ int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len) {
 
 static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
     int ret = 0;
-    //mr_printf("strCom:%d", input0);
-    //mr_printf("strCom:%s", input1);
-    //mr_printf("strCom:%d", len);
 
+    fixR9_begin();
     switch (input0) {
         case 2:
             if (mr_ram_file) {
@@ -2221,7 +2188,7 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             // clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
             // invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
-            return 0;
+            break;
         }
         case 200:
             mr_updcrc(NULL, 0); /* initialize crc */
@@ -2233,7 +2200,7 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
         }
         case 700: {
             int type = len;
-            ret = mr_newSIMInd(type, (uint8*)input1);
+            ret = _mr_newSIMInd(type, (uint8*)input1);
             break;
         }
         case 701: {
@@ -2246,6 +2213,7 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             ret = mr_platEx(200001, (uint8*)_mr_c_port_table, sizeof(_mr_c_port_table), NULL, NULL, NULL);
             break;
     }
+    fixR9_end();
     return ret;
 }
 
@@ -2255,9 +2223,6 @@ extern void mr_c_function_load(void);
 
 static int _mr_TestComC(int input0, char* input1, int32 len, int32 code) {
     int ret = 0;
-    //mr_printf("strCom:%d", input0);
-    //mr_printf("strCom:%s", input1);
-    //mr_printf("strCom:%d", len);
 
     switch (input0) {
 #ifdef SDK_MOD
@@ -2541,10 +2506,6 @@ static int32 getAppInfo() {
     return MR_SUCCESS;
 }
 
-uint32 mrp_version(void) {
-    return MR_VERSION;
-}
-
 int32 mr_doExt(char* extName) {
     char* filebuf;
     int32 filelen;
@@ -2795,33 +2756,18 @@ int32 mr_start_dsm(const char* entry) {
 }
 
 int32 mr_stop_ex(int16 freemem) {
-    //int i;
+    fixR9_begin();
     if (mr_state == MR_STATE_IDLE) {
+        fixR9_end();
         return MR_IGNORE;
     }
 
     if ((mr_state == MR_STATE_RUN) || (mr_state == MR_STATE_PAUSE)) {
-#if 0
-		mrp_getglobal(vm_state, "dealevent");
-		if (mrp_isfunction(vm_state, -1)) {
-			mrp_pushnumber(vm_state, MR_EXIT_EVENT);
-			_mr_pcall(1,0);
-
-		} else {  /* no dealevent function */
-			MRDBGPRINTF("exit de is nil!");
-			mrp_pop(vm_state, 1);  /* remove dealevent */
-		}
-#else
         c_event_st.code = MR_EXIT_EVENT;
         c_event_st.param0 = 0;
         c_event_st.param1 = 0;
-
         _mr_TestComC(801, (char*)&c_event_st, sizeof(c_event_st), 1);
-#endif
     }
-
-    //MRDBGPRINTF("restart timer12");
-    //mr_sleep(50);
 
     mr_state = MR_STATE_IDLE;
     mr_timer_state = MR_TIMER_STATE_IDLE;
@@ -2879,18 +2825,15 @@ int32 mr_stop_ex(int16 freemem) {
 	}
 #endif
 
-    //MRDBGPRINTF("restart timer13");
-    //mr_sleep(50);
-
     if (freemem) {
         mr_mem_free(Origin_LG_mem_base, Origin_LG_mem_len);
     }
     //mr_timerStop();
+    fixR9_end();
     return MR_SUCCESS;
 }
 
-int32 mr_stop(void)  //int16 freemem)
-{
+int32 mr_stop(void) {
     if (mr_stop_function) {
         int status = mr_stop_function();
         mr_stop_function = NULL;  //1943
@@ -3032,16 +2975,17 @@ int32 mr_timer(void) {
 }
 
 int32 mr_registerAPP(uint8* p, int32 len, int32 index) {
+    fixR9_begin();
     MRDBGPRINTF("mr_registerAPP:%d p:%d", index, p);
     if (index < (sizeof(mr_m0_files) / sizeof(uint8*))) {
         mr_m0_files[index] = p;
     } else {
         MRDBGPRINTF("mr_registerAPP err!");
+        fixR9_end();
         return MR_FAILED;
     }
-
     MRDBGPRINTF("mr_registerAPP mr_m0_files[%d]:%d ", index, mr_m0_files[index]);
-
+    fixR9_end();
     return MR_SUCCESS;
 }
 
@@ -3145,14 +3089,12 @@ static int32 _mr_change_to_current(void) {
 }
 #endif
 
-static int32 _mr_save_sms_cfg(MR_FILE_HANDLE f) {
+static int32 _mr_save_sms_cfg(int32 f) {
     int32 ret;
 
-    //MRDBGPRINTF("mr_save_sms_cfg before check!");
+    fixR9_begin();
     if (mr_sms_cfg_need_save) {
         mr_sms_cfg_need_save = FALSE;
-        //MRDBGPRINTF("mr_save_sms_cfg before mr_seek!");
-
 #ifdef MR_CFG_USE_A_DISK
         _mr_change_to_root();
 #endif
@@ -3161,49 +3103,45 @@ static int32 _mr_save_sms_cfg(MR_FILE_HANDLE f) {
         _mr_change_to_current();
 #endif
         if (f == 0) {
-            return MR_FAILED;
+            goto err;
         }
         ret = mr_seek(f, 0, MR_SEEK_SET);
         if (ret == MR_FAILED) {
-            //MRDBGPRINTF("mr_save_sms_cfg mr_seek err!");
             mr_close(f);
-            return MR_FAILED;
+            goto err;
         }
-        //MRDBGPRINTF("mr_save_sms_cfg before mr_write!");
         ret = mr_write(f, mr_sms_cfg_buf, MR_SMS_CFG_BUF_LEN);
         if (ret == MR_FAILED) {
-            //MRDBGPRINTF("mr_save_sms_cfg mr_write err!");
             mr_close(f);
-            return MR_FAILED;
+            goto err;
         }
         mr_close(f);
     }
-    //MRDBGPRINTF("mr_save_sms_cfg end!");
+    fixR9_end();
     return MR_SUCCESS;
+err:
+    fixR9_end();
+    return MR_FAILED;
 }
-
-//#endif
 
 //查看DSM配置文件是否存在，不存在则创建之
 static int32 _mr_load_sms_cfg(void) {
-    MR_FILE_HANDLE f;
+    int32 f;
     int32 ret;
 
+    fixR9_begin();
     mr_sms_cfg_need_save = FALSE;
-
     MEMSET(mr_sms_cfg_buf, 0, MR_SMS_CFG_BUF_LEN);
-
 #ifdef MR_CFG_USE_A_DISK
     _mr_change_to_root();
 #endif
-
     if (mr_info(DSM_CFG_FILE_NAME) == MR_IS_FILE) {
         f = mr_open(DSM_CFG_FILE_NAME, MR_FILE_RDONLY);
         if (f == 0) {
 #ifdef MR_CFG_USE_A_DISK
             _mr_change_to_current();
 #endif
-            return MR_FAILED;
+            goto err;
         }
         ret = mr_read(f, mr_sms_cfg_buf, MR_SMS_CFG_BUF_LEN);
         mr_close(f);
@@ -3213,14 +3151,13 @@ static int32 _mr_load_sms_cfg(void) {
 #ifdef MR_CFG_USE_A_DISK
                 _mr_change_to_current();
 #endif
-                return MR_FAILED;
+                goto err;
             }
             mr_close(f);
             _mr_smsAddNum(0, "518869058");
             _mr_smsAddNum(1, "918869058");
             _mr_smsAddNum(3, "aa");
         }
-        //#endif
     } else {
         _mr_smsAddNum(0, "518869058");
         _mr_smsAddNum(1, "918869058");
@@ -3230,12 +3167,14 @@ static int32 _mr_load_sms_cfg(void) {
 #ifdef MR_CFG_USE_A_DISK
     _mr_change_to_current();
 #endif
+    fixR9_end();
     return MR_SUCCESS;
+err:
+    fixR9_end();
+    return MR_FAILED;
 }
 
 int32 _mr_smsGetBytes(int32 pos, char* p, int32 len) {
-    //MRDBGPRINTF("_mr_smsGetBytes");
-
     if ((pos >= MR_SMS_CFG_BUF_LEN) || (pos < 0) || ((pos + len) >= MR_SMS_CFG_BUF_LEN)) {
         return MR_FAILED;
     }
@@ -3244,14 +3183,15 @@ int32 _mr_smsGetBytes(int32 pos, char* p, int32 len) {
 }
 
 static int32 _mr_smsSetBytes(int32 pos, char* p, int32 len) {
-    //MRDBGPRINTF("_mr_smsGetBytes");
-
+    fixR9_begin();
     if ((pos >= MR_SMS_CFG_BUF_LEN) || (pos < 0) || ((pos + len) >= MR_SMS_CFG_BUF_LEN)) {
+        fixR9_end();
         return MR_FAILED;
     }
     mr_sms_cfg_need_save = TRUE;
     MEMCPY(mr_sms_cfg_buf + pos, p, len);
     //MRDBGPRINTF("mr_smsSetBytes %d", *p);
+    fixR9_end();
     return MR_SUCCESS;
 }
 
@@ -3259,7 +3199,6 @@ int32 _mr_smsGetNum(int32 index, char* pNum) {
     char num[MR_MAX_NUM_LEN];
     uint32 len;
 
-    //MRDBGPRINTF("_mr_smsGetNum");
     _mr_smsGetBytes(MR_MAX_NUM_LEN * index + MR_SECTION_LEN, num, MR_MAX_NUM_LEN);
     len = _mr_decode((uint8*)num, STRNLEN(num, MR_MAX_NUM_LEN - 1), (uint8*)pNum);
     if ((len == 0) || (len >= MR_MAX_NUM_LEN)) {
@@ -3301,18 +3240,16 @@ a)   120×32个字节，每120个字节存放一条DSM更新短消息的全部�
 static int32 _mr_smsAddNum(int32 index, char* pNum) {
     int32 len = STRLEN(pNum);
     char num[MR_MAX_NUM_LEN];
+    fixR9_begin();
     if (len > (((MR_MAX_NUM_LEN - 1) / 4 * 3))) {
         MRDBGPRINTF("num too long");
+        fixR9_end();
         return MR_FAILED;
     }
-
-    //   MRDBGPRINTF("_mr_smsAddNum");
     MEMSET(num, 0, MR_MAX_NUM_LEN);
-
     _mr_encode((uint8*)pNum, len, (uint8*)num);
-
     _mr_smsSetBytes(MR_MAX_NUM_LEN * index + MR_SECTION_LEN, num, MR_MAX_NUM_LEN);
-
+    fixR9_end();
     return MR_SUCCESS;
 }
 
@@ -3421,7 +3358,7 @@ int32 _mr_smsReplyServer(char* pNum, uint8* old_IMSI) {
     uint8 smsstring[MR_MAX_SM_LEN];
     mr_userinfo info;
     uint32 offset = 0;
-    //MR_FILE_HANDLE f;
+    //int32 f;
 
     if (mr_getUserInfo(&info) != MR_SUCCESS) {
         return MR_FAILED;
@@ -3700,15 +3637,16 @@ int32 mr_smsIndiaction(uint8* pContent, int32 nLen, uint8* pNum, int32 type)  //
 }
 
 static int32 _mr_newSIMInd(int16 type, uint8* old_IMSI) {
-    int32 id = mr_getNetworkID();
+    int32 id;
     uint8 flag;
     char num[MR_MAX_NUM_LEN];
     int32 f;
 
+    fixR9_begin();
+    id = mr_getNetworkID();
     if ((MR_SIM_NEW == type) || (MR_SIM_CHANGE == type)) {
         f = _mr_load_sms_cfg();
         _mr_save_sms_cfg(f);
-
         _mr_smsGetBytes(5, (char*)&flag, 1);
         if (flag >= 128) {
             _mr_smsGetNum(3, num);
@@ -3716,34 +3654,32 @@ static int32 _mr_newSIMInd(int16 type, uint8* old_IMSI) {
             switch (id) {
                 case MR_NET_ID_MOBILE:
                     if (_mr_smsGetNum(MR_NET_ID_MOBILE, num) == MR_FAILED)
-                        return MR_FAILED;
+                        goto err;
                     break;
                 case MR_NET_ID_CN:
                 case MR_NET_ID_CDMA:
                     if (_mr_smsGetNum(MR_NET_ID_CN, num) == MR_FAILED)
-                        return MR_FAILED;
+                        goto err;
                     break;
                 default:
-                    return MR_FAILED;
+                    goto err;
                     break;
             }
         }
         _mr_smsReplyServer(num, old_IMSI);
     }
+    fixR9_end();
     return MR_SUCCESS;
-}
-
-int32 mr_newSIMInd(int16 type, uint8* old_IMSI) {
-    int32 ret;
-    ret = _mr_newSIMInd(type, old_IMSI);
-    return ret;
+err:
+    fixR9_end();
+    return MR_FAILED;
 }
 
 //****************************短信
 
 int32 mr_save_mrp(void* p, uint32 l) {
     char filename[15];
-    MR_FILE_HANDLE f;
+    int32 f;
 
     if (p == NULL || l == 0) {
         return MR_FAILED;
@@ -3803,7 +3739,7 @@ static int _mr_isMr(char* input) {
     char enc[16];
     int appid, appver;
     int ret = MR_FAILED;
-
+    fixR9_begin();
     if (mr_getUserInfo(&info) == MR_SUCCESS) {
         appid = htonl(*((int*)&input[16]));
         appver = htonl(*((int*)&input[20]));
@@ -3828,309 +3764,10 @@ static int _mr_isMr(char* input) {
         if (MEMCMP(enc, input, 16) == 0) {
             ret = MR_SUCCESS;
         }
-    } else {
     }
+    fixR9_end();
     return ret;
 }
-
-//////////////////////////////////////////md5
-
-#define T1 0xd76aa478
-#define T2 0xe8c7b756
-#define T3 0x242070db
-#define T4 0xc1bdceee
-#define T5 0xf57c0faf
-#define T6 0x4787c62a
-#define T7 0xa8304613
-#define T8 0xfd469501
-#define T9 0x698098d8
-#define T10 0x8b44f7af
-#define T11 0xffff5bb1
-#define T12 0x895cd7be
-#define T13 0x6b901122
-#define T14 0xfd987193
-#define T15 0xa679438e
-#define T16 0x49b40821
-#define T17 0xf61e2562
-#define T18 0xc040b340
-#define T19 0x265e5a51
-#define T20 0xe9b6c7aa
-#define T21 0xd62f105d
-#define T22 0x02441453
-#define T23 0xd8a1e681
-#define T24 0xe7d3fbc8
-#define T25 0x21e1cde6
-#define T26 0xc33707d6
-#define T27 0xf4d50d87
-#define T28 0x455a14ed
-#define T29 0xa9e3e905
-#define T30 0xfcefa3f8
-#define T31 0x676f02d9
-#define T32 0x8d2a4c8a
-#define T33 0xfffa3942
-#define T34 0x8771f681
-#define T35 0x6d9d6122
-#define T36 0xfde5380c
-#define T37 0xa4beea44
-#define T38 0x4bdecfa9
-#define T39 0xf6bb4b60
-#define T40 0xbebfbc70
-#define T41 0x289b7ec6
-#define T42 0xeaa127fa
-#define T43 0xd4ef3085
-#define T44 0x04881d05
-#define T45 0xd9d4d039
-#define T46 0xe6db99e5
-#define T47 0x1fa27cf8
-#define T48 0xc4ac5665
-#define T49 0xf4292244
-#define T50 0x432aff97
-#define T51 0xab9423a7
-#define T52 0xfc93a039
-#define T53 0x655b59c3
-#define T54 0x8f0ccc92
-#define T55 0xffeff47d
-#define T56 0x85845dd1
-#define T57 0x6fa87e4f
-#define T58 0xfe2ce6e0
-#define T59 0xa3014314
-#define T60 0x4e0811a1
-#define T61 0xf7537e82
-#define T62 0xbd3af235
-#define T63 0x2ad7d2bb
-#define T64 0xeb86d391
-
-static void md5_process(md5_state_t* pms, const md5_byte_t* data /*[64]*/) {
-    md5_word_t
-        a = pms->abcd[0],
-        b = pms->abcd[1],
-        c = pms->abcd[2], d = pms->abcd[3];
-    md5_word_t t;
-
-    //#ifndef ARCH_IS_BIG_ENDIAN
-    //#define ARCH_IS_BIG_ENDIAN 1	/* slower, default implementation */
-    //#endif
-
-#ifdef MR_BIG_ENDIAN
-
-    /*
-	* On big-endian machines, we must arrange the bytes in the right
-	* order.  (This also works on machines of unknown byte order.)
-	*/
-    md5_word_t X[16];
-    const md5_byte_t* xp = data;
-    int i;
-
-    for (i = 0; i < 16; ++i, xp += 4)
-        X[i] = xp[0] + (xp[1] << 8) + (xp[2] << 16) + (xp[3] << 24);
-
-#else /* !MR_BIG_ENDIAN */
-
-    /*
-	* On little-endian machines, we can process properly aligned data
-	* without copying it.
-	*/
-    md5_word_t xbuf[16];
-    const md5_word_t* X;
-
-    if (!((data - (const md5_byte_t*)0) & 3)) {
-        /* data are properly aligned */
-        X = (const md5_word_t*)data;
-    } else {
-        /* not aligned */
-        MEMCPY(xbuf, data, 64);
-        X = xbuf;
-    }
-#endif
-
-#define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32 - (n))))
-
-        /* Round 1. */
-        /* Let [abcd k s i] denote the operation
-	a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s). */
-#define F(x, y, z) (((x) & (y)) | (~(x) & (z)))
-#define SET(a, b, c, d, k, s, Ti)   \
-    t = a + F(b, c, d) + X[k] + Ti; \
-    a = ROTATE_LEFT(t, s) + b
-    /* Do the following 16 operations. */
-    SET(a, b, c, d, 0, 7, T1);
-    SET(d, a, b, c, 1, 12, T2);
-    SET(c, d, a, b, 2, 17, T3);
-    SET(b, c, d, a, 3, 22, T4);
-    SET(a, b, c, d, 4, 7, T5);
-    SET(d, a, b, c, 5, 12, T6);
-    SET(c, d, a, b, 6, 17, T7);
-    SET(b, c, d, a, 7, 22, T8);
-    SET(a, b, c, d, 8, 7, T9);
-    SET(d, a, b, c, 9, 12, T10);
-    SET(c, d, a, b, 10, 17, T11);
-    SET(b, c, d, a, 11, 22, T12);
-    SET(a, b, c, d, 12, 7, T13);
-    SET(d, a, b, c, 13, 12, T14);
-    SET(c, d, a, b, 14, 17, T15);
-    SET(b, c, d, a, 15, 22, T16);
-#undef SET
-
-    /* Round 2. */
-    /* Let [abcd k s i] denote the operation
-	a = b + ((a + G(b,c,d) + X[k] + T[i]) <<< s). */
-#define G(x, y, z) (((x) & (z)) | ((y) & ~(z)))
-#define SET(a, b, c, d, k, s, Ti)   \
-    t = a + G(b, c, d) + X[k] + Ti; \
-    a = ROTATE_LEFT(t, s) + b
-    /* Do the following 16 operations. */
-    SET(a, b, c, d, 1, 5, T17);
-    SET(d, a, b, c, 6, 9, T18);
-    SET(c, d, a, b, 11, 14, T19);
-    SET(b, c, d, a, 0, 20, T20);
-    SET(a, b, c, d, 5, 5, T21);
-    SET(d, a, b, c, 10, 9, T22);
-    SET(c, d, a, b, 15, 14, T23);
-    SET(b, c, d, a, 4, 20, T24);
-    SET(a, b, c, d, 9, 5, T25);
-    SET(d, a, b, c, 14, 9, T26);
-    SET(c, d, a, b, 3, 14, T27);
-    SET(b, c, d, a, 8, 20, T28);
-    SET(a, b, c, d, 13, 5, T29);
-    SET(d, a, b, c, 2, 9, T30);
-    SET(c, d, a, b, 7, 14, T31);
-    SET(b, c, d, a, 12, 20, T32);
-#undef SET
-
-    /* Round 3. */
-    /* Let [abcd k s t] denote the operation
-	a = b + ((a + H(b,c,d) + X[k] + T[i]) <<< s). */
-#define H(x, y, z) ((x) ^ (y) ^ (z))
-#define SET(a, b, c, d, k, s, Ti)   \
-    t = a + H(b, c, d) + X[k] + Ti; \
-    a = ROTATE_LEFT(t, s) + b
-    /* Do the following 16 operations. */
-    SET(a, b, c, d, 5, 4, T33);
-    SET(d, a, b, c, 8, 11, T34);
-    SET(c, d, a, b, 11, 16, T35);
-    SET(b, c, d, a, 14, 23, T36);
-    SET(a, b, c, d, 1, 4, T37);
-    SET(d, a, b, c, 4, 11, T38);
-    SET(c, d, a, b, 7, 16, T39);
-    SET(b, c, d, a, 10, 23, T40);
-    SET(a, b, c, d, 13, 4, T41);
-    SET(d, a, b, c, 0, 11, T42);
-    SET(c, d, a, b, 3, 16, T43);
-    SET(b, c, d, a, 6, 23, T44);
-    SET(a, b, c, d, 9, 4, T45);
-    SET(d, a, b, c, 12, 11, T46);
-    SET(c, d, a, b, 15, 16, T47);
-    SET(b, c, d, a, 2, 23, T48);
-#undef SET
-
-    /* Round 4. */
-    /* Let [abcd k s t] denote the operation
-	a = b + ((a + I(b,c,d) + X[k] + T[i]) <<< s). */
-#define I(x, y, z) ((y) ^ ((x) | ~(z)))
-#define SET(a, b, c, d, k, s, Ti)   \
-    t = a + I(b, c, d) + X[k] + Ti; \
-    a = ROTATE_LEFT(t, s) + b
-    /* Do the following 16 operations. */
-    SET(a, b, c, d, 0, 6, T49);
-    SET(d, a, b, c, 7, 10, T50);
-    SET(c, d, a, b, 14, 15, T51);
-    SET(b, c, d, a, 5, 21, T52);
-    SET(a, b, c, d, 12, 6, T53);
-    SET(d, a, b, c, 3, 10, T54);
-    SET(c, d, a, b, 10, 15, T55);
-    SET(b, c, d, a, 1, 21, T56);
-    SET(a, b, c, d, 8, 6, T57);
-    SET(d, a, b, c, 15, 10, T58);
-    SET(c, d, a, b, 6, 15, T59);
-    SET(b, c, d, a, 13, 21, T60);
-    SET(a, b, c, d, 4, 6, T61);
-    SET(d, a, b, c, 11, 10, T62);
-    SET(c, d, a, b, 2, 15, T63);
-    SET(b, c, d, a, 9, 21, T64);
-#undef SET
-
-    /* Then perform the following additions. (That is increment each
-	of the four registers by the value it had before this block
-	was started.) */
-    pms->abcd[0] += a;
-    pms->abcd[1] += b;
-    pms->abcd[2] += c;
-    pms->abcd[3] += d;
-}
-
-void mr_md5_init(md5_state_t* pms) {
-    pms->count[0] = pms->count[1] = 0;
-    pms->abcd[0] = 0x67452301;
-    pms->abcd[1] = 0xefcdab89;
-    pms->abcd[2] = 0x98badcfe;
-    pms->abcd[3] = 0x10325476;
-}
-
-void mr_md5_append(md5_state_t* pms, const md5_byte_t* data, int nbytes) {
-    const md5_byte_t* p = data;
-    int left = nbytes;
-    int offset = (pms->count[0] >> 3) & 63;
-    md5_word_t nbits = (md5_word_t)(nbytes << 3);
-
-    if (nbytes <= 0)
-        return;
-
-    /* Update the message length. */
-    pms->count[1] += nbytes >> 29;
-    pms->count[0] += nbits;
-
-    if (pms->count[0] < nbits)
-        pms->count[1]++;
-
-    /* Process an initial partial block. */
-    if (offset) {
-        int copy = (offset + nbytes > 64 ? 64 - offset : nbytes);
-
-        MEMCPY(pms->buf + offset, p, copy);
-
-        if (offset + copy < 64)
-            return;
-
-        p += copy;
-        left -= copy;
-        md5_process(pms, pms->buf);
-    }
-
-    /* Process full blocks. */
-    for (; left >= 64; p += 64, left -= 64)
-        md5_process(pms, p);
-
-    /* Process a final partial block. */
-    if (left)
-        MEMCPY(pms->buf, p, left);
-}
-
-void mr_md5_finish(md5_state_t* pms, md5_byte_t digest[16]) {
-    static const md5_byte_t pad[64] =
-        {
-            0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-    md5_byte_t data[8];
-    int i;
-
-    /* Save the length before padding. */
-    for (i = 0; i < 8; ++i)
-        data[i] = (md5_byte_t)(pms->count[i >> 2] >> ((i & 3) << 3));
-
-    /* Pad to 56 bytes mod 64. */
-    mr_md5_append(pms, pad, ((55 - (pms->count[0] >> 3)) & 63) + 1);
-
-    /* Append the length. */
-
-    mr_md5_append(pms, data, 8);
-    for (i = 0; i < 16; ++i)
-        digest[i] = (md5_byte_t)(pms->abcd[i >> 2] >> ((i & 3) << 3));
-}
-
-//////////////////////////////////////////md5
 
 int FF_Divide(int dividend, int divisor) {
     int i;

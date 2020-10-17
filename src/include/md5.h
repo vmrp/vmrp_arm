@@ -87,6 +87,10 @@ void md5_finish(P2(md5_state_t *pms, md5_byte_t digest[16]));
 void md5_finish(md5_state_t *pms, md5_byte_t digest[16]);
 #endif
 
+void mr_md5_init(md5_state_t* pms);
+void mr_md5_append(md5_state_t* pms, const md5_byte_t* data, int nbytes);
+void mr_md5_finish(md5_state_t* pms, md5_byte_t digest[16]);
+
 #ifdef __cplusplus
 }  /* end extern "C" */
 #endif

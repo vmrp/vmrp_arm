@@ -126,55 +126,33 @@ BOOL fixR9_checkFree(void *p) {
     return (context && (p == context->rwMemCheck));
 }
 
+#ifdef __GNUC__
 void *getR9() {
     register void *ret;
-#ifdef __GNUC__
     asm("MOV %[result], r9"
         : [ result ] "=r"(ret));
-#else
-    __asm {
-      mov ret, r9;
-    }
-#endif
     return ret;
 }
 
 void setR9(void *value) {
-#ifdef __GNUC__
     asm("MOV r9, %[input_value]"
         :
         : [ input_value ] "r"(value));
-#else
-    __asm {
-      mov r9, value;
-    }
-#endif
 }
 
 void *getR10() {
     register void *ret;
-#ifdef __GNUC__
     asm("MOV %[result], r10"
         : [ result ] "=r"(ret));
-#else
-    __asm {
-      mov ret, r10;
-    }
-#endif
     return ret;
 }
 
 void setR10(void *value) {
-#ifdef __GNUC__
     asm("MOV r10, %[input_value]"
         :
         : [ input_value ] "r"(value));
-#else
-    __asm {
-      mov r10, value;
-    }
-#endif
 }
+#endif
 
 void fixR9_save() {
     if (context) {
@@ -192,8 +170,8 @@ void fixR9_setIsInMythroad(BOOL v) {
 BOOL isInExt() {
     void *r9v = getR9();
     if ((uint32)r9v > sizeof(fixR9_st)) {
-        fixR9_st *ctx = (fixR9_st *)(r9v - sizeof(fixR9_st));
-        if (ctx && (r9v == ctx->rwMem)) { // 注意，ctx有可能会是个无效的内存地址，目前还不知道怎样获得有效地址的范围
+        fixR9_st *ctx = (fixR9_st *)((char *)r9v - sizeof(fixR9_st));
+        if (ctx && (r9v == ctx->rwMem)) {      // 注意，ctx有可能会是个无效的内存地址，目前还不知道怎样获得有效地址的范围
             if (ctx->isInMythroad == FALSE) {  // 加多一层，避免误判
                 return TRUE;
             }
@@ -205,7 +183,7 @@ BOOL isInExt() {
 int32 fixR9_begin() {
     if (isInExt()) {
         void *r9v = getR9();
-        fixR9_st *ctx = (fixR9_st *)(r9v - sizeof(fixR9_st));
+        fixR9_st *ctx = (fixR9_st *)((char *)r9v - sizeof(fixR9_st));
         register void *newR9v = ctx->r9Mythroad;  // 必需先用寄存器保存
         register void *newR10v = ctx->r10Mythroad;
         // 注意，这里在ext空间，不能直接使用context
