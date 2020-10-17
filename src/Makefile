@@ -86,6 +86,7 @@ LOCAL_SRC_FILES := mythroad_mini.c \
                     strtol.c	\
                     strtoul.c	\
                     dsm.c	\
+                    fixR9.c	\
 
 mini:
 	gcc $(LOCAL_CFLAGS) $(LOCAL_SRC_FILES) -I./include -I.

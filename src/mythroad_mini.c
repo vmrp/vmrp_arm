@@ -1,3 +1,4 @@
+#include "fixR9.h"
 #include "md5.h"
 #include "mr.h"
 #include "mr_auxlib.h"
@@ -29,12 +30,7 @@
 #define LOCHDR 30          /* size of local header, including sig */
 #define EXTHDR 16          /* size of extended local header, inc sig */
 
-const unsigned char* mr_m0_files[] = {
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+const unsigned char* mr_m0_files[50];
 
 typedef struct _mini_mr_c_event_st {
     int32 code;
@@ -46,10 +42,6 @@ typedef struct _mini_mr_c_event_st {
 
 mini_mr_c_event_st c_event_st;
 
-#ifdef COMPATIBILITY01
-//#define MR_DRAW_TXT_AUTO_UNICODE   //向下兼容，过渡期后取消
-#endif
-
 #define MRDBGPRINTF mr_printf
 
 mrp_State* vm_state;
@@ -58,29 +50,17 @@ static uint16* mr_screenBuf;
 #ifdef MR_SCREEN_CACHE_BITMAP
 static uint8* mr_screenBMP;
 #endif
-#ifdef MR_TRACE
-mr_bitmapSt mr_bitmap[BITMAPMAX + 1];
-mr_tileSt mr_tile[TILEMAX];
-int16* mr_map[TILEMAX];
-mr_soundSt mr_sound[SOUNDMAX];
-#else
 static mr_bitmapSt mr_bitmap[BITMAPMAX + 1];
 static mr_tileSt mr_tile[TILEMAX];
 static int16* mr_map[TILEMAX];
 static mr_soundSt mr_sound[SOUNDMAX];
-#endif
 static mr_spriteSt mr_sprite[SPRITEMAX];
-//static mr_cycleSt mr_cycle;
 int32 mr_state = MR_STATE_IDLE;
 static int32 bi = 0;
 static char pack_filename[MR_MAX_FILENAME_SIZE];
-//static char  pack_filename_old[MR_MAX_FILENAME_SIZE];
 static char start_filename[MR_MAX_FILENAME_SIZE];
-
 static char start_fileparameter[MR_MAX_FILENAME_SIZE];
-
 static char old_pack_filename[MR_MAX_FILENAME_SIZE];
-//static char  pack_filename_old[MR_MAX_FILENAME_SIZE];
 static char old_start_filename[MR_MAX_FILENAME_SIZE];
 
 static char mr_entry[MR_MAX_FILENAME_SIZE];
@@ -211,29 +191,17 @@ static int32 _mr_newSIMInd(int16 type, uint8* old_IMSI);
 static int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h);
 static int _mr_isMr(char* input);
 
-#ifdef MR_ANYKA_MOD
-void _DrawPoint(int16 x, int16 y, uint32 nativecolor);
-static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint32 transcoler, int16 sx, int16 sy, int16 mw);
-static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint32 transcoler);
-static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b);
-static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font);
-int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint32 transcoler, uint32 color_check);
-#else
 void _DrawPoint(int16 x, int16 y, uint16 nativecolor);
 static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw);
 static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler);
 static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b);
 static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font);
 int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transcoler, uint16 color_check);
-#endif
 
 void* _mr_readFile(const char* filename, int* filelen, int lookfor);
 int mr_wstrlen(char* txt);
 int32 mr_registerAPP(uint8* p, int32 len, int32 index);
 
-void* mr_malloc(uint32 len);
-void mr_free(void* p, uint32 len);
-void* mr_realloc(void* p, uint32 oldlen, uint32 len);
 int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len);
 static int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb);
 static int _mr_TestCom(mrp_State* L, int input0, int input1);
@@ -252,8 +220,7 @@ static int32 _mr_getMetaMemLimit(void);
 
 static const void* _mr_c_internal_table[17];
 
-static void* _mr_c_port_table[] = {
-    NULL, NULL, NULL, NULL};
+static void* _mr_c_port_table[4];
 
 #ifdef SDK_MOD
 void* sdk_mr_c_function_table;
@@ -264,6 +231,9 @@ static const void* _mr_c_function_table[150];
 #endif
 
 void mythroad_init(void) {
+    memset2(_mr_c_port_table, 0, sizeof(_mr_c_port_table));
+    memset2(mr_m0_files, 0, sizeof(mr_m0_files));
+
     ///////////////////////////////////////////////////////////////////////
     _mr_c_internal_table[0] = (void*)mr_m0_files;
     _mr_c_internal_table[1] = (void*)&vm_state;
@@ -633,18 +603,6 @@ void* mr_realloc(void* p, uint32 oldlen, uint32 len) {
     return newblock;
 }
 
-//#ifdef MR_PLAT_DRAWTEXT
-
-/*
-typedef struct
-{
-int32 ch;
-int32 x;
-int32 y;
-int32 color;
-}mr_drawCharSt;
-*/
-
 void _DrawPoint(int16 x, int16 y, uint16 nativecolor) {
     if (x < 0 || y < 0 || x >= MR_SCREEN_W || y >= MR_SCREEN_H)
         return;
@@ -825,7 +783,6 @@ static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 
     }
 }
 
-//static void _DrawBitmapEx(uint16* p, int16 x, int16 y, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler)
 static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler) {
     /*
 	int16 A = pTrans->A;
@@ -1169,11 +1126,9 @@ static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b
 #else
     mr_drawText((char*)tempBuf, x, y, MAKERGB(r, g, b));
 #endif
-    //#ifdef MR_DRAW_TXT_AUTO_UNICODE
     if (!is_unicode) {
         MR_FREE((void*)tempBuf, TextSize);
     }
-    //#endif
     return 0;
 }
 
@@ -2349,6 +2304,7 @@ static int _mr_TestComC(int input0, char* input1, int32 len, int32 code) {
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
             MRDBGPRINTF("mr_load_c_function: 0x%X", mr_load_c_function);
             ret = mr_load_c_function(code);
+            fixR9_init(mr_c_function_P);
         } break;
         case 801: {
             int32 output_len = 0;
@@ -2594,10 +2550,10 @@ int32 mr_doExt(char* extName) {
     }
     _mr_TestCom(NULL, 3629, 2913);
 
-    if (_mr_TestComC(800, filebuf, filelen, 0) == 0) {
+    if (_mr_TestComC(800, filebuf, filelen, 0) == 0) {  // 调用mr_load_c_function()
         _mr_TestComC(801, filebuf, MR_VERSION, 6);
         _mr_TestComC(801, (char*)&mrc_appInfo_st, sizeof(mrc_appInfo_st), 8);
-        _mr_TestComC(801, filebuf, MR_VERSION, 0); // 这一步会最终会进入mrc_init函数
+        _mr_TestComC(801, filebuf, MR_VERSION, 0);  // 这一步会最终会进入mrc_init函数
     } else {
         MRDBGPRINTF("mr_doExt err:%d", 11002);
         return MR_FAILED;

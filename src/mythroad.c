@@ -62,17 +62,14 @@ static int16* mr_map[TILEMAX];
 static mr_soundSt mr_sound[SOUNDMAX];
 #endif
 static mr_spriteSt mr_sprite[SPRITEMAX];
-//static mr_cycleSt mr_cycle;
 int32 mr_state = MR_STATE_IDLE;
 static int32 bi = 0;
 static char pack_filename[MR_MAX_FILENAME_SIZE];
-//static char  pack_filename_old[MR_MAX_FILENAME_SIZE];
 static char start_filename[MR_MAX_FILENAME_SIZE];
 
 static char start_fileparameter[MR_MAX_FILENAME_SIZE];
 
 static char old_pack_filename[MR_MAX_FILENAME_SIZE];
-//static char  pack_filename_old[MR_MAX_FILENAME_SIZE];
 static char old_start_filename[MR_MAX_FILENAME_SIZE];
 
 static char mr_entry[MR_MAX_FILENAME_SIZE];
@@ -6280,7 +6277,6 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     MEMSET(mr_sprite, 0, sizeof(mr_sprite));
     MEMSET(mr_tile, 0, sizeof(mr_tile));
     MEMSET(mr_map, 0, sizeof(mr_map));
-    //   MEMSET(&mr_cycle, 0, sizeof(mr_cycle));
 
     for (i = 0; i < TILEMAX; i++) {
         mr_tile[i].x1 = 0;
