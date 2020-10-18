@@ -4,20 +4,6 @@
 #include "mr_gzip.h"
 #include "mythroad.h"
 
-/* PKZIP header definitions */
-#define LOCSIG 0x04034b50L /* four-byte lead-in (lsb first) */
-#define LOCFLG 6           /* offset of bit flag */
-#define CRPFLG 1           /*  bit for encrypted entry */
-#define EXTFLG 8           /*  bit for extended local header */
-#define LOCHOW 8           /* offset of compression method */
-#define LOCTIM 10          /* file mod time (for decryption) */
-#define LOCCRC 14          /* offset of crc */
-#define LOCSIZ 18          /* offset of compressed size */
-#define LOCLEN 22          /* offset of uncompressed length */
-#define LOCFIL 26          /* offset of file name field length */
-#define LOCEXT 28          /* offset of extra field length */
-#define LOCHDR 30          /* size of local header, including sig */
-#define EXTHDR 16          /* size of extended local header, inc sig */
 
 /* Globals */
 

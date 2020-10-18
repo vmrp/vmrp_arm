@@ -15,21 +15,6 @@
 #include "mythroad.h"
 #include "string.h"
 
-/* PKZIP header definitions */
-#define LOCSIG 0x04034b50L /* four-byte lead-in (lsb first) */
-#define LOCFLG 6           /* offset of bit flag */
-#define CRPFLG 1           /*  bit for encrypted entry */
-#define EXTFLG 8           /*  bit for extended local header */
-#define LOCHOW 8           /* offset of compression method */
-#define LOCTIM 10          /* file mod time (for decryption) */
-#define LOCCRC 14          /* offset of crc */
-#define LOCSIZ 18          /* offset of compressed size */
-#define LOCLEN 22          /* offset of uncompressed length */
-#define LOCFIL 26          /* offset of file name field length */
-#define LOCEXT 28          /* offset of extra field length */
-#define LOCHDR 30          /* size of local header, including sig */
-#define EXTHDR 16          /* size of extended local header, inc sig */
-
 const unsigned char* mr_m0_files[50];
 
 typedef struct _mini_mr_c_event_st {
@@ -1826,8 +1811,7 @@ void* _mr_readFileForPlat(const char* mrpname, const char* filename, int* filele
                 nTmp = mr_readForPlat(f, (char*)filebuf + oldlen, *filelen - oldlen);
                 //MRDBGPRINTF("Debug:_mr_readFile:readlen = %d,oldlen=%d",nTmp,oldlen);
                 //MRDBGPRINTF("oldlen=%d",oldlen);
-                if (nTmp <= 0)
-                {
+                if (nTmp <= 0) {
                     //MRDBGPRINTF("oldlen=%d",oldlen);
                     mr_freeForPlat(filebuf, *filelen);
                     mr_closeForPlat(f);
@@ -1907,32 +1891,6 @@ end:
     fixR9_end();
     return 0;
 }
-
-#ifdef SDK_MOD
-int mr_sdk(int code, int param) {
-    int ret = 0;
-    switch (code) {
-        case 1:
-            //ret = NU_Retrieve_Clock();
-            ret = mr_getTime();
-            break;
-        case 2:
-            //ret = NU_Retrieve_Clock();
-            ret = 0xdcb512a5;
-            break;
-        case 100:
-            ret = LG_mem_min;
-            break;
-        case 101:
-            ret = LG_mem_top;
-            break;
-        case 102:
-            ret = LG_mem_left;
-            break;
-    }
-    return ret;
-}
-#endif
 
 static int _mr_TestCom(mrp_State* L, int input0, int input1) {
     int ret = 0;

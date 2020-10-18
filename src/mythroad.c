@@ -20,21 +20,6 @@
 #include "string.h"
 #include "tomr.h"
 
-/* PKZIP header definitions */
-#define LOCSIG 0x04034b50L /* four-byte lead-in (lsb first) */
-#define LOCFLG 6           /* offset of bit flag */
-#define CRPFLG 1           /*  bit for encrypted entry */
-#define EXTFLG 8           /*  bit for extended local header */
-#define LOCHOW 8           /* offset of compression method */
-#define LOCTIM 10          /* file mod time (for decryption) */
-#define LOCCRC 14          /* offset of crc */
-#define LOCSIZ 18          /* offset of compressed size */
-#define LOCLEN 22          /* offset of uncompressed length */
-#define LOCFIL 26          /* offset of file name field length */
-#define LOCEXT 28          /* offset of extra field length */
-#define LOCHDR 30          /* size of local header, including sig */
-#define EXTHDR 16          /* size of extended local header, inc sig */
-
 const unsigned char* mr_m0_files[50];
 //#endif
 
@@ -1536,11 +1521,6 @@ static int MRF_SpriteCheck(mrp_State* L) {
     g = (uint16)((color_check & 0xff00) >> 8);
     b = (uint16)(color_check & 0xff);
 
-    /*
-   color = (r/8)<<11;
-   color |=(g/4)<<5;
-   color |=(b/8);     
-*/
     color = MAKERGB(r, g, b);
     //   return mr_check(mr_bitmap[i].p + spriteindex*mr_bitmap[i].w*mr_sprite[i].h,
     //      x, y, mr_bitmap[i].w, mr_sprite[i].h, *(mr_bitmap[i].p), color);
@@ -1632,23 +1612,18 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
         pos = pos + len;
         while (!found) {
             if (((pos + 4) >= m0file_len) || (len < 1) || (len >= MR_MAX_FILE_SIZE)) {
-                //MRDBGPRINTF( "_mr_readFile:err 4 at \"%s\"!",filename);
                 _mr_readFileShowInfo(filename, 1004);
                 return 0;
             }
             MEMCPY(&len, &mr_m0_file[pos], 4);
-            //MRDBGPRINTF("readFile 3 len = %d", len);
 
-            //MRDBGPRINTF("readFile 3 len = %d", len);
             pos = pos + 4;
             if (((len + pos) >= m0file_len) || (len < 1) || (len >= MR_MAX_FILENAME_SIZE)) {
-                //MRDBGPRINTF( "_mr_readFile:err 2 at \"%s\"!",filename);
                 _mr_readFileShowInfo(filename, 1002);
                 return 0;
             }
             MEMSET(TempName, 0, sizeof(TempName));
             MEMCPY(TempName, &mr_m0_file[pos], len);
-            //MRDBGPRINTF(TempName);
             pos = pos + len;
             if (STRCMP(filename, TempName) == 0) {
                 if (lookfor == 1) {
@@ -1659,21 +1634,18 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
 
                 pos = pos + 4;
                 if (((len + pos) > m0file_len) || (len < 1) || (len >= MR_MAX_FILE_SIZE)) {
-                    //MRDBGPRINTF( "_mr_readFile:err 4 at \"%s\"!",filename);
                     _mr_readFileShowInfo(filename, 1003);
                     return 0;
                 }
             } else {
                 MEMCPY(&len, &mr_m0_file[pos], 4);
 
-                //MRDBGPRINTF("l = %d,p = %d", len, pos);
                 pos = pos + 4 + len;
             } /*if (STRCMP(filename, TempName)==0)*/
         }
 
         *filelen = len;
         if (*filelen <= 0) {
-            //MRDBGPRINTF("_mr_readFile  \"%s\" len err!", filename);
             _mr_readFileShowInfo(filename, 1005);
             return 0;
         }
@@ -1708,7 +1680,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
 
         f = mr_open(pack_filename, MR_FILE_RDONLY);
         if (f == 0) {
-            //MRDBGPRINTF( "file  \"%s\" can not be opened!", filename);
             _mr_readFileShowInfo(filename, 2002);
             return 0;
         }
@@ -1750,7 +1721,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                     return 0;
                 }
 
-                //MRDBGPRINTF("str1=%s",filename);
                 while (!found) {
                     MEMCPY(&len, &indexbuf[pos], 4);
                     pos = pos + 4;
@@ -1763,9 +1733,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                     MEMSET(TempName, 0, sizeof(TempName));
                     MEMCPY(TempName, &indexbuf[pos], len);
                     pos = pos + len;
-                    //MRDBGPRINTF("pos=%d,len=%d",pos,len);
-                    //MRDBGPRINTF("str2=%s",TempName);
-                    //MRDBGPRINTF("strcmp=%d",STRCMP(filename, TempName));
                     if (STRCMP(filename, TempName) == 0) {
                         if (lookfor == 1) {
                             mr_close(f);
@@ -1798,7 +1765,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
 
                 *filelen = file_len;
 
-                //MRDBGPRINTF("Debug:_mr_readFile:old filelen = %d",file_len);
                 filebuf = MR_MALLOC((uint32)*filelen);
                 if (filebuf == NULL) {
                     mr_close(f);
@@ -1815,15 +1781,9 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                 }
 
                 oldlen = 0;
-                //MRDBGPRINTF("oldlen=%d",oldlen);
                 while (oldlen < *filelen) {
-                    //MRDBGPRINTF("oldlen=%d",oldlen);
                     nTmp = mr_read(f, (char*)filebuf + oldlen, *filelen - oldlen);
-                    //MRDBGPRINTF("Debug:_mr_readFile:readlen = %d,oldlen=%d",nTmp,oldlen);
-                    //MRDBGPRINTF("oldlen=%d",oldlen);
-                    if (nTmp <= 0)
-                    {
-                        //MRDBGPRINTF("oldlen=%d",oldlen);
+                    if (nTmp <= 0) {
                         MR_FREE(filebuf, *filelen);
                         mr_close(f);
                         _mr_readFileShowInfo(filename, 3009);
@@ -1861,7 +1821,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
 
                     if ((nTmp != 4) || (len < 1) || (len >= MR_MAX_FILENAME_SIZE)) {
                         mr_close(f);
-                        //MRDBGPRINTF( "name of file \"%s\" is too long!",filename);
                         _mr_readFileShowInfo(filename, 2007);
                         return 0;
                     }
@@ -1869,13 +1828,9 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                     nTmp = mr_read(f, TempName, len);
                     if (nTmp != (int32)len) {
                         mr_close(f);
-                        //MRDBGPRINTF( "_mr_readFile:err 3 at \"%s\"!",filename);
                         _mr_readFileShowInfo(filename, 2008);
                         return 0;
                     }
-                    //MRDBGPRINTF("str1=%s",filename);
-                    //MRDBGPRINTF("str2=%s",TempName);
-                    //MRDBGPRINTF("strcmp=%d",STRCMP(filename, TempName));
                     if (STRCMP(filename, TempName) == 0) {
                         if (lookfor == 1) {
                             mr_close(f);
@@ -1885,7 +1840,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                         nTmp = mr_read(f, &len, 4);
 
                         if ((nTmp != 4) || (len < 1) || (len > MR_MAX_FILE_SIZE)) {
-                            //MRDBGPRINTF( "_mr_readFile:err 4 at \"%s\"!",filename);
                             _mr_readFileShowInfo(filename, 2009);
                             mr_close(f);
                             return 0;
@@ -1894,14 +1848,12 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                         nTmp = mr_read(f, &len, 4);
 
                         if ((nTmp != 4) || (len < 1) || (len > MR_MAX_FILE_SIZE)) {
-                            //MRDBGPRINTF( "_mr_readFile:err 5 at \"%s\"!",filename);
                             _mr_readFileShowInfo(filename, 2010);
                             mr_close(f);
                             return 0;
                         }
                         nTmp = mr_seek(f, len, 1);
                         if (nTmp < 0) {
-                            //MRDBGPRINTF( "_mr_readFile:err 6 at \"%s\"!",filename);
                             _mr_readFileShowInfo(filename, 2011);
                             mr_close(f);
                             return 0;
@@ -1916,7 +1868,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                     return 0;
                 }
 
-                //MRDBGPRINTF("Debug:_mr_readFile:old filelen = %d",len);
                 filebuf = MR_MALLOC((uint32)*filelen);
                 if (filebuf == NULL) {
                     mr_close(f);
@@ -1927,7 +1878,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                 oldlen = 0;
                 while (oldlen < *filelen) {
                     nTmp = mr_read(f, (char*)filebuf + oldlen, *filelen - oldlen);
-                    //MRDBGPRINTF("Debug:_mr_readFile:readlen = %d,oldlen=%d",nTmp,oldlen);
                     if (nTmp <= 0) {
                         MR_FREE(filebuf, *filelen);
                         mr_close(f);
@@ -2165,8 +2115,7 @@ void* _mr_readFileForPlat(const char* mrpname, const char* filename, int* filele
                 nTmp = mr_readForPlat(f, (char*)filebuf + oldlen, *filelen - oldlen);
                 //MRDBGPRINTF("Debug:_mr_readFile:readlen = %d,oldlen=%d",nTmp,oldlen);
                 //MRDBGPRINTF("oldlen=%d",oldlen);
-                if (nTmp <= 0)
-                {
+                if (nTmp <= 0) {
                     //MRDBGPRINTF("oldlen=%d",oldlen);
                     mr_freeForPlat(filebuf, *filelen);
                     mr_closeForPlat(f);
@@ -2269,8 +2218,7 @@ int32 mr_checkMrp(char* mrp_name) {
 
     //2008-6-11
     // if (tempbuf[192] != 2) // 展迅
-    if (tempbuf[192] != 1)
-    {
+    if (tempbuf[192] != 1) {
         mr_close(f);
         MR_FREE(tempbuf, CHECK_MRP_BUF_SIZE);
         MRDBGPRINTF("mrc_checkMrp err %d", 31);
@@ -3803,32 +3751,6 @@ static int MRF_closeNet(mrp_State* L) {
     return 1;
 }
 
-#ifdef SDK_MOD
-int mr_sdk(int code, int param) {
-    int ret = 0;
-    switch (code) {
-        case 1:
-            //ret = NU_Retrieve_Clock();
-            ret = mr_getTime();
-            break;
-        case 2:
-            //ret = NU_Retrieve_Clock();
-            ret = 0xdcb512a5;
-            break;
-        case 100:
-            ret = LG_mem_min;
-            break;
-        case 101:
-            ret = LG_mem_top;
-            break;
-        case 102:
-            ret = LG_mem_left;
-            break;
-    }
-    return ret;
-}
-#endif
-
 static int _mr_TestCom(mrp_State* L, int input0, int input1) {
     int ret = 0;
 
@@ -4387,7 +4309,6 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
 #endif
 #endif
 #endif
-
 
 #ifdef MR_BREW_MOD
             mr_cacheSync(NULL, 0);
@@ -5625,7 +5546,6 @@ uint32* mr_get_c_function_p(void) {
 }
 
 #endif
-
 
 //****************************短信
 
