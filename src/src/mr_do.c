@@ -20,9 +20,6 @@
 #include "mr_zio.h"
 
 
-#ifdef MR_SPREADTRUM_MOD
-jmp_buf mr_setjmp_buf;
-#endif
 
 /*
 ** {======================================================
@@ -61,30 +58,10 @@ static void seterrorobj (mrp_State *L, int errcode, StkId oldtop) {
 
 void mr_D_throw (mrp_State *L, int errcode) 
 {
-#ifdef MR_SPREADTRUM_MOD
-   //MRDBGPRINTF("before longjmp1");
-     
    if (L->errorJmp) {
-      //MRDBGPRINTF("before longjmp2");
-
-      L->errorJmp->status = errcode;
-      MEMCPY(&mr_setjmp_buf, &L->errorJmp->b, sizeof(jmp_buf));
-      LONGJMP();
-
-      //MRDBGPRINTF("after longjmp");
-
-
-   }
-#else
-
-   if (L->errorJmp) {
-
       L->errorJmp->status = errcode;
       LONGJMP(L->errorJmp->b, 1);
-   }
-#endif
-
-  else {
+   } else {
     G(L)->panic(L);
     //exit(EXIT_FAILURE);  //ouli brew
   }
@@ -96,37 +73,6 @@ int mr_D_rawrunprotected (mrp_State *L, Pfunc f, void *ud) {
   lj.status = 0;
   lj.previous = L->errorJmp;  /* chain new error handler */
   L->errorJmp = &lj;
-
-
-#ifdef MR_SPREADTRUM_MOD
-     //MRDBGPRINTF("before setjmp1");
-  
-  __asm
-  {
-  	mov r1, #0
-  }
-  SETJMP();
-  __asm
-  {
-  	cmp r1, #0
-  	bne label_err_end
-  }
-   {
-      MEMCPY(&lj.b, &mr_setjmp_buf, sizeof(jmp_buf));
-           //MRDBGPRINTF("before setjmp2");
-      (*f)(L, ud);
-          //MRDBGPRINTF("after setjmp1");
-   }
-
-label_err_end:
-
-  //MRDBGPRINTF("after setjmp2");
-    
-  L->errorJmp = lj.previous;  /* restore old error handler */
-  return lj.status;
-
-  
-#else
   
    if (SETJMP(lj.b) == 0)
    {
@@ -136,8 +82,6 @@ label_err_end:
     
   L->errorJmp = lj.previous;  /* restore old error handler */
   return lj.status;
-#endif
-  
 }
 
 
@@ -464,15 +408,7 @@ int mr_D_pcall (mrp_State *L, Pfunc func, void *u,
   ptrdiff_t old_errfunc = L->errfunc;
   L->errfunc = ef;
   
-#ifdef MR_SPREADTRUM_MOD
-         //MRDBGPRINTF("before runprotected");
-#endif   
-
   status = mr_D_rawrunprotected(L, func, u);
-
-#ifdef MR_SPREADTRUM_MOD
-           //MRDBGPRINTF("after runprotected");
-#endif   
 
   if (status != 0) {  /* an error occurred? */
     StkId oldtop = restorestack(L, old_top);

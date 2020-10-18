@@ -1833,26 +1833,13 @@ void* _mr_readFileForPlat(const char* mrpname, const char* filename, int* filele
             }
 
             oldlen = 0;
-#ifdef MR_SPREADTRUM_MOD
-            if ((*filelen < 0)) {
-                MRDBGPRINTF("filelen=%d", *filelen);
-                mr_freeForPlat(filebuf, file_len);
-                mr_closeForPlat(f);
-                _mr_readFileShowInfo(filename, 3010);
-                return 0;
-            }
-#endif
             //MRDBGPRINTF("oldlen=%d",oldlen);
             while (oldlen < *filelen) {
                 //MRDBGPRINTF("oldlen=%d",oldlen);
                 nTmp = mr_readForPlat(f, (char*)filebuf + oldlen, *filelen - oldlen);
                 //MRDBGPRINTF("Debug:_mr_readFile:readlen = %d,oldlen=%d",nTmp,oldlen);
                 //MRDBGPRINTF("oldlen=%d",oldlen);
-#ifdef MR_SPREADTRUM_MOD
-                if ((nTmp <= 0) || (oldlen > 1024 * 1024))
-#else
                 if (nTmp <= 0)
-#endif
                 {
                     //MRDBGPRINTF("oldlen=%d",oldlen);
                     mr_freeForPlat(filebuf, *filelen);
@@ -2396,9 +2383,7 @@ int32 mrc_GetMrpInfoEx(int32 IsFixed, int32 Handle, E_MRP_INFOID CMD, uint8* Rec
             ret = mrc_GetMrpInfoRead(IsFixed, Handle, temp, RecBuf, 4);
             p32 = (uint32*)RecBuf;
             temp = *p32;
-#ifndef MR_SPREADTRUM_MOD        //LIB_SPREADTRUM_MOD
             temp = htonl(temp);  //MTK平台，需要转为网络字节序
-#endif
             *(uint32*)RecBuf = temp;
             break;
         case MRP_RAM:  //uint32类型
@@ -2408,10 +2393,8 @@ int32 mrc_GetMrpInfoEx(int32 IsFixed, int32 Handle, E_MRP_INFOID CMD, uint8* Rec
                 break;
             ret = mrc_GetMrpInfoRead(IsFixed, Handle, 228, (uint8*)&ram, 2);
             ret = mrc_GetMrpInfoRead(IsFixed, Handle, 230, (uint8*)&ram_check, 2);
-#ifndef MR_SPREADTRUM_MOD  //LIB_SPREADTRUM_MOD
             ram = htonl(ram);
             ram_check = htonl(ram_check);
-#endif
             mr_updcrc(NULL, 0); /* initialize crc */
             mr_updcrc((unsigned char*)&ram, 2);
             mr_updcrc((unsigned char*)&ram, 2);
@@ -3999,17 +3982,7 @@ int32 _mr_getMetaMemLimit() {
                 mr_close(f);
                 return 0;
             }
-
-#ifdef MR_SPREADTRUM_MOD
-            if ((file_len < 0)) {
-                mr_close(f);
-
-                return 0;
-            }
-#endif
-
             nTmp = mr_read(f, &_v[0], 4);
-
             mr_close(f);
             if (nTmp != 4) {
                 return nTmp;

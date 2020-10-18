@@ -730,15 +730,7 @@ MRP_API int mrp_pcall (mrp_State *L, int nargs, int nresults, int errfunc) {
   c.func = L->top - (nargs+1);  /* function to be called */
   c.nresults = nresults;
 
-#ifdef MR_SPREADTRUM_MOD
-   //MRDBGPRINTF("before D_pcall");
-#endif   
-
   status = mr_D_pcall(L, f_call, &c, savestack(L, c.func), func);
-
-#ifdef MR_SPREADTRUM_MOD
-  //MRDBGPRINTF("after D_pcall");
-#endif 
 
   mrp_unlock(L);
   return status;

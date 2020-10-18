@@ -1578,259 +1578,6 @@ static void _mr_readFileShowInfo(const char* filename, int32 code) {
     MRDBGPRINTF("read file  \"%s\" err, code=%d", filename, code);
 }
 
-#if 0
-#ifdef MR_SPREADTRUM_MOD
-
-void * _mr_readFileUnzip(void* filebuf, int *filelen, int is_rom_file)
-{
-   int method;
-   uint32 reallen;
-   int32 oldlen;
-   mr_gzInBuf = filebuf;
-   LG_gzoutcnt = 0;
-   LG_gzinptr = 0;
-
-   method = mr_get_method(*filelen);
-   if (method < 0) 
-   {
-       return filebuf;             
-   }
-
-   reallen  = (uint32)(((uch*)filebuf)[*filelen-4]);
-   reallen |= (uint32)(((uch*)filebuf)[*filelen-3]) << 8;
-   reallen |= (uint32)(((uch*)filebuf)[*filelen-2]) << 16;
-   reallen |= (uint32)(((uch*)filebuf)[*filelen-1]) << 24;
-
-   MRDBGPRINTF("filelen = %d",reallen);
-   MRDBGPRINTF("mem left = %d",LG_mem_left);
-
-   mr_gzOutBuf = MR_MALLOC(reallen);
-   oldlen = *filelen;
-   *filelen = reallen;
-   if(mr_gzOutBuf == NULL)
-   {
-      if(!is_rom_file)
-         MR_FREE(mr_gzInBuf, oldlen);
-      //MRDBGPRINTF("_mr_readFile  \"%s\" Not memory unzip!", filename);
-      return 0;
-   }
-   
-   if (mr_unzip() != 0) {
-      if(!is_rom_file)
-         MR_FREE(mr_gzInBuf, oldlen);
-      MR_FREE(mr_gzOutBuf, reallen);
-      //MRDBGPRINTF("_mr_readFile: \"%s\" Unzip err!", filename);
-      return 0;
-   }
-
-   if(!is_rom_file)
-      MR_FREE(mr_gzInBuf, oldlen);
-
-   return mr_gzOutBuf;
-}
-
-void * _mr_readFile(const char* filename, int *filelen, int lookfor)
-{
-   //int ret;
-   uint32 found=0;
-   int32 nTmp;
-   uint32 len;
-   void* filebuf;
-   MR_FILE_HANDLE f;
-   char TempName[MR_MAX_FILENAME_SIZE];
-   //char* mr_m0_file;
-   int is_rom_file = FALSE;
-   int32 oldlen;
-   uint32 headbuf[4];
-
-
-   MRDBGPRINTF("found=%d",found);
-   f = mr_open(pack_filename, MR_FILE_RDONLY );
-   if (f == 0)
-   {
-      _mr_readFileShowInfo(filename, 2002);
-      return 0;
-   }
-
-      MRDBGPRINTF("found=%d",found);
-   // 从这里开始是新版的mrp处理
-      MEMSET(headbuf, 0, sizeof(headbuf));
-      nTmp = mr_read(f, &headbuf, sizeof(headbuf));
-      headbuf[0] = ntohl(headbuf[0]);
-      headbuf[1] = ntohl(headbuf[1]);
-      headbuf[2] = ntohl(headbuf[2]);
-      headbuf[3] = ntohl(headbuf[3]);
-      if( (nTmp != 16)||(headbuf[0] != 1196446285))
-      {
-          mr_close(f);
-          _mr_readFileShowInfo(filename, 3001);
-          return 0;
-      }
-         MRDBGPRINTF("found=%d",found);
-      if(headbuf[1] > 232){                             //新版mrp 
-         uint32 indexlen = headbuf[1] + 8 - headbuf[3];
-         uint8* indexbuf = MR_MALLOC(indexlen);
-         uint32 pos = 0;
-         uint32 file_pos,file_len;
-         MRDBGPRINTF("found=%d",found);
-         if(!indexbuf){
-            mr_close(f);
-            _mr_readFileShowInfo(filename, 3003);
-            return 0;
-         }
-         nTmp = mr_seek(f, headbuf[3] - 16, MR_SEEK_CUR);
-         if (nTmp < 0)
-         {
-            mr_close(f);
-            MR_FREE(indexbuf, indexlen);
-            _mr_readFileShowInfo(filename, 3002);
-            return 0;
-         }
-         
-         MRDBGPRINTF("found=%d",found);
-         nTmp = mr_read(f, indexbuf, indexlen);
-         
-         if ((nTmp != (int32)indexlen))
-         {
-            mr_close(f);
-            MR_FREE(indexbuf, indexlen);
-            _mr_readFileShowInfo(filename, 3003);
-            return 0;
-         }
-         
-
-         MRDBGPRINTF("str1=%s,found=%d",filename,found);
-         while(!found)
-         {
-            MEMCPY(&len, &indexbuf[pos], 4);
-            len = ntohl(len);
-            pos = pos + 4;
-            if (((len + pos) > indexlen)||(len<1)||(len>=MR_MAX_FILENAME_SIZE))
-            {
-               mr_close(f);
-               MR_FREE(indexbuf, indexlen);
-               _mr_readFileShowInfo(filename, 3004);
-               return 0;
-            }
-            MEMSET(TempName, 0, sizeof(TempName));
-            MEMCPY(TempName, &indexbuf[pos], len);
-            pos = pos + len;
-            MRDBGPRINTF("pos=%d,len=%d,str2=%s",pos,len,TempName);
-            if (STRCMP(filename, TempName)==0)
-            {
-               if(lookfor)
-               {
-                  mr_close(f);
-                  MR_FREE(indexbuf, indexlen);
-                  return (void *)1;
-               }
-               found = 1;
-               MEMCPY(&file_pos, &indexbuf[pos], 4);
-               pos = pos + 4;
-               MEMCPY(&file_len, &indexbuf[pos], 4);
-               pos = pos + 4;
-               file_pos = ntohl(file_pos);
-               file_len = ntohl(file_len);
-               if ((file_pos + file_len) > headbuf[2])
-               {
-                  mr_close(f);
-                  MR_FREE(indexbuf, indexlen);
-                  _mr_readFileShowInfo(filename, 3005);
-                  return 0;
-               }
-            }else{
-               pos = pos + 12;
-               if (pos >= indexlen)
-               {
-                  mr_close(f);
-                  MR_FREE(indexbuf, indexlen);
-                  _mr_readFileShowInfo(filename, 3006);
-                  return 0;
-               }
-            }/*if (STRCMP(filename, TempName)==0)*/
-         }
-
-         MR_FREE(indexbuf, indexlen);
-         
-         *filelen = file_len;
-         
-         MRDBGPRINTF("old filelen = %d",file_len);
-         filebuf = MR_MALLOC((uint32)*filelen);
-         if(filebuf == NULL)
-         {
-            mr_close(f);
-            _mr_readFileShowInfo(filename, 3007);
-            return 0;
-         }
-
-         nTmp = mr_seek(f, file_pos, MR_SEEK_SET);
-         if (nTmp < 0)
-         {
-            MR_FREE(filebuf, *filelen);
-            mr_close(f);
-            _mr_readFileShowInfo(filename, 3008);
-            return 0;
-         }
-
-
-
-         oldlen = 0;
-         if ((*filelen < 0)){
-            MRDBGPRINTF("filelen=%d",*filelen);
-            MR_FREE(filebuf, file_len);
-            mr_close(f);
-            _mr_readFileShowInfo(filename, 3010);
-            return 0;
-         }
-         MRDBGPRINTF("oldlen1=%d",oldlen);
-         while(oldlen < *filelen){
-            MRDBGPRINTF("oldlen2=%d",oldlen);
-            nTmp = mr_read(f, (char*)filebuf+oldlen, *filelen-oldlen);
-            MRDBGPRINTF("nTmp=%d",nTmp);
-            MRDBGPRINTF("oldlen3=%d",oldlen);
-            if ((nTmp <= 0) || (oldlen > 1024*1024))
-            {
-                MRDBGPRINTF("oldlen=%d",oldlen);
-                MR_FREE(filebuf, *filelen);
-                mr_close(f);
-                _mr_readFileShowInfo(filename, 3009);
-                return 0;
-            }
-            oldlen = oldlen + nTmp;
-         }
-
-         mr_close(f);
-
-         
-      }
-      // 新版的mrp处理
-   
-
-   MRDBGPRINTF("filebuf=%x,%x", filebuf, *((uint8*)filebuf));
-   return _mr_readFileUnzip(filebuf, filelen, is_rom_file);
-   
-}
-
-#endif
-
-#ifdef MR_SPREADTRUM_MOD        
-
-void * _mr_readFile_for_spreadtrum(const char* filename, int *filelen, int lookfor);
-
-void * _mr_readFile(const char* filename, int *filelen, int lookfor)
-{
-   void * ret = _mr_readFile_for_spreadtrum(filename, filelen, lookfor);
-   if (ret == NULL){
-      return _mr_readFile_for_spreadtrum(filename, filelen, lookfor);
-   }
-   return ret;
-}
-
-void * _mr_readFile_for_spreadtrum(const char* filename, int *filelen, int lookfor)
-#else
-#endif
-#endif
-
 void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
     // int ret;
     int method;
@@ -2094,26 +1841,13 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                 }
 
                 oldlen = 0;
-#ifdef MR_SPREADTRUM_MOD
-                if ((*filelen < 0)) {
-                    //MRDBGPRINTF("filelen=%d",*filelen);
-                    MR_FREE(filebuf, file_len);
-                    mr_close(f);
-                    _mr_readFileShowInfo(filename, 3010);
-                    return 0;
-                }
-#endif
                 //MRDBGPRINTF("oldlen=%d",oldlen);
                 while (oldlen < *filelen) {
                     //MRDBGPRINTF("oldlen=%d",oldlen);
                     nTmp = mr_read(f, (char*)filebuf + oldlen, *filelen - oldlen);
                     //MRDBGPRINTF("Debug:_mr_readFile:readlen = %d,oldlen=%d",nTmp,oldlen);
                     //MRDBGPRINTF("oldlen=%d",oldlen);
-#ifdef MR_SPREADTRUM_MOD
-                    if ((nTmp <= 0) || (oldlen > 1024 * 1024))
-#else
                     if (nTmp <= 0)
-#endif
                     {
                         //MRDBGPRINTF("oldlen=%d",oldlen);
                         MR_FREE(filebuf, *filelen);
@@ -2484,26 +2218,13 @@ void* _mr_readFileForPlat(const char* mrpname, const char* filename, int* filele
             }
 
             oldlen = 0;
-#ifdef MR_SPREADTRUM_MOD
-            if ((*filelen < 0)) {
-                MRDBGPRINTF("filelen=%d", *filelen);
-                mr_freeForPlat(filebuf, file_len);
-                mr_closeForPlat(f);
-                _mr_readFileShowInfo(filename, 3010);
-                return 0;
-            }
-#endif
             //MRDBGPRINTF("oldlen=%d",oldlen);
             while (oldlen < *filelen) {
                 //MRDBGPRINTF("oldlen=%d",oldlen);
                 nTmp = mr_readForPlat(f, (char*)filebuf + oldlen, *filelen - oldlen);
                 //MRDBGPRINTF("Debug:_mr_readFile:readlen = %d,oldlen=%d",nTmp,oldlen);
                 //MRDBGPRINTF("oldlen=%d",oldlen);
-#ifdef MR_SPREADTRUM_MOD
-                if ((nTmp <= 0) || (oldlen > 1024 * 1024))
-#else
                 if (nTmp <= 0)
-#endif
                 {
                     //MRDBGPRINTF("oldlen=%d",oldlen);
                     mr_freeForPlat(filebuf, *filelen);
@@ -2611,12 +2332,9 @@ int32 mr_checkMrp(char* mrp_name) {
         return MR_FAILED - 4;
     }
 
-//2008-6-11
-#ifdef MR_SPREADTRUM_MOD
-    if (tempbuf[192] != 2)
-#else
+    //2008-6-11
+    // if (tempbuf[192] != 2) // 展迅
     if (tempbuf[192] != 1)
-#endif
     {
         mr_close(f);
         MR_FREE(tempbuf, CHECK_MRP_BUF_SIZE);
@@ -4751,13 +4469,6 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
 #endif
 #endif
 
-#ifdef MR_SPREADTRUM_MOD
-            {
-                // 移植层提供的函数， 用来同步Cache的。
-                //extern void mr_cacheSync(void);
-                mr_cacheSync(NULL, 0);
-            }
-#endif
 
 #ifdef MR_BREW_MOD
             mr_cacheSync(NULL, 0);
@@ -5026,13 +4737,6 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
 #endif
 #endif
 
-#ifdef MR_SPREADTRUM_MOD
-            {
-                // 移植层提供的函数， 用来同步Cache的。
-                mr_cacheSync(NULL, 0);
-            }
-#endif
-
 #ifdef MR_VIA_MOD
             //mr_sleep(1000);
             MRDBGPRINTF("before mr_load_c_function");
@@ -5110,16 +4814,7 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
                              ((len + 0x0000001F * 3) & (~0x0000001F)));
             }
 #endif
-
-#ifdef MR_SPREADTRUM_MOD
-            {
-                // 移植层提供的函数， 用来同步Cache的。
-                mr_cacheSync(NULL, 0);
-            }
-#endif
-
             ret = mr_load_c_function(code);
-
             mrp_pushnumber(L, ret);
             return 1;
         } break;
@@ -5875,7 +5570,6 @@ int32 mr_event(int16 type, int32 param1, int32 param2) {
 
 #endif
 
-    //#ifndef MR_SPREADTRUM_MOD
     if ((mr_state == MR_STATE_RUN) || ((mr_timer_run_without_pause) && (mr_state == MR_STATE_PAUSE))) {
         if (mr_event_function) {
             int status = mr_event_function(type, param1, param2);
@@ -5919,33 +5613,6 @@ int32 mr_event(int16 type, int32 param1, int32 param2) {
 
         return MR_SUCCESS;  //deal
     }
-    /*
-#else
-if (mr_state == MR_STATE_RUN)
-{
-   
-   mrp_getglobal(vm_state, "dealevent");
-   if (mrp_isfunction(vm_state, -1)) {
-      mrp_pushnumber(vm_state, type);
-      mrp_pushnumber(vm_state, param1);
-      mrp_pushnumber(vm_state, param2);
-      status = 0;mrp_call(vm_state, 3, 0);  
-      if (status != 0) {
-         MRDBGPRINTF(mrp_tostring(vm_state, -1));
-         mrp_pop(vm_state, 1);  
-      }
-   } else {  
-      MRDBGPRINTF("dealevent is nil!");  
-      mrp_pop(vm_state, 1); 
-   }
-   //mrp_setgcthreshold(vm_state, 0);
-   
-
-   return MR_SUCCESS;  //deal
-}
-#endif
-*/
-
     return MR_IGNORE;  //didnot deal
 }
 
@@ -6048,241 +5715,6 @@ uint32* mr_get_c_function_p(void) {
 
 #endif
 
-#if 0
-/*
- * "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
- *
- * 返回0xFF表示失败
- */
-static unsigned char _mr_decode_table ( unsigned char in )
-{
-    unsigned char   out = 0xFF;
-
-    if ( in == 'D') //14
-    {
-        out = 7;
-    }
-    else if ( in == 'h') //7
-    {
-        out = 14;
-    }
-    else if ( in == 'x') //59
-    {
-        out = 63;
-    }
-    else if ( in >= 'A' && in <= 'Z' )
-    {
-        out = in - 'A' + 11;
-    }
-    else if ( in >= 'a' && in <= 'k' )
-    {
-        out = in - 'a' ;
-    }
-    else if ( in >= 'l' && in <= 'z' )
-    {
-        out = in - 'l' + 47;
-    }
-    else if ( in >= '0' && in <= '9' )
-    {
-        out = in - '0' + 37;
-    }
-    else if ( '+' == in )
-    {
-        out = 62;
-    }
-    else if ( '/' == in )
-    {
-        out = 59;
-    }
-    else if ( '=' == in )
-    {
-        out = 64;
-    }
-    return( out );
-}  /* end of base64decodetable */
-
-
-/*
- * BASE64解码算法的本质是char 转byte
-return byte的个数
- * 返回-1表示失败
- */
-int32 _mr_decode(unsigned char *in, unsigned int len, unsigned char *out)
-{
-    unsigned int    x, y, z;
-    int    i, j;
-    unsigned char   bufa[4];
-    unsigned char   bufb[3];
-
-    /*
-     * 由主调函数确保形参有效性
-     */
-    x           = ( len - 4 ) / 4;
-    i           =
-    j           = 0;
-    for ( z = 0; z < x; z++ )
-    {
-        for ( y = 0; y < 4; y++ )
-        {
-            if(( bufa[y] = _mr_decode_table( in[j+y]) ) == 0xff)
-               return MR_FAILED;
-        }  /* end of for */
-        out[i]      = bufa[0] << 2 | ( bufa[1] & 0x30 ) >> 4;
-        out[i+1]    = ( bufa[1] & 0x0F ) << 4 | ( bufa[2] & 0x3C ) >> 2;
-        out[i+2]    = ( bufa[2] & 0x03 ) << 6 | ( bufa[3] & 0x3F );
-        i          += 3;
-        j          += 4;
-    }  /* end of for */
-    for ( z = 0; z < 4; z++ )
-    {
-        if(( bufa[z]     = _mr_decode_table(in[j+z]) ) == 0xff)
-           return MR_FAILED;
-    }  /* end of for */
-    /*
-     * 编码算法确保了结尾最多有两个'='
-     */
-    if ( '=' == in[len-2] )
-    {
-        y   = 2;
-    }
-    else if ( '=' == in[len-1] )
-    {
-        y   = 1;
-    }
-    else
-    {
-        y   = 0;
-    }
-    /*
-     * BASE64算法所需填充字节个数是自识别的
-     */
-    for ( z = 0; z < y; z++ )
-    {
-        bufa[4-z-1] = 0x00;
-    }  /* end of for */
-    bufb[0]     = bufa[0] << 2 | ( bufa[1] & 0x30 ) >> 4;
-    bufb[1]     = ( bufa[1] & 0x0F ) << 4 | ( bufa[2] & 0x3C ) >> 2;
-    bufb[2]     = ( bufa[2] & 0x03 ) << 6 | ( bufa[3] & 0x3F );
-    /*
-     * y必然小于3
-     */
-    for ( z = 0; z < 3 - y; z++ )
-    {
-        out[i+z]    = bufb[z];
-    }  /* end of for */
-    /*
-     * 离开for循环的时候已经z++了
-     */
-    i          += z;
-    return( i );
-}  /* end of base64decode */
-
-
-/*
- *
- * "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
- *
- * 返回0xFF表示失败
- */
-static unsigned char _mr_encode_table ( unsigned char in )
-{
-    unsigned char   out = 0xFF;
-
-    if ( in == 7) //14
-    {
-        out = 'D';
-    }
-    else if ( in == 14) //7
-    {
-        out = 'h';
-    }
-    else if ( 59 == in )
-    {
-        out = '/';
-    }
-    else if ( in >= 11 && in <= 36  )
-    {
-        out = in + 'A' - 11;
-    }
-    else if ( in >= 47 && in <= 61 )
-    {
-        out = in + 'l' - 47;
-    }
-    else if ( in <= 10 )
-    {
-        out = in + 'a' ;
-    }
-    else if ( in >= 37 && in <= 46 )
-    {
-        out = in + '0'- 37;
-    }
-    else if ( 62 == in )
-    {
-        out = '+';
-    }
-    else if ( in == 63) //59
-    {
-        out = 'x';
-    }
-    return( out );
-}  /* end of base64encodetable */
-
-
-/*
- * BASE64编码算法的本质是byte -> char
-return char的个数
- * 返回-1表示失败
- */
-int32 _mr_encode( unsigned char *in, unsigned int len, unsigned char *out)
-{
-    unsigned int    x, y, z;
-    int    i, j;
-    unsigned char   buf[3];
-
-    x   = len / 3;
-    y   = len % 3;
-    i   =
-    j   = 0;
-    for ( z = 0; z < x; z++ )
-    {
-        out[i]      = _mr_encode_table( (uint8)(in[j] >> 2) );
-        out[i+1]    = _mr_encode_table( (uint8)(( in[j] & 0x03 ) << 4 | in[j+1] >> 4) );
-        out[i+2]    = _mr_encode_table( (uint8)(( in[j+1] & 0x0F ) << 2 | in[j+2] >> 6) );
-        out[i+3]    = _mr_encode_table( (uint8)(in[j+2] & 0x3F) );
-        if( (out[i]|out[i+1]|out[i+2]|out[i+3]) == 0xff )
-          return MR_FAILED;
-        i          += 4;
-        j          += 3;
-    }  /* end of for */
-    if ( 0 != y )
-    {
-        buf[0]      =
-        buf[1]      =
-        buf[2]      = 0x00;
-        for ( z = 0; z < y; z++ )
-        {
-            buf[z]  = in[j+z];
-        }  /* end of for */
-        out[i]      = _mr_encode_table( buf[0] >> 2 );
-        out[i+1]    = _mr_encode_table( ( buf[0] & 0x03 ) << 4 | buf[1] >> 4 );
-        out[i+2]    = _mr_encode_table( ( buf[1] & 0x0F ) << 2 | buf[2] >> 6 );
-        out[i+3]    = _mr_encode_table( buf[2] & 0x3F );
-        if( (out[i]|out[i+1]|out[i+2]|out[i+3]) == 0xff )
-          return MR_FAILED;
-        i          += 4;
-        /*
-         * BASE64算法所需填充字节个数是自识别的
-         */
-        for ( z = 0; z < 3 - y; z++ )
-        {
-            out[i-z-1]  = '=';
-        }  /* end of for */
-    }
-    out[i] = 0;
-    return( i );
-}  /* end of base64encode */
-
-#endif
 
 //****************************短信
 
@@ -7543,17 +6975,7 @@ int32 _mr_getMetaMemLimit() {
                 mr_close(f);
                 return 0;
             }
-
-#ifdef MR_SPREADTRUM_MOD
-            if ((file_len < 0)) {
-                mr_close(f);
-
-                return 0;
-            }
-#endif
-
             nTmp = mr_read(f, &_v[0], 4);
-
             mr_close(f);
             if (nTmp != 4) {
                 return nTmp;

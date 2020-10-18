@@ -736,29 +736,6 @@ typedef struct _mrcMpsFpEventParamsSt {
     int32 p5;
 } mrcMpsFpEventParamsSt;
 
-#ifdef MR_SPREADTRUM_MOD
-void spreadtrum_patch_save(int32* gr9, int32* gr8);
-void spreadtrum_patch_load(int32 gr9, int32 gr8);
-
-#ifndef __thumb
-#define SPREADTRUM_PATCH_SAVE \
-    int32 gr8, gr9;           \
-    spreadtrum_patch_save(&gr9, &gr8);
-
-#define SPREADTRUM_PATCH_LOAD \
-    spreadtrum_patch_load(gr9, gr8);
-
-#else
-#define SPREADTRUM_PATCH_SAVE
-#define SPREADTRUM_PATCH_LOAD
-#endif
-
-#else
-
-#define SPREADTRUM_PATCH_SAVE
-#define SPREADTRUM_PATCH_LOAD
-
-#endif
 
 //extern int32 mrc_initNetworkCbState;
 extern MR_INIT_NETWORK_CB mrc_initNetworkCbFunc;
