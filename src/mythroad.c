@@ -1609,9 +1609,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
         }
         pos = pos + 4;
         MEMCPY(&len, &mr_m0_file[pos], 4);
-#ifdef MR_BIG_ENDIAN
-        len = ntohl(len);
-#endif
         pos = pos + 4;
 
         if ((pack_filename[0] == '$')) {
@@ -1628,10 +1625,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
 #endif
         } else {
             MEMCPY(&m0file_len, &mr_m0_file[pos], 4);
-
-#ifdef MR_BIG_ENDIAN
-            m0file_len = ntohl(m0file_len);
-#endif
         }
 
         //MRDBGPRINTF("readFile 11 len = %d", len);
@@ -1645,10 +1638,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
             }
             MEMCPY(&len, &mr_m0_file[pos], 4);
             //MRDBGPRINTF("readFile 3 len = %d", len);
-
-#ifdef MR_BIG_ENDIAN
-            len = ntohl(len);
-#endif
 
             //MRDBGPRINTF("readFile 3 len = %d", len);
             pos = pos + 4;
@@ -1668,10 +1657,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                 found = 1;
                 MEMCPY(&len, &mr_m0_file[pos], 4);
 
-#ifdef MR_BIG_ENDIAN
-                len = ntohl(len);
-#endif
-
                 pos = pos + 4;
                 if (((len + pos) > m0file_len) || (len < 1) || (len >= MR_MAX_FILE_SIZE)) {
                     //MRDBGPRINTF( "_mr_readFile:err 4 at \"%s\"!",filename);
@@ -1680,10 +1665,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                 }
             } else {
                 MEMCPY(&len, &mr_m0_file[pos], 4);
-
-#ifdef MR_BIG_ENDIAN
-                len = ntohl(len);
-#endif
 
                 //MRDBGPRINTF("l = %d,p = %d", len, pos);
                 pos = pos + 4 + len;
@@ -1772,9 +1753,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                 //MRDBGPRINTF("str1=%s",filename);
                 while (!found) {
                     MEMCPY(&len, &indexbuf[pos], 4);
-#ifdef MR_BIG_ENDIAN
-                    len = ntohl(len);
-#endif
                     pos = pos + 4;
                     if (((len + pos) > indexlen) || (len < 1) || (len >= MR_MAX_FILENAME_SIZE)) {
                         mr_close(f);
@@ -1799,10 +1777,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                         pos = pos + 4;
                         MEMCPY(&file_len, &indexbuf[pos], 4);
                         pos = pos + 4;
-#ifdef MR_BIG_ENDIAN
-                        file_pos = ntohl(file_pos);
-                        file_len = ntohl(file_len);
-#endif
                         if ((file_pos + file_len) > headbuf[2]) {
                             mr_close(f);
                             MR_FREE(indexbuf, indexlen);
@@ -1885,10 +1859,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                 while (!found) {
                     nTmp = mr_read(f, &len, 4);
 
-#ifdef MR_BIG_ENDIAN
-                    len = ntohl(len);
-#endif
-
                     if ((nTmp != 4) || (len < 1) || (len >= MR_MAX_FILENAME_SIZE)) {
                         mr_close(f);
                         //MRDBGPRINTF( "name of file \"%s\" is too long!",filename);
@@ -1914,10 +1884,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                         found = 1;
                         nTmp = mr_read(f, &len, 4);
 
-#ifdef MR_BIG_ENDIAN
-                        len = ntohl(len);
-#endif
-
                         if ((nTmp != 4) || (len < 1) || (len > MR_MAX_FILE_SIZE)) {
                             //MRDBGPRINTF( "_mr_readFile:err 4 at \"%s\"!",filename);
                             _mr_readFileShowInfo(filename, 2009);
@@ -1926,10 +1892,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                         }
                     } else {
                         nTmp = mr_read(f, &len, 4);
-
-#ifdef MR_BIG_ENDIAN
-                        len = ntohl(len);
-#endif
 
                         if ((nTmp != 4) || (len < 1) || (len > MR_MAX_FILE_SIZE)) {
                             //MRDBGPRINTF( "_mr_readFile:err 5 at \"%s\"!",filename);
@@ -1981,10 +1943,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
         // 新版的mrp处理
         /*
       nTmp = mr_read(f, &len, 4);
-
-#ifdef MR_BIG_ENDIAN
-      len = ntohl(len);
-#endif
       
       if (nTmp != 4)
       {
@@ -2001,10 +1959,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
          return 0;
       }
       nTmp = mr_read(f, &len, 4);
-
-#ifdef MR_BIG_ENDIAN
-      len = ntohl(len);
-#endif
       
       if ((nTmp != 4)||(len<1)||(len>MR_MAX_FILE_SIZE))
       {
@@ -2106,12 +2060,6 @@ void* _mr_readFileForPlat(const char* mrpname, const char* filename, int* filele
         uint32 headbuf[4];
         MEMSET(headbuf, 0, sizeof(headbuf));
         nTmp = mr_readForPlat(f, &headbuf, sizeof(headbuf));
-#ifdef MR_BIG_ENDIAN
-        headbuf[0] = ntohl(headbuf[0]);
-        headbuf[1] = ntohl(headbuf[1]);
-        headbuf[2] = ntohl(headbuf[2]);
-        headbuf[3] = ntohl(headbuf[3]);
-#endif
         if ((nTmp != 16) || (headbuf[0] != 1196446285)) {
             mr_closeForPlat(f);
             _mr_readFileShowInfo(filename, 3001);
@@ -2147,9 +2095,6 @@ void* _mr_readFileForPlat(const char* mrpname, const char* filename, int* filele
             //MRDBGPRINTF("str1=%s",filename);
             while (!found) {
                 MEMCPY(&len, &indexbuf[pos], 4);
-#ifdef MR_BIG_ENDIAN
-                len = ntohl(len);
-#endif
                 pos = pos + 4;
                 if (((len + pos) > indexlen) || (len < 1) || (len >= MR_MAX_FILENAME_SIZE)) {
                     mr_closeForPlat(f);
@@ -2171,10 +2116,6 @@ void* _mr_readFileForPlat(const char* mrpname, const char* filename, int* filele
                     pos = pos + 4;
                     MEMCPY(&file_len, &indexbuf[pos], 4);
                     pos = pos + 4;
-#ifdef MR_BIG_ENDIAN
-                    file_pos = ntohl(file_pos);
-                    file_len = ntohl(file_len);
-#endif
                     if ((file_pos + file_len) > headbuf[2]) {
                         mr_closeForPlat(f);
                         mr_freeForPlat(indexbuf, indexlen);
@@ -2308,12 +2249,6 @@ int32 mr_checkMrp(char* mrp_name) {
     nTmp = mr_read(f, &headbuf, sizeof(headbuf));
     mr_updcrc(NULL, 0);
     mr_updcrc((uint8*)&headbuf, sizeof(headbuf));
-#ifdef MR_BIG_ENDIAN
-    headbuf[0] = ntohl(headbuf[0]);
-    headbuf[1] = ntohl(headbuf[1]);
-    headbuf[2] = ntohl(headbuf[2]);
-    headbuf[3] = ntohl(headbuf[3]);
-#endif
     if ((nTmp != 16) || (headbuf[0] != 1196446285 /*1196446285*/) || (headbuf[1] <= 232)) {
         mr_close(f);
         MR_FREE(tempbuf, CHECK_MRP_BUF_SIZE);
@@ -2344,9 +2279,6 @@ int32 mr_checkMrp(char* mrp_name) {
     //2008-6-11
 
     MEMCPY(&crc32, &tempbuf[68], 4);
-#ifdef MR_BIG_ENDIAN
-    crc32 = ntohl(crc32);
-#endif
     MEMSET(&tempbuf[68], 0, 4);
     mr_updcrc(tempbuf, 224);
 
@@ -3205,10 +3137,6 @@ static int MRF_TileLoad(mrp_State* L) {
     char* filename = ((char*)mrp_tostring(L, 2));
     int filelen;
 
-#ifdef MR_BIG_ENDIAN
-    uint16 dx, dy, w;
-#endif
-
 #ifdef MYTHROAD_DEBUG
     if (i >= TILEMAX) {
         mrp_pushstring(L, "TileLoad:tile index out of rang!");
@@ -3228,15 +3156,6 @@ static int MRF_TileLoad(mrp_State* L) {
         mrp_pushfstring(L, "TileLoad %d:cannot read \"%s\"!", i, filename);
         mrp_error(L);
         return 0;
-    }
-#endif
-
-#ifdef MR_BIG_ENDIAN
-    for (dy = 0; dy < mr_tile[i].h; dy++) {
-        for (dx = 0; dx < mr_tile[i].w; dx++) {
-            w = mr_tile[i].w;
-            mr_map[i][w * dy + dx] = ntohs(mr_map[i][w * dy + dx]);
-        }
     }
 #endif
 
@@ -4506,10 +4425,6 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
                 //unzip_len  = *(uint32*)(input1 + len - 4);
                 MEMCPY(&unzip_len, (input1 + len - 4), 4);
                 //MRDBGPRINTF("unzip_len1 = %d", unzip_len);
-#ifdef MR_BIG_ENDIAN
-                unzip_len = ntohl(unzip_len);
-#endif
-                //MRDBGPRINTF("unzip_len2 = %d", unzip_len);
 
                 mr_gzOutBuf = MR_MALLOC(unzip_len);
             }
@@ -4517,10 +4432,6 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             //unzip_len  = *(uint32*)(input1 + len - 4);
             MEMCPY(&unzip_len, (input1 + len - 4), 4);
             //MRDBGPRINTF("unzip_len1 = %d", unzip_len);
-#ifdef MR_BIG_ENDIAN
-            unzip_len = ntohl(unzip_len);
-#endif
-            //MRDBGPRINTF("unzip_len2 = %d", unzip_len);
 
             mr_gzOutBuf = MR_MALLOC(unzip_len);
 #endif

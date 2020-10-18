@@ -706,17 +706,6 @@ enum {
     MRC_EXT_MPS_EVENT
 };
 
-#if 0
-#ifdef MR_BIG_ENDIAN
-#define ntohl(i) (((uint32)i >> 24) | (((uint32)i & 0xff0000) >> 8) | (((uint32)i & 0xff00) << 8) | ((uint32)i << 24))
-#define htonl(i) (i)
-#define ntohs(i) ((((uint16)i) >> 8) | ((uint16)i << 8))
-#else
-#define ntohl(i) (i)
-#define htonl(i) (((uint32)i >> 24) | (((uint32)i & 0xff0000) >> 8) | (((uint32)i & 0xff00) << 8) | ((uint32)i << 24))
-#define ntohs(i) (i)
-#endif
-#endif
 
 typedef struct _mrcMpsFpCallParamsSt {
     mpsFpFuncType func;

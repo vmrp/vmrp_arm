@@ -1726,12 +1726,6 @@ void* _mr_readFileForPlat(const char* mrpname, const char* filename, int* filele
         uint32 headbuf[4];
         MEMSET(headbuf, 0, sizeof(headbuf));
         nTmp = mr_readForPlat(f, &headbuf, sizeof(headbuf));
-#ifdef MR_BIG_ENDIAN
-        headbuf[0] = ntohl(headbuf[0]);
-        headbuf[1] = ntohl(headbuf[1]);
-        headbuf[2] = ntohl(headbuf[2]);
-        headbuf[3] = ntohl(headbuf[3]);
-#endif
         if ((nTmp != 16) || (headbuf[0] != 1196446285)) {
             mr_closeForPlat(f);
             _mr_readFileShowInfo(filename, 3001);
@@ -1767,9 +1761,6 @@ void* _mr_readFileForPlat(const char* mrpname, const char* filename, int* filele
             //MRDBGPRINTF("str1=%s",filename);
             while (!found) {
                 MEMCPY(&len, &indexbuf[pos], 4);
-#ifdef MR_BIG_ENDIAN
-                len = ntohl(len);
-#endif
                 pos = pos + 4;
                 if (((len + pos) > indexlen) || (len < 1) || (len >= MR_MAX_FILENAME_SIZE)) {
                     mr_closeForPlat(f);
@@ -1791,10 +1782,6 @@ void* _mr_readFileForPlat(const char* mrpname, const char* filename, int* filele
                     pos = pos + 4;
                     MEMCPY(&file_len, &indexbuf[pos], 4);
                     pos = pos + 4;
-#ifdef MR_BIG_ENDIAN
-                    file_pos = ntohl(file_pos);
-                    file_len = ntohl(file_len);
-#endif
                     if ((file_pos + file_len) > headbuf[2]) {
                         mr_closeForPlat(f);
                         mr_freeForPlat(indexbuf, indexlen);
