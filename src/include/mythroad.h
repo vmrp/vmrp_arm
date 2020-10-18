@@ -144,25 +144,14 @@ typedef struct {
 #ifdef MR_SCREEN_CACHE_BITMAP
 #define MAKERGB(r, g, b)     (uint16) ( ((uint32)(r>>3) << 10) + ((uint32)(g>>3) << 5) + ((uint32)(b>>3)) )
 #else
-#ifdef MR_ANYKA_MOD
-#define MAKERGB(r, g, b)     (uint32) ( ((uint32)r<<16) | ((uint32)g << 8) | ((uint32)b) )
-#else
 #define MAKERGB(r, g, b)     (uint16) ( ((uint32)(r>>3) << 11) + ((uint32)(g>>2) << 5) + ((uint32)(b>>3)) )
-#endif
 #endif
 
 
 #ifdef MR_SCREEN_CACHE_BITMAP
 #define MR_SCREEN_CACHE_POINT(x, y)    (mr_screenBuf + (MR_SCREEN_H-y) * MR_SCREEN_MAX_W + x)
 #else
-#ifdef MR_ANYKA_MOD
-#define MR_SCREEN_CACHE_POINT(x, y)    ((uint8*)mr_screenBuf + (y * MR_SCREEN_MAX_W + x)*3)
-#define MR_BITMAP_POINT(p, x, y, w)    ((uint8*)p + (y * w + x)*3)
-#define MR_BITMAP_POINT_COLOUR(p)  ( ((uint32)*((uint8*)p)<<16) | ((uint32)*((uint8*)p+1)<<8) | *((uint8*)p+2) )
-
-#else
 #define MR_SCREEN_CACHE_POINT(x, y)    (mr_screenBuf + y * MR_SCREEN_MAX_W + x)
-#endif
 #endif
 
 

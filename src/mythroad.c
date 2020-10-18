@@ -191,12 +191,6 @@ int32 mr_check_code_len;
 int32 mr_checkCode(void);
 #endif
 
-void mr_md5_init(md5_state_t* pms);
-void mr_md5_append(md5_state_t* pms, const md5_byte_t* data, int nbytes);
-void mr_md5_finish(md5_state_t* pms, md5_byte_t digest[16]);
-//int32 _mr_decode(unsigned char *in, unsigned int len, unsigned char *out);
-//int32 _mr_encode(unsigned char *in, unsigned int len, unsigned char *out);
-
 static int32 _mr_smsSetBytes(int32 pos, char* p, int32 len);
 static int32 _mr_smsAddNum(int32 index, char* pNum);
 static int32 _mr_load_sms_cfg(void);
@@ -206,27 +200,12 @@ static int32 _mr_newSIMInd(int16 type, uint8* old_IMSI);
 static int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h);
 static int _mr_isMr(char* input);
 
-#ifdef MR_ANYKA_MOD
-static void _DrawPoint(int16 x, int16 y, uint32 nativecolor);
-//static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint32 transcoler, int16 sx, int16 sy, int16 mw);
-static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint32 transcoler, int16 sx, int16 sy, int16 mw);
-
-static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint32 transcoler);
-//static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b);
-void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b);
-
-static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font);
-int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint32 transcoler, uint32 color_check);
-#else
 void _DrawPoint(int16 x, int16 y, uint16 nativecolor);
-//static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw);
 void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw);
 static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler);
-//static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b);
 void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b);
 static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font);
 int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transcoler, uint16 color_check);
-#endif
 
 void* _mr_readFile(const char* filename, int* filelen, int lookfor);
 int mr_wstrlen(char* txt);
@@ -351,13 +330,13 @@ static void _mr_c_internal_table_init() {
 static void* _mr_c_port_table[4];
 
 #ifdef SDK_MOD
-    void* sdk_mr_c_function_table;
-    const void* _mr_c_function_table[150];
+void* sdk_mr_c_function_table;
+const void* _mr_c_function_table[150];
 #else
-    static const void* _mr_c_function_table[150];
+static const void* _mr_c_function_table[150];
 #endif
 
-static void _mr_c_function_table_init(){
+static void _mr_c_function_table_init() {
     _mr_c_function_table[0] = (void*)mr_malloc;
     _mr_c_function_table[1] = (void*)mr_free;
     _mr_c_function_table[2] = (void*)mr_realloc;  // 3
@@ -710,10 +689,6 @@ void* mr_realloc(void* p, uint32 oldlen, uint32 len) {
     return newblock;
 }
 
-#ifndef MR_ANYKA_MOD
-
-//#ifdef MR_PLAT_DRAWTEXT
-
 /*
 typedef struct
 {
@@ -727,11 +702,9 @@ typedef struct
 void _DrawPoint(int16 x, int16 y, uint16 nativecolor) {
     if (x < 0 || y < 0 || x >= MR_SCREEN_W || y >= MR_SCREEN_H)
         return;
-    //*(mr_screenBuf + y * MR_SCREEN_MAX_W + x) = nativecolor;
     *MR_SCREEN_CACHE_POINT(x, y) = nativecolor;
 }
 
-//static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw)
 void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw) {
     uint16 *dstp, *srcp;
     int MaxY = MIN(MR_SCREEN_H, y + h);
@@ -913,50 +886,7 @@ void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, ui
     }
 }
 
-//static void _DrawBitmapEx(uint16* p, int16 x, int16 y, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler)
 static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler) {
-    /*
-   int16 A = pTrans->A;
-   int16 B = pTrans->B;
-   int16 C = pTrans->C;
-   int16 D = pTrans->D;
-   uint16 rop = pTrans->rop;
-   uint16 *dstp,*srcp;
-   int16 CenterX = x + w/2;
-   int16 CenterY = y + h/2;
-   int16 dx,dy;
-   int32 I = A * D - B * C;
-   int16 MaxY = (ABS(C) * w/2 + ABS(D) * h/2)/256;
-   int16 MinY = 0-MaxY;
-   
-   MaxY = MIN(MaxY, MR_SCREEN_H - CenterY);
-   MinY = MAX(MinY, 0 - CenterY);
-   
-   for(dy=MinY;dy<MaxY;dy++)
-   {
-      int16 MaxX = MIN(D==0? 999:(D>0? (w * I / 2 /256 + B * dy )/D:(B * dy - w * I / 2 /256 )/D), 
-         C==0? 999:(C>0? (A * dy + h * I / 2/256)/C:(A * dy - h * I / 2/256)/C));
-      int16 MinX = MAX(D==0? -999:(D>0? (B * dy - w * I / 2 /256 )/D:(w * I / 2 /256 + B * dy )/D), 
-         C==0? -999:(C>0? (A * dy - h * I / 2/256)/C:(A * dy + h * I / 2/256)/C));
-      MaxX = MIN(MaxX, MR_SCREEN_W - CenterX);
-      MinX = MAX(MinX, 0 - CenterX);
-      dstp = mr_screenBuf + (dy + CenterY) * MR_SCREEN_MAX_W + (MinX + CenterX);
-      for(dx=MinX;dx<MaxX;dx++)
-      {
-         srcp = p + ( (A * dy - C * dx )*256/I + h/2 ) * w + (D * dx - B * dy)*256/I + w/2;
-         if (!((rop == BM_TRANSPARENT) && (*srcp == transcoler)))
-            *dstp = *srcp;
-         dstp++;
-      }
-   }
-*/
-
-    /*
-int16 MaxX = MIN(D==0? 999:(D>0? (((w * I)>>9) + B * dy )/D:(B * dy - ((w * I)>>9) )/D), 
-   C==0? 999:(C>0? (A * dy + ((h * I)>>9))/C:(A * dy - ((h * I) >>9))/C));
-int16 MinX = MAX(D==0? -999:(D>0? (B * dy - ((w * I)>>9) )/D:(((w * I) >>9) + B * dy )/D), 
-   C==0? -999:(C>0? (A * dy - ((h * I)>>9))/C:(A * dy + ((h * I)>>9))/C));
-*/
     int32 A = pTrans->A;
     int32 B = pTrans->B;
     int32 C = pTrans->C;
@@ -1023,10 +953,10 @@ void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b) {
     uint16 nativecolor;
 
     /*
-   nativecolor = (r/8)<<11;
-   nativecolor |=(g/4)<<5;
-   nativecolor |=(b/8);          
-*/
+    nativecolor = (r/8)<<11;
+    nativecolor |=(g/4)<<5;
+    nativecolor |=(b/8);          
+    */
     nativecolor = MAKERGB(r, g, b);
 
     if ((MaxY > MinY) && (MaxX > MinX)) {
@@ -1624,754 +1554,6 @@ static int MRF_SpriteCheck(mrp_State* L) {
 
     return 1;
 }
-
-#else // 从716行开始
-
-static void _DrawPoint(int16 x, int16 y, uint32 nativecolor) {
-    uint8* dstp;
-    if (x < 0 || y < 0 || x >= MR_SCREEN_W || y >= MR_SCREEN_H)
-        return;
-    //*(mr_screenBuf + y * MR_SCREEN_MAX_W + x) = nativecolor;
-    dstp = MR_SCREEN_CACHE_POINT(x, y);
-    *dstp++ = nativecolor >> 16;
-    *dstp++ = (nativecolor & 0xff00) >> 8;
-    *dstp = (nativecolor & 0xff);
-}
-
-static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint32 transcoler, int16 sx, int16 sy, int16 mw) {
-    uint8 *dstp, *srcp;
-    int MaxY = MIN(MR_SCREEN_H, y + h);
-    int MaxX = MIN(MR_SCREEN_W, x + w);
-    int MinY = MAX(0, y);
-    int MinX = MAX(0, x);
-    uint16 dx, dy;
-
-    if (rop > MR_SPRITE_TRANSPARENT) {
-        uint16 BitmapRop = rop & MR_SPRITE_INDEX_MASK;
-        uint16 BitmapMode = (rop >> MR_TILE_SHIFT) & 0x3;
-        uint16 BitmapFlip = (rop >> MR_TILE_SHIFT) & 0x4;
-        switch (BitmapRop) {
-            case BM_TRANSPARENT:
-                for (dy = MinY; dy < MaxY; dy++) {
-                    dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
-                    //srcp = (uint8*)p + ((dy - y) * w + (MinX - x))*3;
-                    srcp = MR_BITMAP_POINT(p, (MinX - x), (dy - y), w);
-                    for (dx = MinX; dx < MaxX; dx++) {
-                        if ((*srcp != (transcoler >> 16)) || (*(srcp + 1) != ((transcoler & 0xff00) >> 8)) || (*(srcp + 2) != (transcoler & 0xff))) {
-                            *dstp++ = *srcp++;
-                            *dstp++ = *srcp++;
-                            *dstp++ = *srcp++;
-                        } else {
-                            dstp += 3;
-                            srcp += 3;
-                        }
-                    }
-                }
-                break;
-            case BM_COPY:
-                switch (BitmapMode) {
-                    case MR_ROTATE_0:
-                        if (MaxX > MinX) {
-                            for (dy = MinY; dy < MaxY; dy++) {
-                                dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
-                                //srcp = BitmapFlip? (uint8*)p + ((h - 1 - (dy - y)) * w + (MinX - x))*3
-                                //                                         :p + ((dy - y) * w + (MinX - x))*3;
-                                srcp = BitmapFlip ? MR_BITMAP_POINT(p, (MinX - x), (h - 1 - (dy - y)), w)
-                                                  : MR_BITMAP_POINT(p, (MinX - x), (dy - y), w);
-                                MEMCPY(dstp, srcp, (MaxX - MinX) * 3);
-                            }
-                        }
-                        break;
-                    case MR_ROTATE_90:
-                        for (dy = MinY; dy < MaxY; dy++) {
-                            dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
-                            //srcp = BitmapFlip? p + ((h - 1 - (MinX - x)) * w + (w - 1 - (dy - y)))*3
-                            //                                   :p + ((MinX - x) * w + (w - 1 - (dy - y)))*3;
-                            srcp = BitmapFlip ? MR_BITMAP_POINT(p, (w - 1 - (dy - y)), (h - 1 - (MinX - x)), w)
-                                              : MR_BITMAP_POINT(p, (w - 1 - (dy - y)), (MinX - x), w);
-                            for (dx = MinX; dx < MaxX; dx++) {
-                                *dstp++ = *srcp++;
-                                *dstp++ = *srcp++;
-                                *dstp++ = *srcp;
-                                srcp -= 2;
-                                srcp = BitmapFlip ? srcp - w * 3 : srcp + w * 3;
-                            }
-                        }
-                        break;
-                    case MR_ROTATE_180:
-                        for (dy = MinY; dy < MaxY; dy++) {
-                            dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
-                            //srcp = BitmapFlip? p + (dy - y) * w + (w - 1 - (MinX - x))
-                            //                      :p + (h - 1 - (dy - y)) * w + (w - 1 - (MinX - x));
-                            srcp = BitmapFlip ? MR_BITMAP_POINT(p, (w - 1 - (MinX - x)), (dy - y), w)
-                                              : MR_BITMAP_POINT(p, (w - 1 - (MinX - x)), (h - 1 - (dy - y)), w);
-                            for (dx = MinX; dx < MaxX; dx++) {
-                                *dstp++ = *srcp++;
-                                *dstp++ = *srcp++;
-                                *dstp++ = *srcp;
-                                srcp -= 5;
-                            }
-                        }
-                        break;
-                    case MR_ROTATE_270:
-                        for (dy = MinY; dy < MaxY; dy++) {
-                            dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
-                            //srcp = BitmapFlip? p + (MinX - x) * w + (dy - y):p + (h - 1 - (MinX - x)) * w + (dy - y);
-                            srcp = BitmapFlip ? MR_BITMAP_POINT(p, (dy - y), (MinX - x), w)
-                                              : MR_BITMAP_POINT(p, (dy - y), (h - 1 - (MinX - x)), w);
-                            for (dx = MinX; dx < MaxX; dx++) {
-                                *dstp++ = *srcp++;
-                                *dstp++ = *srcp++;
-                                *dstp++ = *srcp;
-                                srcp -= 2;
-                                srcp = BitmapFlip ? srcp + w * 3 : srcp - w * 3;
-                            }
-                        }
-                        break;
-                }
-        }
-    } else {
-        switch (rop) {
-            case BM_TRANSPARENT:
-                for (dy = MinY; dy < MaxY; dy++) {
-                    dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
-                    //srcp = p + (dy - y + sy) * mw + (MinX - x + sx);
-                    srcp = MR_BITMAP_POINT(p, (MinX - x + sx), (dy - y + sy), mw);
-                    for (dx = MinX; dx < MaxX; dx++) {
-                        if ((*srcp != (transcoler >> 16)) || (*(srcp + 1) != ((transcoler & 0xff00) >> 8)) || (*(srcp + 2) != (transcoler & 0xff))) {
-                            *dstp++ = *srcp++;
-                            *dstp++ = *srcp++;
-                            *dstp++ = *srcp++;
-                        } else {
-                            dstp += 3;
-                            srcp += 3;
-                        }
-                    }
-                }
-                break;
-            case BM_COPY:
-                if (MaxX > MinX) {
-                    for (dy = MinY; dy < MaxY; dy++) {
-                        dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
-                        //srcp = p + (dy - y + sy) * mw + (MinX - x + sx);
-                        srcp = MR_BITMAP_POINT(p, (MinX - x + sx), (dy - y + sy), mw);
-                        MEMCPY(dstp, srcp, (MaxX - MinX) * 3);
-                    }
-                }
-                break;
-            case BM_GRAY:
-            case BM_OR:
-            case BM_XOR:
-            case BM_NOT:
-            case BM_MERGENOT:
-            case BM_ANDNOT:
-            case BM_AND:
-            case BM_REVERSE:
-                for (dy = MinY; dy < MaxY; dy++) {
-                    dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
-                    //srcp = p + (dy - y + sy) * mw + (MinX - x + sx);
-                    srcp = MR_BITMAP_POINT(p, (MinX - x + sx), (dy - y + sy), mw);
-                    for (dx = MinX; dx < MaxX; dx++) {
-                        switch (rop) {
-                            case BM_GRAY:
-                                if ((*srcp != (transcoler >> 16)) || (*(srcp + 1) != ((transcoler & 0xff00) >> 8)) || (*(srcp + 2) != (transcoler & 0xff))) {
-                                    uint32 r, g, b;
-                                    r = *srcp;
-                                    srcp++;
-                                    g = *srcp;
-                                    srcp++;
-                                    b = *srcp;
-                                    srcp++;
-                                    r = (r * 30 + g * 59 + b * 11) / 100;
-                                    *dstp = r;
-                                    dstp++;
-                                    *dstp = r;
-                                    dstp++;
-                                    *dstp = r;
-                                    dstp++;
-                                } else {
-                                    dstp += 3;
-                                    srcp += 3;
-                                }
-                                break;
-                            case BM_REVERSE:
-                                if ((*srcp != (transcoler >> 16)) || (*(srcp + 1) != ((transcoler & 0xff00) >> 8)) || (*(srcp + 2) != (transcoler & 0xff))) {
-                                    uint32 r, g, b;
-                                    r = *srcp;
-                                    srcp++;
-                                    g = *srcp;
-                                    srcp++;
-                                    b = *srcp;
-                                    srcp++;
-                                    *dstp = ~r;
-                                    dstp++;
-                                    *dstp = ~g;
-                                    dstp++;
-                                    *dstp = ~b;
-                                    dstp++;
-                                } else {
-                                    dstp += 3;
-                                    srcp += 3;
-                                }
-                                break;
-                            case BM_OR:
-                                *dstp = (*srcp) | (*dstp);
-                                dstp++;
-                                srcp++;
-                                *dstp = (*srcp) | (*dstp);
-                                dstp++;
-                                srcp++;
-                                *dstp = (*srcp) | (*dstp);
-                                dstp++;
-                                srcp++;
-                                break;
-                            case BM_XOR:
-                                *dstp = (*srcp) ^ (*dstp);
-                                dstp++;
-                                srcp++;
-                                *dstp = (*srcp) ^ (*dstp);
-                                dstp++;
-                                srcp++;
-                                *dstp = (*srcp) ^ (*dstp);
-                                dstp++;
-                                srcp++;
-                                break;
-                            case BM_NOT:
-                                *dstp = ~(*srcp);
-                                dstp++;
-                                srcp++;
-                                *dstp = ~(*srcp);
-                                dstp++;
-                                srcp++;
-                                *dstp = ~(*srcp);
-                                dstp++;
-                                srcp++;
-                                break;
-                            case BM_MERGENOT:
-                                *dstp = (~*srcp) | (*dstp);
-                                dstp++;
-                                srcp++;
-                                *dstp = (~*srcp) | (*dstp);
-                                dstp++;
-                                srcp++;
-                                *dstp = (~*srcp) | (*dstp);
-                                dstp++;
-                                srcp++;
-                                break;
-                            case BM_ANDNOT:
-                                *dstp = (~*srcp) & (*dstp);
-                                dstp++;
-                                srcp++;
-                                *dstp = (~*srcp) & (*dstp);
-                                dstp++;
-                                srcp++;
-                                *dstp = (~*srcp) & (*dstp);
-                                dstp++;
-                                srcp++;
-                                break;
-                            case BM_AND:
-                                *dstp = (*srcp) & (*dstp);
-                                dstp++;
-                                srcp++;
-                                *dstp = (*srcp) & (*dstp);
-                                dstp++;
-                                srcp++;
-                                *dstp = (*srcp) & (*dstp);
-                                dstp++;
-                                srcp++;
-                                break;
-                        }
-                    }
-                }
-                break;
-        }
-    }
-}
-
-static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint32 transcoler) {
-    int32 A = pTrans->A;
-    int32 B = pTrans->B;
-    int32 C = pTrans->C;
-    int32 D = pTrans->D;
-    uint8 *dstp, *srcp;
-    int16 CenterX = dstbmp->x + w / 2;
-    int16 CenterY = dstbmp->y + h / 2;
-    int32 dx, dy;
-    int32 I = A * D - B * C;
-    int16 MaxY = (ABS(C) * w + ABS(D) * h) >> 9;
-    int16 MinY = 0 - MaxY;
-
-    MaxY = MIN(MaxY, dstbmp->h - CenterY);
-    MinY = MAX(MinY, 0 - CenterY);
-
-    for (dy = MinY; dy < MaxY; dy++) {
-        int16 MaxX = (int16)MIN(D == 0 ? 999 : (MAX((((w * I) >> 9) + B * dy) / D, (B * dy - ((w * I) >> 9)) / D)),
-                                C == 0 ? 999 : (MAX((A * dy + ((h * I) >> 9)) / C, (A * dy - ((h * I) >> 9)) / C)));
-        int16 MinX = (int16)MAX(D == 0 ? -999 : (MIN((B * dy - ((w * I) >> 9)) / D, (((w * I) >> 9) + B * dy) / D)),
-                                C == 0 ? -999 : (MIN((A * dy - ((h * I) >> 9)) / C, (A * dy + ((h * I) >> 9)) / C)));
-        MaxX = MIN(MaxX, dstbmp->w - CenterX);
-        MinX = MAX(MinX, 0 - CenterX);
-        dstp = (uint8*)dstbmp->p + ((dy + CenterY) * dstbmp->w + (MinX + CenterX)) * 3;
-        switch (pTrans->rop) {
-            case BM_TRANSPARENT:
-                for (dx = MinX; dx < MaxX; dx++) {
-                    int32 offsety = ((A * dy - C * dx) << 8) / I + h / 2;
-                    int32 offsetx = ((D * dx - B * dy) << 8) / I + w / 2;
-                    if (((offsety < h) && (offsety >= 0)) && ((offsetx < w) && (offsetx >= 0))) {
-                        srcp = (uint8*)srcbmp->p + ((offsety + srcbmp->y) * w + (offsetx + srcbmp->x)) * 3;
-                        if ((*srcp != (transcoler >> 16)) || (*(srcp + 1) != ((transcoler & 0xff00) >> 8)) || (*(srcp + 2) != (transcoler & 0xff))) {
-                            *dstp++ = *srcp++;
-                            *dstp++ = *srcp++;
-                            *dstp++ = *srcp;
-                        } else {
-                            dstp += 3;
-                        }
-                    } else {
-                        dstp += 3;
-                    }
-                }
-                break;
-            case BM_COPY:
-                for (dx = MinX; dx < MaxX; dx++) {
-                    int32 offsety = ((A * dy - C * dx) << 8) / I + h / 2;
-                    int32 offsetx = ((D * dx - B * dy) << 8) / I + w / 2;
-                    if (((offsety < h) && (offsety >= 0)) && ((offsetx < w) && (offsetx >= 0))) {
-                        srcp = (uint8*)srcbmp->p + ((offsety + srcbmp->y) * w + (offsetx + srcbmp->x)) * 3;  //1943,fix "*3"
-                        *dstp++ = *srcp++;
-                        *dstp++ = *srcp++;
-                        *dstp++ = *srcp;
-                    } else {
-                        dstp += 3;
-                    }
-                }
-                break;
-        }
-    }
-}
-
-static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b) {
-    uint8 *dstp, *srcp;
-    int MaxY = MIN(MR_SCREEN_H, y + h);
-    int MaxX = MIN(MR_SCREEN_W, x + w);
-    int MinY = MAX(0, y);
-    int MinX = MAX(0, x);
-    uint16 dx, dy;
-
-    if ((MaxY > MinY) && (MaxX > MinX)) {
-        dstp = MR_SCREEN_CACHE_POINT(MinX, MinY);
-        srcp = dstp;
-        for (dx = MinX; dx < MaxX; dx++) {
-            *dstp++ = r;
-            *dstp++ = g;
-            *dstp++ = b;
-        }
-
-        for (dy = MinY + 1; dy < MaxY; dy++) {
-            dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
-            MEMCPY(dstp, srcp, (MaxX - MinX) * 3);
-        }
-    }
-    return;
-}
-
-static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font) {
-    int TextSize;
-    uint16* tempBuf;
-    int tempret = 0;
-
-    if (!pcText) {
-        MRDBGPRINTF("DrawText x=%d: txt is nil!", x);
-        return 0;
-    }
-
-    if (!is_unicode) {
-        tempBuf = c2u((const char*)pcText, NULL, &TextSize);
-        if (!tempBuf) {
-            MRDBGPRINTF("DrawText x=%d:c2u err!", x);
-            return 0;
-        }
-    } else {
-        tempBuf = (uint16*)pcText;
-    }
-
-    {
-        uint16 ch;
-        int width, height;
-        const char* current_bitmap;
-        uint8* p = (uint8*)tempBuf;
-        int32 X1, Y1;
-        uint16 a_, b_;
-        uint16 chx = x, chy = y;
-        uint32 color = MAKERGB(r, g, b);
-        ch = (uint16)((*p << 8) + *(p + 1));
-        while (ch) {
-            current_bitmap = mr_getCharBitmap(ch, font, &width, &height);
-            if (current_bitmap) {
-
-#ifndef MR_FONT_LIB_REDUNDANCY_BIT
-                int32 font_data_size = ((width * height) + 7) >> 3;
-                int32 X2 = 0, Y2;
-                X1 = chx;
-                Y1 = chy;
-                while (font_data_size--) {
-                    uint8 pattern = *current_bitmap++;
-
-                    if (!pattern) {
-                        int32 nTemp;
-
-                        X2 += 8;
-                        nTemp = X2 / width;
-
-                        if (nTemp) {
-                            Y1 += nTemp;
-
-                            height -= nTemp;
-
-                            if (!height)
-                                break;
-                        }
-
-                        X2 %= width;
-                        X1 = chx + X2;
-                    } else {
-                        for (Y2 = 0; Y2 < 8; Y2++) {
-                            if (pattern & 0x80)
-                                _DrawPoint(X1, Y1, color);
-                            ++X2;
-                            if (X2 == width) {
-                                X1 = chx;
-                                height--;
-                                ++Y1;
-
-                                if (height == 0)
-                                    break;
-                                X2 = 0;
-                            } else {
-                                ++X1;
-                            }
-                            pattern <<= 1;
-                        }
-                    }
-                }
-#else
-                for (Y1 = 0; Y1 < height; Y1++)
-                    for (X1 = 0; X1 < width; X1++) {
-                        a_ = (X1 & (0x07));
-                        b_ = Y1 * ((width + 7) >> 3) + ((X1 & 0xF8) >> 3);
-#if 0
-                        MRDBGPRINTF("%d,%d,%d, %d", a_, b_, (((uint16)(current_bitmap[b_]))&(0x80>>a_))
-                           ,((uint16)(current_bitmap[b_])));
-#endif
-                        if (((uint16)(current_bitmap[b_])) & (0x80 >> a_)) {
-                            _DrawPoint((int16)(chx + X1), (int16)(chy + Y1), color);
-                        }
-                    };
-#endif
-
-                chx = chx + width;
-            };
-            p += 2;
-            ch = (uint16)((*p << 8) + *(p + 1));
-        };
-    }
-    if (!is_unicode) {
-        MR_FREE((void*)tempBuf, TextSize);
-    }
-    return 0;
-}
-
-static int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, mr_colourSt colorst, int flag, uint16 font) {
-    int TextSize, endchar_index;
-    uint16* tempBuf;
-    int tempret = 0;
-    uint16 ch;
-    endchar_index = 0;
-
-    if (!pcText) {
-        MRDBGPRINTF("DrawTextEx x=%d: txt is nil!", x);
-        return 0;
-    }
-
-    if (!(flag & DRAW_TEXT_EX_IS_UNICODE)) {
-        tempBuf = c2u((const char*)pcText, NULL, &TextSize);
-        if (!tempBuf) {
-            MRDBGPRINTF("DrawTextEx x=%d:c2u err!", x);
-            return 0;
-        }
-    } else {
-        tempBuf = (uint16*)pcText;
-    }
-
-    {
-        int width, height, mh;
-        const char* current_bitmap;
-        uint8* p = (uint8*)tempBuf;
-        int32 X1, Y1;
-        uint16 a_, b_;
-        uint16 chx = x, chy = y;
-        uint32 color = MAKERGB(colorst.r, colorst.g, colorst.b);
-        ch = (uint16)((*p << 8) + *(p + 1));
-        mh = 0;
-        while (ch) {
-            if ((ch == 0x0a) || (ch == 0x0d)) {
-                current_bitmap = mr_getCharBitmap(0x20, font, &width, &height);
-            } else {
-                current_bitmap = mr_getCharBitmap(ch, font, &width, &height);
-            }
-            if (current_bitmap) {
-
-#ifndef MR_FONT_LIB_REDUNDANCY_BIT
-                int32 font_data_size = ((width * height) + 7) >> 3;
-                int32 X2 = 0, Y2;
-                if (flag & DRAW_TEXT_EX_IS_AUTO_NEWLINE) {
-                    if (((chx + width) > (x + rect.w)) || (ch == 0x0a)) {
-                        if ((chy + mh) < (y + rect.h)) {
-                            endchar_index = p - (uint8*)tempBuf;
-                        }
-                        X1 = chx = x;
-                        Y1 = chy = chy + mh + 2;
-                        mh = 0;
-                        if (Y1 > (y + rect.h)) {
-                            break;
-                        }
-                    } else {
-                        X1 = chx;
-                        Y1 = chy;
-                    }
-                    mh = (mh > height) ? mh : height;
-                } else {
-                    if ((chx > (x + rect.w)) || (ch == 0x0a)) {
-                        break;
-                    }
-                    if ((chx + width) > (x + rect.w)) {
-                        endchar_index = p - (uint8*)tempBuf;
-                    }
-                    X1 = chx;
-                    Y1 = chy;
-                }
-
-                if ((ch == 0x0a) || (ch == 0x0d)) {
-                    p += 2;
-                    ch = (uint16)((*p << 8) + *(p + 1));
-                    continue;
-                }
-                while (font_data_size--) {
-                    uint8 pattern = *current_bitmap++;
-
-                    if (!pattern) {
-                        int32 nTemp;
-
-                        X2 += 8;
-                        nTemp = X2 / width;
-
-                        if (nTemp) {
-                            Y1 += nTemp;
-
-                            height -= nTemp;
-
-                            if (!height)
-                                break;
-                        }
-
-                        X2 %= width;
-                        X1 = chx + X2;
-                    } else {
-                        for (Y2 = 0; Y2 < 8; Y2++) {
-                            if (pattern & 0x80)
-                                if (X1 < (x + rect.w) && Y1 < (y + rect.h))
-                                    _DrawPoint(X1, Y1, color);
-                            ++X2;
-                            if (X2 == width) {
-                                X1 = chx;
-                                height--;
-                                ++Y1;
-
-                                if (height == 0)
-                                    break;
-                                X2 = 0;
-                            } else {
-                                ++X1;
-                            }
-                            pattern <<= 1;
-                        }
-                    }
-                }
-#else
-                if (flag & DRAW_TEXT_EX_IS_AUTO_NEWLINE) {
-                    if (((chx + width) > (x + rect.w)) || (ch == 0x0a)) {
-                        if ((chy + mh) < (y + rect.h)) {
-                            endchar_index = p - (uint8*)tempBuf;
-                        }
-                        chx = x;
-                        chy = chy + mh + 2;
-                        mh = 0;
-                        if (chy > (y + rect.h)) {
-                            break;
-                        }
-                    }
-                    mh = (mh > height) ? mh : height;
-                } else {
-                    if ((chx > (x + rect.w)) || (ch == 0x0a)) {
-                        break;
-                    }
-                    if ((chx + width) > (x + rect.w)) {
-                        endchar_index = p - (uint8*)tempBuf;
-                    }
-                }
-
-                if ((ch == 0x0a) || (ch == 0x0d)) {
-                    p += 2;
-                    ch = (uint16)((*p << 8) + *(p + 1));
-                    continue;
-                }
-                for (Y1 = 0; Y1 < height; Y1++)
-                    for (X1 = 0; X1 < width; X1++) {
-                        a_ = (X1 & (0x07));
-                        b_ = Y1 * ((width + 7) >> 3) + ((X1 & 0xF8) >> 3);
-                        if (((uint16)(current_bitmap[b_])) & (0x80 >> a_))
-                            if ((chx + X1) < (x + rect.w) && (chy + Y1) < (y + rect.h))
-                                _DrawPoint((int16)(chx + X1), (int16)(chy + Y1), color);
-                    };
-#endif
-                chx = chx + width;
-            };
-            p += 2;
-            ch = (uint16)((*p << 8) + *(p + 1));
-        };
-        if (!ch) {
-            if (flag & DRAW_TEXT_EX_IS_AUTO_NEWLINE) {
-                if ((chy + mh) < (y + rect.h)) {
-                    endchar_index = mr_wstrlen((char*)tempBuf);
-                }
-            } else {
-                if (!((chx > (x + rect.w)) || (ch == 0x0a))) {
-                    endchar_index = mr_wstrlen((char*)tempBuf);
-                }
-            }
-        }
-    }
-
-    if (!(flag & DRAW_TEXT_EX_IS_UNICODE)) {
-        MR_FREE((void*)tempBuf, TextSize);
-    }
-    return endchar_index;
-}
-
-int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint32 transcoler, uint32 color_check) {
-    uint8 *dstp, *srcp;
-    int16 MaxY = MIN(MR_SCREEN_H, y + h);
-    int16 MaxX = MIN(MR_SCREEN_W, x + w);
-    int16 MinY = MAX(0, y);
-    int16 MinX = MAX(0, x);
-    uint16 dx, dy;
-    int nResult = 0;
-
-    for (dy = MinY; dy < MaxY; dy++) {
-        dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
-        srcp = MR_BITMAP_POINT(p, (MinX - x), (dy - y), w);  //p + (dy - y) * w + (MinX - x);
-        for (dx = MinX; dx < MaxX; dx++) {
-            if ((*srcp != (transcoler >> 16)) || (*(srcp + 1) != ((transcoler & 0xff00) >> 8)) || (*(srcp + 2) != (transcoler & 0xff)))
-            //if (*srcp != transcoler)
-            {
-                if ((*dstp != (color_check >> 16)) || (*(dstp + 1) != ((color_check & 0xff00) >> 8)) || (*(dstp + 2) != (color_check & 0xff)))
-                //if (*dstp != color_check)
-                {
-                    nResult++;
-                }
-            }
-            dstp += 3;
-            srcp += 3;
-        }
-    }
-
-    return nResult;
-}
-
-static int MRF_BmGetScr(mrp_State* L) {
-    uint16 i = ((uint16)to_mr_tonumber(L, 1, 0));
-    uint16 *srcp, *dstp;
-    uint16 dx, dy;
-    if (i >= BITMAPMAX) {
-        mrp_pushfstring(L, "BmGetScr:index %d invalid!", i);
-        mrp_error(L);
-        return 0;
-    }
-    if (mr_bitmap[i].p) {
-        MR_FREE(mr_bitmap[i].p, mr_bitmap[i].buflen);
-        mr_bitmap[i].p = NULL;
-    }
-
-    mr_bitmap[i].p = MR_MALLOC(MR_SCREEN_W * MR_SCREEN_H * MR_SCREEN_DEEP);
-    if (!mr_bitmap[i].p) {
-        mrp_pushfstring(L, "BmGetScr %d :No memory!", i);
-        mrp_error(L);
-        return 0;
-    }
-
-    mr_bitmap[i].w = (int16)MR_SCREEN_W;
-    mr_bitmap[i].h = (int16)MR_SCREEN_H;
-    mr_bitmap[i].buflen = MR_SCREEN_W * MR_SCREEN_H * MR_SCREEN_DEEP;
-    dstp = mr_bitmap[i].p;
-    MEMCPY(dstp, MR_SCREEN_CACHE_POINT(0, 0), MR_SCREEN_W * MR_SCREEN_H * MR_SCREEN_DEEP);
-    return 0;
-}
-
-//effect
-static int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb) {
-    uint8* dstp;
-    int MaxY = MIN(MR_SCREEN_H, y + h);
-    int MaxX = MIN(MR_SCREEN_W, x + w);
-    int MinY = MAX(0, y);
-    int MinX = MAX(0, x);
-    uint16 dx, dy;
-
-    for (dy = MinY; dy < MaxY; dy++) {
-        dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
-        for (dx = MinX; dx < MaxX; dx++) {
-            *dstp = (((uint32)*dstp) * perr) >> 8;
-            dstp++;
-            *dstp = (((uint32)*dstp) * perg) >> 8;
-            dstp++;
-            *dstp = (((uint32)*dstp) * perb) >> 8;
-            dstp++;
-        }
-    }
-    return 0;
-}
-//effect
-
-static int MRF_SpriteCheck(mrp_State* L) {
-    uint16 i = ((uint16)to_mr_tonumber(L, 1, 0));
-    uint16 spriteindex = ((uint16)to_mr_tonumber(L, 2, 0));
-    int16 x = ((int16)to_mr_tonumber(L, 3, 0));
-    int16 y = ((int16)to_mr_tonumber(L, 4, 0));
-    uint32 color_check = ((uint32)to_mr_tonumber(L, 5, 0));
-    uint32 color;
-    uint16 r, g, b;
-#ifdef MYTHROAD_DEBUG
-    if (i >= SPRITEMAX) {
-        mrp_pushfstring(L, "SpriteCheck:index %d invalid!", i);
-        mrp_error(L);
-        return 0;
-    }
-    if (!mr_bitmap[i].p) {
-        mrp_pushfstring(L, "SpriteCheck:Sprite %d is nil!", i);
-        mrp_error(L);
-        return 0;
-    }
-#endif
-    {
-        int to_mr_ret = (int)_BitmapCheck(mr_bitmap[i].p +
-                                              spriteindex * mr_bitmap[i].w * mr_sprite[i].h,
-                                          (uint16)x, (uint16)y, (uint16)mr_bitmap[i].w, (uint16)mr_sprite[i].h,
-                                          MR_BITMAP_POINT_COLOUR(mr_bitmap[i].p), color_check);
-        to_mr_pushnumber(L, (mrp_Number)to_mr_ret);
-    }
-
-    return 1;
-}
-
-#endif  // 从716行开始
 
 void _mr_showErrorInfo(const char* errstr) {
     int32 i;
@@ -3769,16 +2951,7 @@ static int MRF_DrawPoint(mrp_State* L) {
     uint8 r = ((uint8)to_mr_tonumber(L, 3, 0));
     uint8 g = ((uint8)to_mr_tonumber(L, 4, 0));
     uint8 b = ((uint8)to_mr_tonumber(L, 5, 0));
-#ifdef MR_ANYKA_MOD
-    uint32 nativecolor;
-#else
     uint16 nativecolor;
-#endif
-    /*
-   nativecolor = (r/8)<<11;
-   nativecolor |=(g/4)<<5;
-   nativecolor |=(b/8);        
-   */
     nativecolor = MAKERGB(r, g, b);
     _DrawPoint(x, y, nativecolor);
     return 0;
@@ -3794,23 +2967,14 @@ static int MRF_DrawLine(mrp_State* L) {
     uint8 b = ((uint8)to_mr_tonumber(L, 7, 0));
     int x, y, dx, dy, c1, c2, err, swap = 0;
 
-#ifdef MR_ANYKA_MOD
-    uint32 nativecolor;
-#else
     uint16 nativecolor;
-#endif
-    /*
-    nativecolor = (r/8)<<11;
-    nativecolor |=(g/4)<<5;
-    nativecolor |=(b/8);     
-*/
     nativecolor = MAKERGB(r, g, b);
 
     /*   
     if (x1 < 0 || x1 >= MR_SCREEN_W || x2 < 0 || x2 >= MR_SCREEN_W ||
         y1 < 0 || y1 >= MR_SCREEN_H || y2 < 0 || y2 >= MR_SCREEN_H)
         return;
-*/
+    */
 
     dx = x2 - x1;
     dy = y2 - y1;
@@ -3867,13 +3031,7 @@ static int MRF_BitmapLoad(mrp_State* L) {
     uint16 w = ((uint16)to_mr_tonumber(L, 5, 0));
     uint16 h = ((uint16)to_mr_tonumber(L, 6, 0));
     uint16 max_w = ((uint16)to_mr_tonumber(L, 7, 0));
-#ifdef MR_ANYKA_MOD
-    uint8* dstp;
-    uint16 *filebuf, *srcp;
-
-#else
     uint16 *filebuf, *srcp, *dstp;
-#endif
     int filelen;
     uint16 y2 = y + h;
     uint16 dx, dy;
@@ -3909,36 +3067,6 @@ static int MRF_BitmapLoad(mrp_State* L) {
     mr_bitmap[i].h = h;
 
     //MRDBGPRINTF("BitmapLoad:2 %s", filename);
-#ifdef MR_ANYKA_MOD
-    if (w * h * 2 <= filelen) {
-        mr_bitmap[i].p = MR_MALLOC(w * h * MR_SCREEN_DEEP);
-        if (!mr_bitmap[i].p) {
-            MR_FREE(filebuf, filelen);
-            mrp_pushfstring(L, "BitmapLoad %d \"%s\":No memory!", i, filename);
-            mrp_error(L);
-            return 0;
-        }
-        mr_bitmap[i].buflen = w * h * MR_SCREEN_DEEP;
-        dstp = (uint8*)mr_bitmap[i].p;
-        for (dy = y; dy < y2; dy++) {
-            srcp = filebuf + dy * max_w + x;
-            for (dx = 0; dx < w; dx++) {
-                *dstp++ = ((*srcp & 0xf800) >> 8);
-                *dstp++ = ((*srcp & 0x7e0) >> 3);
-                *dstp++ = ((*srcp & 0x1f) << 3);
-                srcp++;
-            }
-        }
-        MR_FREE(filebuf, filelen);
-        //MRDBGPRINTF("BitmapLoad:4 %s", filename);
-    } else {
-        //MRDBGPRINTF("BitmapLoad:5 %s", filename);
-        MR_FREE(filebuf, filelen);
-        mrp_pushfstring(L, "BitmapLoad %d \"%s\":len err!", i, filename);
-        mrp_error(L);
-        return 0;
-    }
-#else
     if ((x == 0) && (y == 0) && (w == max_w)) {
         mr_bitmap[i].p = filebuf;
         mr_bitmap[i].buflen = filelen;
@@ -3969,7 +3097,6 @@ static int MRF_BitmapLoad(mrp_State* L) {
         mrp_error(L);
         return 0;
     }
-#endif
 
     //MRDBGPRINTF("BitmapLoad:3 %s", filename);
     return 0;
@@ -3999,15 +3126,8 @@ static int MRF_BitmapShow(mrp_State* L) {
 
     w = (w == -1) ? mr_bitmap[i].w : w;
     h = (h == -1) ? mr_bitmap[i].h : h;
-//   mr_drawBitmap(mr_bitmap[i].p, x, y, mr_bitmap[i].w, mr_bitmap[i].h, rop, *(mr_bitmap[i].p));
-#ifdef MR_ANYKA_MOD
-    _DrawBitmap(mr_bitmap[i].p, x, y, w, h, rop,
-                MR_BITMAP_POINT_COLOUR(mr_bitmap[i].p),
-                sx, sy, mr_bitmap[i].w);
-#else
+    //   mr_drawBitmap(mr_bitmap[i].p, x, y, mr_bitmap[i].w, mr_bitmap[i].h, rop, *(mr_bitmap[i].p));
     _DrawBitmap(mr_bitmap[i].p, x, y, w, h, rop, *(mr_bitmap[i].p), sx, sy, mr_bitmap[i].w);
-#endif
-
     return 0;
 }
 
@@ -4022,13 +3142,7 @@ static int MRF_BitmapShowEx(mrp_State* L) {
     int16 sx = ((int16)mr_L_optint(L, 8, 0));
     int16 sy = ((int16)mr_L_optint(L, 9, 0));
 
-#ifdef MR_ANYKA_MOD
-    _DrawBitmap(p, x, y, w, h, rop,
-                MR_BITMAP_POINT_COLOUR(p),
-                sx, sy, mw);
-#else
     _DrawBitmap(p, x, y, w, h, rop, *p, sx, sy, mw);
-#endif
     return 0;
 }
 
@@ -4109,55 +3223,8 @@ static int MRF_BitmapDraw(mrp_State* L) {
     srcbmp.y = sy;
     srcbmp.p = mr_bitmap[si].p;
 
-#ifdef MR_ANYKA_MOD
-    _DrawBitmapEx(&srcbmp, &dstbmp, w, h, &Trans, MR_BITMAP_POINT_COLOUR(mr_bitmap[si].p));
-#else
     _DrawBitmapEx(&srcbmp, &dstbmp, w, h, &Trans, *(mr_bitmap[si].p));
-#endif
     return 0;
-    /*
-   uint16 w = mr_bitmap[i].w;
-   uint16 h = mr_bitmap[i].h;
-   uint16 dw = mr_bitmap[di].w;
-   uint16 dh = mr_bitmap[di].h;
-   uint16 *dstp,*srcp;
-   uint16 *sp = mr_bitmap[i].p;
-   uint16 *dp = mr_bitmap[di].p;
-   int16 CenterX = x + w/2;
-   int16 CenterY = y + h/2;
-   int16 dx,dy;
-   int32 I = A * D - B * C;
-   int16 MaxY = (ABS(C) * w + ABS(D) * h)>>9;
-   int16 MinY = 0-MaxY;
-
-   MaxY = MIN(MaxY, dh - CenterY);
-   MinY = MAX(MinY, 0 - CenterY);
-
-   for(dy=MinY;dy<MaxY;dy++)
-   {
-      int16 MaxX = MIN(D==0? 999:(D>0? (((w * I)>>9) + B * dy )/D:(B * dy - ((w * I)>>9) )/D), 
-         C==0? 999:(C>0? (A * dy + ((h * I)>>9))/C:(A * dy - ((h * I) >>9))/C));
-      int16 MinX = MAX(D==0? -999:(D>0? (B * dy - ((w * I)>>9) )/D:(((w * I) >>9) + B * dy )/D), 
-         C==0? -999:(C>0? (A * dy - ((h * I)>>9))/C:(A * dy + ((h * I)>>9))/C));
-      MaxX = MIN(MaxX, dw - CenterX);
-      MinX = MAX(MinX, 0 - CenterX);
-      dstp = dp + (dy + CenterY) * dw + (MinX + CenterX);
-      for(dx=MinX;dx<MaxX;dx++)
-      {
-         int32 offsety = ((A * dy - C * dx )<<8)/I + h/2;
-         int32 offsetx = ((D * dx - B * dy )<<8)/I + w/2;
-         if(((offsety < h) && (offsety >= 0))&&((offsetx < w) && (offsetx >= 0))){
-            srcp = sp + offsety*w+offsetx;
-            *dstp = *srcp;
-         }
-         dstp++;
-         srcp = sp + ( ((A * dy - C * dx )<<8)/I + h/2 ) * w + ((D * dx - B * dy)<<8)/I + w/2;
-         *dstp = *srcp;
-         dstp++;
-      }
-   }
-   return 0;
-   */
 }
 
 static int MRF_BitmapInfo(mrp_State* L) {
@@ -4207,17 +3274,12 @@ static int MRF_SpriteDraw(mrp_State* L) {
         return 0;
     }
 #endif
-/*
+    /*
    mr_drawBitmap(mr_bitmap[i].p + spriteindex*mr_bitmap[i].w*mr_sprite[i].h,
       x, y, mr_bitmap[i].w, mr_sprite[i].h, BM_TRANSPARENT, *(mr_bitmap[i].p));
 */
-#ifdef MR_ANYKA_MOD
-    _DrawBitmap((uint16*)((uint8*)mr_bitmap[i].p + spriteindex * mr_bitmap[i].w * mr_sprite[i].h * 3),
-                x, y, mr_bitmap[i].w, mr_sprite[i].h, mod, MR_BITMAP_POINT_COLOUR(mr_bitmap[i].p), 0, 0, mr_bitmap[i].w);
-#else
     _DrawBitmap(mr_bitmap[i].p + spriteindex * mr_bitmap[i].w * mr_sprite[i].h,
                 x, y, mr_bitmap[i].w, mr_sprite[i].h, mod, *(mr_bitmap[i].p), 0, 0, mr_bitmap[i].w);
-#endif
     return 0;
 }
 
@@ -4255,15 +3317,8 @@ static int MRF_SpriteDrawEx(mrp_State* L) {
     srcbmp.h = mr_sprite[i].h;
     srcbmp.x = 0;
     srcbmp.y = 0;
-#ifdef MR_ANYKA_MOD
-    srcbmp.p = (uint16*)((uint8*)mr_bitmap[i].p +
-                         (spriteindex & MR_SPRITE_INDEX_MASK) * mr_bitmap[i].w * mr_sprite[i].h * 3);
-    _DrawBitmapEx(&srcbmp, &dstbmp, mr_bitmap[i].w, mr_sprite[i].h, &Trans,
-                  MR_BITMAP_POINT_COLOUR(mr_bitmap[i].p));
-#else
     srcbmp.p = mr_bitmap[i].p + (spriteindex & MR_SPRITE_INDEX_MASK) * mr_bitmap[i].w * mr_sprite[i].h;
     _DrawBitmapEx(&srcbmp, &dstbmp, mr_bitmap[i].w, mr_sprite[i].h, &Trans, *(mr_bitmap[i].p));
-#endif
 
     //_DrawBitmapEx(mr_bitmap[i].p + (spriteindex & MR_SPRITE_INDEX_MASK)*mr_bitmap[i].w*mr_sprite[i].h,
     //   x, y, mr_bitmap[i].w, mr_sprite[i].h, &Trans, *(mr_bitmap[i].p));
@@ -4371,17 +3426,6 @@ static int MRF_TileDraw(mrp_State* L) {
                 int16 drawX = dx * tilew + x;
                 int16 drawY = dy * tileh + y;
                 if ((drawX + tilew >= mr_tile[i].x1) && (drawX < mr_tile[i].x2) && (drawY + tileh >= mr_tile[i].y1) && (drawY < mr_tile[i].y2))
-#ifdef MR_ANYKA_MOD
-                    _DrawBitmap((uint16*)((uint8*)mr_bitmap[i].p +
-                                          (unTile & MR_SPRITE_INDEX_MASK) * tilew * tileh * 3),
-                                (int16)drawX,
-                                (int16)drawY,
-                                (uint16)tilew,
-                                (uint16)tileh,
-                                (uint16)((unTile & 0xfc00) +
-                                         ((unTile & MR_SPRITE_TRANSPARENT) ? BM_TRANSPARENT : BM_COPY)),
-                                MR_BITMAP_POINT_COLOUR(mr_bitmap[i].p), 0, 0, (uint16)tilew);
-#else
                     _DrawBitmap(mr_bitmap[i].p +
                                     (unTile & MR_SPRITE_INDEX_MASK) * tilew * tileh,
                                 (int16)drawX,
@@ -4391,7 +3435,6 @@ static int MRF_TileDraw(mrp_State* L) {
                                 (uint16)((unTile & 0xfc00) +
                                          ((unTile & MR_SPRITE_TRANSPARENT) ? BM_TRANSPARENT : BM_COPY)),
                                 (uint16) * (mr_bitmap[i].p), 0, 0, (uint16)tilew);
-#endif
             }
         }
     }  //for (dy = yStart; dy < yEnd; dy++)
@@ -5904,7 +4947,6 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             break;
         }
 #ifdef SDK_MOD
-#ifndef MR_ANYKA_MOD
 #ifndef MTK_MOD
 
 #ifdef MR_C_TEST
@@ -5940,7 +4982,6 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
         } break;
 #endif
 
-#endif
 #endif
 #else
         case 800: {
@@ -6133,12 +5174,6 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
 #ifdef MR_SCREEN_CACHE_BITMAP
     char* bm_header;
     uint32 bmsize;
-#endif
-
-//anyka spacial ,add this for qq initnet and quit to qqlist,qqlist hasn`t socket obj
-#ifdef MR_ANYKA_MOD
-    extern int32 mr_initNetworkCBState;
-    mr_initNetworkCBState = 0;
 #endif
 
 #ifdef MR_PLAT_READFILE
@@ -7001,7 +6036,6 @@ int mr_wstrlen(char* txt) {
     }
     return lenth;
 }
-
 
 #ifdef SDK_MOD
 
@@ -8292,305 +7326,6 @@ static int _mr_isMr(char* input) {
     }
     return ret;
 }
-
-//////////////////////////////////////////md5
-
-#define T1 0xd76aa478
-#define T2 0xe8c7b756
-#define T3 0x242070db
-#define T4 0xc1bdceee
-#define T5 0xf57c0faf
-#define T6 0x4787c62a
-#define T7 0xa8304613
-#define T8 0xfd469501
-#define T9 0x698098d8
-#define T10 0x8b44f7af
-#define T11 0xffff5bb1
-#define T12 0x895cd7be
-#define T13 0x6b901122
-#define T14 0xfd987193
-#define T15 0xa679438e
-#define T16 0x49b40821
-#define T17 0xf61e2562
-#define T18 0xc040b340
-#define T19 0x265e5a51
-#define T20 0xe9b6c7aa
-#define T21 0xd62f105d
-#define T22 0x02441453
-#define T23 0xd8a1e681
-#define T24 0xe7d3fbc8
-#define T25 0x21e1cde6
-#define T26 0xc33707d6
-#define T27 0xf4d50d87
-#define T28 0x455a14ed
-#define T29 0xa9e3e905
-#define T30 0xfcefa3f8
-#define T31 0x676f02d9
-#define T32 0x8d2a4c8a
-#define T33 0xfffa3942
-#define T34 0x8771f681
-#define T35 0x6d9d6122
-#define T36 0xfde5380c
-#define T37 0xa4beea44
-#define T38 0x4bdecfa9
-#define T39 0xf6bb4b60
-#define T40 0xbebfbc70
-#define T41 0x289b7ec6
-#define T42 0xeaa127fa
-#define T43 0xd4ef3085
-#define T44 0x04881d05
-#define T45 0xd9d4d039
-#define T46 0xe6db99e5
-#define T47 0x1fa27cf8
-#define T48 0xc4ac5665
-#define T49 0xf4292244
-#define T50 0x432aff97
-#define T51 0xab9423a7
-#define T52 0xfc93a039
-#define T53 0x655b59c3
-#define T54 0x8f0ccc92
-#define T55 0xffeff47d
-#define T56 0x85845dd1
-#define T57 0x6fa87e4f
-#define T58 0xfe2ce6e0
-#define T59 0xa3014314
-#define T60 0x4e0811a1
-#define T61 0xf7537e82
-#define T62 0xbd3af235
-#define T63 0x2ad7d2bb
-#define T64 0xeb86d391
-
-static void md5_process(md5_state_t* pms, const md5_byte_t* data /*[64]*/) {
-    md5_word_t
-        a = pms->abcd[0],
-        b = pms->abcd[1],
-        c = pms->abcd[2], d = pms->abcd[3];
-    md5_word_t t;
-
-    //#ifndef ARCH_IS_BIG_ENDIAN
-    //#define ARCH_IS_BIG_ENDIAN 1	/* slower, default implementation */
-    //#endif
-
-#ifdef MR_BIG_ENDIAN
-
-    /*
-     * On big-endian machines, we must arrange the bytes in the right
-     * order.  (This also works on machines of unknown byte order.)
-     */
-    md5_word_t X[16];
-    const md5_byte_t* xp = data;
-    int i;
-
-    for (i = 0; i < 16; ++i, xp += 4)
-        X[i] = xp[0] + (xp[1] << 8) + (xp[2] << 16) + (xp[3] << 24);
-
-#else /* !MR_BIG_ENDIAN */
-
-    /*
-     * On little-endian machines, we can process properly aligned data
-     * without copying it.
-     */
-    md5_word_t xbuf[16];
-    const md5_word_t* X;
-
-    if (!((data - (const md5_byte_t*)0) & 3)) {
-        /* data are properly aligned */
-        X = (const md5_word_t*)data;
-    } else {
-        /* not aligned */
-        MEMCPY(xbuf, data, 64);
-        X = xbuf;
-    }
-#endif
-
-#define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32 - (n))))
-
-        /* Round 1. */
-        /* Let [abcd k s i] denote the operation
-       a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s). */
-#define F(x, y, z) (((x) & (y)) | (~(x) & (z)))
-#define SET(a, b, c, d, k, s, Ti)   \
-    t = a + F(b, c, d) + X[k] + Ti; \
-    a = ROTATE_LEFT(t, s) + b
-    /* Do the following 16 operations. */
-    SET(a, b, c, d, 0, 7, T1);
-    SET(d, a, b, c, 1, 12, T2);
-    SET(c, d, a, b, 2, 17, T3);
-    SET(b, c, d, a, 3, 22, T4);
-    SET(a, b, c, d, 4, 7, T5);
-    SET(d, a, b, c, 5, 12, T6);
-    SET(c, d, a, b, 6, 17, T7);
-    SET(b, c, d, a, 7, 22, T8);
-    SET(a, b, c, d, 8, 7, T9);
-    SET(d, a, b, c, 9, 12, T10);
-    SET(c, d, a, b, 10, 17, T11);
-    SET(b, c, d, a, 11, 22, T12);
-    SET(a, b, c, d, 12, 7, T13);
-    SET(d, a, b, c, 13, 12, T14);
-    SET(c, d, a, b, 14, 17, T15);
-    SET(b, c, d, a, 15, 22, T16);
-#undef SET
-
-    /* Round 2. */
-    /* Let [abcd k s i] denote the operation
-          a = b + ((a + G(b,c,d) + X[k] + T[i]) <<< s). */
-#define G(x, y, z) (((x) & (z)) | ((y) & ~(z)))
-#define SET(a, b, c, d, k, s, Ti)   \
-    t = a + G(b, c, d) + X[k] + Ti; \
-    a = ROTATE_LEFT(t, s) + b
-    /* Do the following 16 operations. */
-    SET(a, b, c, d, 1, 5, T17);
-    SET(d, a, b, c, 6, 9, T18);
-    SET(c, d, a, b, 11, 14, T19);
-    SET(b, c, d, a, 0, 20, T20);
-    SET(a, b, c, d, 5, 5, T21);
-    SET(d, a, b, c, 10, 9, T22);
-    SET(c, d, a, b, 15, 14, T23);
-    SET(b, c, d, a, 4, 20, T24);
-    SET(a, b, c, d, 9, 5, T25);
-    SET(d, a, b, c, 14, 9, T26);
-    SET(c, d, a, b, 3, 14, T27);
-    SET(b, c, d, a, 8, 20, T28);
-    SET(a, b, c, d, 13, 5, T29);
-    SET(d, a, b, c, 2, 9, T30);
-    SET(c, d, a, b, 7, 14, T31);
-    SET(b, c, d, a, 12, 20, T32);
-#undef SET
-
-    /* Round 3. */
-    /* Let [abcd k s t] denote the operation
-          a = b + ((a + H(b,c,d) + X[k] + T[i]) <<< s). */
-#define H(x, y, z) ((x) ^ (y) ^ (z))
-#define SET(a, b, c, d, k, s, Ti)   \
-    t = a + H(b, c, d) + X[k] + Ti; \
-    a = ROTATE_LEFT(t, s) + b
-    /* Do the following 16 operations. */
-    SET(a, b, c, d, 5, 4, T33);
-    SET(d, a, b, c, 8, 11, T34);
-    SET(c, d, a, b, 11, 16, T35);
-    SET(b, c, d, a, 14, 23, T36);
-    SET(a, b, c, d, 1, 4, T37);
-    SET(d, a, b, c, 4, 11, T38);
-    SET(c, d, a, b, 7, 16, T39);
-    SET(b, c, d, a, 10, 23, T40);
-    SET(a, b, c, d, 13, 4, T41);
-    SET(d, a, b, c, 0, 11, T42);
-    SET(c, d, a, b, 3, 16, T43);
-    SET(b, c, d, a, 6, 23, T44);
-    SET(a, b, c, d, 9, 4, T45);
-    SET(d, a, b, c, 12, 11, T46);
-    SET(c, d, a, b, 15, 16, T47);
-    SET(b, c, d, a, 2, 23, T48);
-#undef SET
-
-    /* Round 4. */
-    /* Let [abcd k s t] denote the operation
-          a = b + ((a + I(b,c,d) + X[k] + T[i]) <<< s). */
-#define I(x, y, z) ((y) ^ ((x) | ~(z)))
-#define SET(a, b, c, d, k, s, Ti)   \
-    t = a + I(b, c, d) + X[k] + Ti; \
-    a = ROTATE_LEFT(t, s) + b
-    /* Do the following 16 operations. */
-    SET(a, b, c, d, 0, 6, T49);
-    SET(d, a, b, c, 7, 10, T50);
-    SET(c, d, a, b, 14, 15, T51);
-    SET(b, c, d, a, 5, 21, T52);
-    SET(a, b, c, d, 12, 6, T53);
-    SET(d, a, b, c, 3, 10, T54);
-    SET(c, d, a, b, 10, 15, T55);
-    SET(b, c, d, a, 1, 21, T56);
-    SET(a, b, c, d, 8, 6, T57);
-    SET(d, a, b, c, 15, 10, T58);
-    SET(c, d, a, b, 6, 15, T59);
-    SET(b, c, d, a, 13, 21, T60);
-    SET(a, b, c, d, 4, 6, T61);
-    SET(d, a, b, c, 11, 10, T62);
-    SET(c, d, a, b, 2, 15, T63);
-    SET(b, c, d, a, 9, 21, T64);
-#undef SET
-
-    /* Then perform the following additions. (That is increment each
-        of the four registers by the value it had before this block
-        was started.) */
-    pms->abcd[0] += a;
-    pms->abcd[1] += b;
-    pms->abcd[2] += c;
-    pms->abcd[3] += d;
-}
-
-void mr_md5_init(md5_state_t* pms) {
-    pms->count[0] = pms->count[1] = 0;
-    pms->abcd[0] = 0x67452301;
-    pms->abcd[1] = 0xefcdab89;
-    pms->abcd[2] = 0x98badcfe;
-    pms->abcd[3] = 0x10325476;
-}
-
-void mr_md5_append(md5_state_t* pms, const md5_byte_t* data, int nbytes) {
-    const md5_byte_t* p = data;
-    int left = nbytes;
-    int offset = (pms->count[0] >> 3) & 63;
-    md5_word_t nbits = (md5_word_t)(nbytes << 3);
-
-    if (nbytes <= 0)
-        return;
-
-    /* Update the message length. */
-    pms->count[1] += nbytes >> 29;
-    pms->count[0] += nbits;
-
-    if (pms->count[0] < nbits)
-        pms->count[1]++;
-
-    /* Process an initial partial block. */
-    if (offset) {
-        int copy = (offset + nbytes > 64 ? 64 - offset : nbytes);
-
-        MEMCPY(pms->buf + offset, p, copy);
-
-        if (offset + copy < 64)
-            return;
-
-        p += copy;
-        left -= copy;
-        md5_process(pms, pms->buf);
-    }
-
-    /* Process full blocks. */
-    for (; left >= 64; p += 64, left -= 64)
-        md5_process(pms, p);
-
-    /* Process a final partial block. */
-    if (left)
-        MEMCPY(pms->buf, p, left);
-}
-
-void mr_md5_finish(md5_state_t* pms, md5_byte_t digest[16]) {
-    static const md5_byte_t pad[64] =
-        {
-            0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-    md5_byte_t data[8];
-    int i;
-
-    /* Save the length before padding. */
-    for (i = 0; i < 8; ++i)
-        data[i] = (md5_byte_t)(pms->count[i >> 2] >> ((i & 3) << 3));
-
-    /* Pad to 56 bytes mod 64. */
-    mr_md5_append(pms, pad, ((55 - (pms->count[0] >> 3)) & 63) + 1);
-
-    /* Append the length. */
-
-    mr_md5_append(pms, data, 8);
-    for (i = 0; i < 16; ++i)
-        digest[i] = (md5_byte_t)(pms->abcd[i >> 2] >> ((i & 3) << 3));
-}
-
-//////////////////////////////////////////md5
 
 int FF_Divide(int dividend, int divisor) {
     int i;

@@ -563,27 +563,12 @@ typedef struct _mr_c_function_st {
 #define MR_SCREEN_MAX_W MR_SCREEN_W
 #define MR_SCREEN_H mr_screen_h
 
-#ifdef MR_ANYKA_MOD
-#define MR_SCREEN_DEEP 3
-#else
 #define MR_SCREEN_DEEP 2
-#endif
 
 /*下面的MAKERGB是MR平台内部的*/
-#ifdef MR_ANYKA_MOD
-#define MAKERGB(r, g, b) (uint32)(((uint32)r << 16) | ((uint32)g << 8) | ((uint32)b))
-#else
 #define MAKERGB(r, g, b) (uint16)(((uint32)(r >> 3) << 11) + ((uint32)(g >> 2) << 5) + ((uint32)(b >> 3)))
-#endif
 
-#ifdef MR_ANYKA_MOD
-#define MR_SCREEN_CACHE_POINT(x, y) ((uint8*)mr_screenBuf + (y * MR_SCREEN_MAX_W + x) * 3)
-#define MR_BITMAP_POINT(p, x, y, w) ((uint8*)p + (y * w + x) * 3)
-#define MR_BITMAP_POINT_COLOUR(p) (((uint32) * ((uint8*)p) << 16) | ((uint32) * ((uint8*)p + 1) << 8) | *((uint8*)p + 2))
-
-#else
 #define MR_SCREEN_CACHE_POINT(x, y) (mr_screenBuf + y * MR_SCREEN_MAX_W + x)
-#endif
 
 /*
  *  zefang_wang 2010.12.21 :

@@ -39,10 +39,6 @@
 //#include "udp.h"
 //#include "select.h"
 
-//anyka spacial ,add this for qq initnet and quit to qqlist,qqlist hasn`t socket obj
-#ifdef MR_ANYKA_MOD
-int32 mr_initNetworkCBState = 0;
-#endif
 
 /*-------------------------------------------------------------------------*\
 * Internal function prototypes
@@ -125,13 +121,6 @@ static int sock_getstate(mrp_State *L)
 */
 
 static int32 mr_initNetworkCB(int32 result) {
-//anyka spacial ,add this for qq initnet and quit to qqlist,qqlist hasn`t socket obj
-#ifdef MR_ANYKA_MOD
-    if (mr_initNetworkCBState != 1) {
-        return MR_FAILED;
-    }
-    mr_initNetworkCBState = 0;
-#endif
 
     if (!((mr_state == MR_STATE_RUN) || (mr_state == MR_STATE_PAUSE))) {
         MRDBGPRINTF("VM is IDLE!");
@@ -170,10 +159,6 @@ static int32 mr_initNetworkCB(int32 result) {
 static int base_open(mrp_State *L, const char *mode) {
     int32 ret = mr_initNetwork(mr_initNetworkCB, mode);
 
-//anyka spacial ,add this for qq initnet and quit to qqlist,qqlist hasn`t socket obj
-#ifdef MR_ANYKA_MOD
-    mr_initNetworkCBState = 1;
-#endif
 
     mr_L_openlib(L, "socket", socket_func, 0);
 #ifdef MRP_SOCKET_DEBUG
