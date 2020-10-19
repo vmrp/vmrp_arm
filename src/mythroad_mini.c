@@ -177,7 +177,7 @@ void _DrawPoint(int16 x, int16 y, uint16 nativecolor);
 static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw);
 static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler);
 static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b);
-static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font);
+int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font);
 int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transcoler, uint16 color_check);
 
 void* _mr_readFile(const char* filename, int* filelen, int lookfor);
@@ -208,9 +208,7 @@ static const void* _mr_c_function_table[150];
 
 unicode_char* mr_c2u(const char* cp, int* err, int* size) {
     unicode_char* ret;
-    fixR9_begin();
     ret = c2u(cp, err, size);
-    fixR9_end();
     return ret;
 }
 
@@ -224,33 +222,25 @@ static int32 _mr_mod(int32 a, int32 b) {
 
 static ulg _mr_updcrc(uch* s, unsigned n) {
     ulg ret;
-    fixR9_begin();
     ret = mr_updcrc(s, n);
-    fixR9_end();
     return ret;
 }
 
 static int _mr_unzip(void) {
     int ret;
-    fixR9_begin();
     ret = mr_unzip();
-    fixR9_end();
     return ret;
 }
 static int32 _mr_transbitmapDraw(mr_transBitmap* hTransBmp, uint16* dstBuf, int32 dest_max_w, int32 dest_max_h, int32 sx, int32 sy,
                                  int32 width, int32 height, int32 dx, int32 dy) {
     int32 ret;
-    fixR9_begin();
     ret = mr_transbitmapDraw(hTransBmp, dstBuf, dest_max_w, dest_max_h, sx, sy, width, height, dx, dy);
-    fixR9_end();
     return ret;
 }
 
 static void _mr_drawRegion(mr_jgraphics_context_t* gContext, mr_jImageSt* src,
                            int sx, int sy, int w, int h, int transform, int x, int y, int anchor) {
-    fixR9_begin();
     mr_drawRegion(gContext, src, sx, sy, w, h, transform, x, y, anchor);
-    fixR9_end();
 }
 
 void mythroad_init(void) {
@@ -423,7 +413,7 @@ void mythroad_init(void) {
     _mr_c_function_table[120] = (void*)_DrawBitmap;
     _mr_c_function_table[121] = (void*)_DrawBitmapEx;
     _mr_c_function_table[122] = (void*)DrawRect;
-    _mr_c_function_table[123] = (void*)_DrawText;
+    _mr_c_function_table[123] = (void*)asm_DrawText;
     _mr_c_function_table[124] = (void*)_BitmapCheck;
     _mr_c_function_table[125] = (void*)_mr_readFile;
     _mr_c_function_table[126] = (void*)mr_wstrlen;
@@ -486,8 +476,6 @@ void* mr_malloc(uint32 len) {
 
     LG_mem_free_t *previous, *nextfree, *l;
 
-    fixR9_begin();
-
     len = (uint32)realLGmemSize(len);
     if (len >= LG_mem_left) {
         MRDBGPRINTF("mr_malloc no memory");
@@ -516,7 +504,6 @@ void* mr_malloc(uint32 len) {
             if (LG_mem_top < previous->next)
                 LG_mem_top = previous->next;
 #endif
-            fixR9_end();
             return (void*)nextfree;
         }
         if (nextfree->len > len) {
@@ -531,7 +518,6 @@ void* mr_malloc(uint32 len) {
             if (LG_mem_top < previous->next)
                 LG_mem_top = previous->next;
 #endif
-            fixR9_end();
             return (void*)nextfree;
         }
         previous = nextfree;
@@ -539,7 +525,6 @@ void* mr_malloc(uint32 len) {
     }
     MRDBGPRINTF("mr_malloc no memory");
 err:
-    fixR9_end();
     return 0;
 }
 
@@ -553,19 +538,17 @@ void mr_free(void* p, uint32 len) {
     // }
     LG_mem_free_t *free, *n;
 
-    fixR9_begin();
     if (fixR9_checkFree(p)) {
         mr_panic("!!!fixR9_checkFree() return true!!!");
-        goto err;
+        return;
     }
 
     len = (uint32)realLGmemSize(len);
 #ifdef MYTHROAD_DEBUG
     if (!len || !p || (char*)p < LG_mem_base || (char*)p >= LG_mem_end || (char*)p + len > LG_mem_end || (char*)p + len <= LG_mem_base) {
         MRDBGPRINTF("mr_free invalid");
-        MRDBGPRINTF("p=%d,l=%d,base=%d,LG_mem_end=%d", (int32)p, len,
-                    (int32)LG_mem_base, (int32)LG_mem_end);
-        goto err;
+        MRDBGPRINTF("p=%d,l=%d,base=%d,LG_mem_end=%d", (int32)p, len, (int32)LG_mem_base, (int32)LG_mem_end);
+        return;
     }
 #endif
 
@@ -578,7 +561,7 @@ void mr_free(void* p, uint32 len) {
 #ifdef MYTHROAD_DEBUG
     if (p == (void*)free || p == (void*)n) {
         MRDBGPRINTF("mr_free:already free");
-        goto err;
+        return;
     }
 #endif
     if ((free != &LG_mem_free) && ((char*)free + free->len == p)) {
@@ -594,8 +577,6 @@ void mr_free(void* p, uint32 len) {
         free->len += n->len;
     }
     LG_mem_left += len;
-err:
-    fixR9_end();
 }
 
 void* mr_realloc(void* p, uint32 oldlen, uint32 len) {
@@ -620,13 +601,10 @@ void* mr_realloc(void* p, uint32 oldlen, uint32 len) {
 }
 
 void _DrawPoint(int16 x, int16 y, uint16 nativecolor) {
-    fixR9_begin();
     if (x < 0 || y < 0 || x >= MR_SCREEN_W || y >= MR_SCREEN_H) {
-        fixR9_end();
         return;
     }
     *MR_SCREEN_CACHE_POINT(x, y) = nativecolor;
-    fixR9_end();
 }
 
 static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw) {
@@ -634,7 +612,6 @@ static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 
     uint16 dx, dy;
     int MinX, MinY, MaxX, MaxY;
 
-    fixR9_begin();
     MinY = MAX(0, y);
     MinX = MAX(0, x);
     MaxX = MIN(MR_SCREEN_W, x + w);
@@ -804,7 +781,6 @@ static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 
                 break;
         }
     }
-    fixR9_end();
 }
 
 static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler) {
@@ -821,7 +797,6 @@ static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint
     int16 MaxY = (ABS(C) * w + ABS(D) * h) >> 9;
     int16 MinY = 0 - MaxY;
 
-    fixR9_begin();
     MaxY = MIN(MaxY, dstbmp->h - CenterY);
     MinY = MAX(MinY, 0 - CenterY);
 
@@ -861,7 +836,6 @@ static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint
                 break;
         }
     }
-    fixR9_end();
 }
 
 static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b) {
@@ -870,7 +844,6 @@ static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8
     uint16 dx, dy;
     uint16 nativecolor;
 
-    fixR9_begin();
     MaxY = MIN(MR_SCREEN_H, y + h);
     MaxX = MIN(MR_SCREEN_W, x + w);
     MinY = MAX(0, y);
@@ -961,14 +934,11 @@ static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8
         }
 #endif
     }
-    fixR9_end();
 }
 
-static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font) {
+int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font) {
     int TextSize;
     uint16* tempBuf;
-
-    fixR9_begin();
 
 #ifdef MYTHROAD_DEBUG
     if (!pcText) {
@@ -1102,7 +1072,6 @@ static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b
     if (!is_unicode) {
         MR_FREE((void*)tempBuf, TextSize);
     }
-    fixR9_end();
 end:
     return 0;
 }
@@ -1112,7 +1081,6 @@ static int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, m
     uint16* tempBuf;
     uint16 ch;
 
-    fixR9_begin();
     endchar_index = 0;
 
     if (!pcText) {
@@ -1323,7 +1291,6 @@ static int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, m
         MR_FREE((void*)tempBuf, TextSize);
     }
 end:
-    fixR9_end();
     return endchar_index;
 }
 
@@ -1333,7 +1300,6 @@ int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transco
     uint16 dx, dy;
     int nResult = 0;
 
-    fixR9_begin();
     MaxY = MIN(MR_SCREEN_H, y + h);
     MaxX = MIN(MR_SCREEN_W, x + w);
     MinY = MAX(0, y);
@@ -1351,7 +1317,6 @@ int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transco
             srcp++;
         }
     }
-    fixR9_end();
     return nResult;
 }
 
@@ -1361,7 +1326,6 @@ static int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 p
     int MaxY, MaxX, MinY, MinX;
     uint16 dx, dy;
 
-    fixR9_begin();
     MaxY = MIN(MR_SCREEN_H, y + h);
     MaxX = MIN(MR_SCREEN_W, x + w);
     MinY = MAX(0, y);
@@ -1383,7 +1347,6 @@ static int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 p
             dstp++;
         }
     }
-    fixR9_end();
     return 0;
 }
 
@@ -1420,7 +1383,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
     char* mr_m0_file;
     int is_rom_file = FALSE;
 
-    fixR9_begin();
     if ((pack_filename[0] == '*') || (pack_filename[0] == '$')) {
         uint32 pos = 0;
         uint32 m0file_len;
@@ -1669,13 +1631,10 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
 
     retv = mr_gzOutBuf;
 end:
-    fixR9_end();
     return retv;
 err:
-    fixR9_end();
     return NULL;
 ret1:
-    fixR9_end();
     return (void*)1;
 }
 
@@ -1872,7 +1831,6 @@ void* _mrc_readFile(const char* mrpname, const char* filename, int* filelen, int
 #endif
 
 static int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h) {
-    fixR9_begin();
     if (!(mr_state == MR_STATE_RUN)) {
         goto end;
     }
@@ -1888,13 +1846,11 @@ static int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h) {
     mr_bufToScreen(x, y, w, h);
 #endif
 end:
-    fixR9_end();
     return 0;
 }
 
 static int _mr_TestCom(mrp_State* L, int input0, int input1) {
     int ret = 0;
-    fixR9_begin();
     switch (input0) {
         case 1:
             ret = mr_getTime();
@@ -1917,13 +1873,11 @@ static int _mr_TestCom(mrp_State* L, int input0, int input1) {
 
 #ifdef MR_PLAT_DRAWTEXT
         case 7:
-            fixR9_end();
             return input1;
 #endif
 
 #ifdef MR_VIA_MOD
         case 8:
-            fixR9_end();
             return input1;
 #endif
         case 9:
@@ -2050,7 +2004,6 @@ static int _mr_TestCom(mrp_State* L, int input0, int input1) {
                 bi = bi & (~MR_FLAGS_AI);
             break;
     }
-    fixR9_end();
     return ret;
 }
 
@@ -2079,7 +2032,6 @@ int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len) {
 static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
     int ret = 0;
 
-    fixR9_begin();
     switch (input0) {
         case 2:
             if (mr_ram_file) {
@@ -2145,7 +2097,6 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             ret = mr_platEx(200001, (uint8*)_mr_c_port_table, sizeof(_mr_c_port_table), NULL, NULL, NULL);
             break;
     }
-    fixR9_end();
     return ret;
 }
 
@@ -2684,9 +2635,7 @@ int32 mr_start_dsm(const char* entry) {
 }
 
 int32 mr_stop_ex(int16 freemem) {
-    fixR9_begin();
     if (mr_state == MR_STATE_IDLE) {
-        fixR9_end();
         return MR_IGNORE;
     }
 
@@ -2757,7 +2706,6 @@ int32 mr_stop_ex(int16 freemem) {
         mr_mem_free(Origin_LG_mem_base, Origin_LG_mem_len);
     }
     //mr_timerStop();
-    fixR9_end();
     return MR_SUCCESS;
 }
 
@@ -2903,17 +2851,14 @@ int32 mr_timer(void) {
 }
 
 int32 mr_registerAPP(uint8* p, int32 len, int32 index) {
-    fixR9_begin();
     MRDBGPRINTF("mr_registerAPP:%d p:%d", index, p);
     if (index < (sizeof(mr_m0_files) / sizeof(uint8*))) {
         mr_m0_files[index] = p;
     } else {
         MRDBGPRINTF("mr_registerAPP err!");
-        fixR9_end();
         return MR_FAILED;
     }
     MRDBGPRINTF("mr_registerAPP mr_m0_files[%d]:%d ", index, mr_m0_files[index]);
-    fixR9_end();
     return MR_SUCCESS;
 }
 
@@ -3020,7 +2965,6 @@ static int32 _mr_change_to_current(void) {
 static int32 _mr_save_sms_cfg(int32 f) {
     int32 ret;
 
-    fixR9_begin();
     if (mr_sms_cfg_need_save) {
         mr_sms_cfg_need_save = FALSE;
 #ifdef MR_CFG_USE_A_DISK
@@ -3045,10 +2989,8 @@ static int32 _mr_save_sms_cfg(int32 f) {
         }
         mr_close(f);
     }
-    fixR9_end();
     return MR_SUCCESS;
 err:
-    fixR9_end();
     return MR_FAILED;
 }
 
@@ -3057,7 +2999,6 @@ static int32 _mr_load_sms_cfg(void) {
     int32 f;
     int32 ret;
 
-    fixR9_begin();
     mr_sms_cfg_need_save = FALSE;
     MEMSET(mr_sms_cfg_buf, 0, MR_SMS_CFG_BUF_LEN);
 #ifdef MR_CFG_USE_A_DISK
@@ -3095,10 +3036,8 @@ static int32 _mr_load_sms_cfg(void) {
 #ifdef MR_CFG_USE_A_DISK
     _mr_change_to_current();
 #endif
-    fixR9_end();
     return MR_SUCCESS;
 err:
-    fixR9_end();
     return MR_FAILED;
 }
 
@@ -3111,15 +3050,12 @@ int32 _mr_smsGetBytes(int32 pos, char* p, int32 len) {
 }
 
 static int32 _mr_smsSetBytes(int32 pos, char* p, int32 len) {
-    fixR9_begin();
     if ((pos >= MR_SMS_CFG_BUF_LEN) || (pos < 0) || ((pos + len) >= MR_SMS_CFG_BUF_LEN)) {
-        fixR9_end();
         return MR_FAILED;
     }
     mr_sms_cfg_need_save = TRUE;
     MEMCPY(mr_sms_cfg_buf + pos, p, len);
     //MRDBGPRINTF("mr_smsSetBytes %d", *p);
-    fixR9_end();
     return MR_SUCCESS;
 }
 
@@ -3168,16 +3104,13 @@ a)   120×32个字节，每120个字节存放一条DSM更新短消息的全部�
 static int32 _mr_smsAddNum(int32 index, char* pNum) {
     int32 len = STRLEN(pNum);
     char num[MR_MAX_NUM_LEN];
-    fixR9_begin();
     if (len > (((MR_MAX_NUM_LEN - 1) / 4 * 3))) {
         MRDBGPRINTF("num too long");
-        fixR9_end();
         return MR_FAILED;
     }
     MEMSET(num, 0, MR_MAX_NUM_LEN);
     _mr_encode((uint8*)pNum, len, (uint8*)num);
     _mr_smsSetBytes(MR_MAX_NUM_LEN * index + MR_SECTION_LEN, num, MR_MAX_NUM_LEN);
-    fixR9_end();
     return MR_SUCCESS;
 }
 
@@ -3570,7 +3503,6 @@ static int32 _mr_newSIMInd(int16 type, uint8* old_IMSI) {
     char num[MR_MAX_NUM_LEN];
     int32 f;
 
-    fixR9_begin();
     id = mr_getNetworkID();
     if ((MR_SIM_NEW == type) || (MR_SIM_CHANGE == type)) {
         f = _mr_load_sms_cfg();
@@ -3596,10 +3528,8 @@ static int32 _mr_newSIMInd(int16 type, uint8* old_IMSI) {
         }
         _mr_smsReplyServer(num, old_IMSI);
     }
-    fixR9_end();
     return MR_SUCCESS;
 err:
-    fixR9_end();
     return MR_FAILED;
 }
 
@@ -3667,7 +3597,6 @@ static int _mr_isMr(char* input) {
     char enc[16];
     int appid, appver;
     int ret = MR_FAILED;
-    fixR9_begin();
     if (mr_getUserInfo(&info) == MR_SUCCESS) {
         appid = htonl(*((int*)&input[16]));
         appver = htonl(*((int*)&input[20]));
@@ -3693,7 +3622,6 @@ static int _mr_isMr(char* input) {
             ret = MR_SUCCESS;
         }
     }
-    fixR9_end();
     return ret;
 }
 

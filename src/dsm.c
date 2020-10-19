@@ -58,13 +58,11 @@ void mr_printf(const char *format, ...) {
     char utf8Buf[1024] = {0};
     va_list params;
 
-    fixR9_begin();
     va_start(params, format);
     vsnprintf_(printfBuf, sizeof(printfBuf), format, params);
     va_end(params);
     GBToUTF8String((uint8 *)printfBuf, (uint8 *)utf8Buf, sizeof(utf8Buf));
     dsmInFuncs->log(utf8Buf);
-    fixR9_end();
 }
 
 #define LOGI(fmt, ...) mr_printf("[INFO]" fmt, ##__VA_ARGS__)
@@ -159,11 +157,9 @@ void xl_font_sky16_textWidthHeight(char *text, int32 *width, int32 *height) {
 */
 
 int32 mr_exit(void) {
-    fixR9_begin();
     LOGD("%s", "mr_exit() called by mythroad!");
     xl_font_sky16_close();
     dsmInFuncs->exit();
-    fixR9_end();
     return MR_SUCCESS;
 }
 
@@ -171,9 +167,7 @@ int32 mr_exit(void) {
     (100000000 + (plat)*1000000 + (ver)*10000 + (card)*1000 + (impl)*10 + (brun))
 
 int32 mr_getUserInfo(mr_userinfo *info) {
-    fixR9_begin();
     if (info == NULL) {
-        fixR9_end();
         return MR_FAILED;
     }
 
@@ -200,7 +194,6 @@ int32 mr_getUserInfo(mr_userinfo *info) {
 #endif
 
     LOGI("%s", "mr_getUserInfo suc!");
-    fixR9_end();
     return MR_SUCCESS;
 }
 
@@ -213,60 +206,34 @@ int32 mr_cacheSync(void *addr, int32 len) {
 }
 
 int32 mr_mem_get(char **mem_base, uint32 *mem_len) {
-    int32 ret;
-    fixR9_begin();
-    ret = dsmInFuncs->mem_get(mem_base, mem_len);
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->mem_get(mem_base, mem_len);
 }
 
 int32 mr_mem_free(char *mem, uint32 mem_len) {
-    int32 ret;
-    fixR9_begin();
-    ret = dsmInFuncs->mem_free(mem, mem_len);
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->mem_free(mem, mem_len);
 }
 
 int32 mr_timerStart(uint16 t) {
-    int32 ret;
-    fixR9_begin();
-    ret = dsmInFuncs->timerStart(t);
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->timerStart(t);
 }
 
 int32 mr_timerStop(void) {
-    int32 ret;
-    fixR9_begin();
-    ret = dsmInFuncs->timerStop();
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->timerStop();
 }
 
 uint32 mr_getTime(void) {
     uint32 s;
-    fixR9_begin();
     s = dsmInFuncs->get_uptime_ms() - dsmStartTime;
     LOGI("mr_getTime():%d", s);
-    fixR9_end();
     return s;
 }
 
 int32 mr_getDatetime(mr_datetime *datetime) {
-    int32 ret;
-    fixR9_begin();
-    ret = dsmInFuncs->getDatetime(datetime);
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->getDatetime(datetime);
 }
 
 int32 mr_sleep(uint32 ms) {
-    int32 ret;
-    fixR9_begin();
-    ret = dsmInFuncs->sleep(ms);
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->sleep(ms);
 }
 
 ///////////////////////// 文件操作接口 //////////////////////////////////////
@@ -404,144 +371,100 @@ char *get_filename(char *outputbuf, const char *filename) {
 int32 mr_open(const char *filename, uint32 mode) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
     int32 ret;
-    fixR9_begin();
     ret = dsmInFuncs->open(get_filename(fullpathname, filename), mode);
     LOGI("mr_open(%s,%d) fd is: %d", fullpathname, mode, ret);
-    fixR9_end();
     return ret;
 }
 
 int32 mr_close(int32 f) {
     int32 ret;
-    fixR9_begin();
     ret = dsmInFuncs->close(f);
     LOGI("mr_close(%d): ret:%d", f, ret);
-    fixR9_end();
     return ret;
 }
 
 int32 mr_read(int32 f, void *p, uint32 l) {
-    int32 ret;
-    fixR9_begin();
     if (f != font_sky16_f) {
         LOGI("mr_read %d,%p,%d", f, p, l);
     }
-    ret = dsmInFuncs->read(f, p, l);
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->read(f, p, l);
 }
 
 int32 mr_write(int32 f, void *p, uint32 l) {
-    int32 ret;
-    fixR9_begin();
     LOGI("mr_write %d,%p,%d", f, p, l);
-    ret = dsmInFuncs->write(f, p, l);
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->write(f, p, l);
 }
 
 int32 mr_seek(int32 f, int32 pos, int method) {
-    int32 ret;
-    fixR9_begin();
-    ret = dsmInFuncs->seek(f, pos, method);
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->seek(f, pos, method);
 }
 
 int32 mr_info(const char *filename) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
-    int32 ret;
-    fixR9_begin();
-    ret = dsmInFuncs->info(get_filename(fullpathname, filename));
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->info(get_filename(fullpathname, filename));
 }
 
 int32 mr_remove(const char *filename) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
     int32 ret;
-    fixR9_begin();
     ret = dsmInFuncs->remove(get_filename(fullpathname, filename));
     LOGI("mr_remove(%s) ret:%d", fullpathname, ret);
-    fixR9_end();
     return ret;
 }
 
 int32 mr_rename(const char *oldname, const char *newname) {
     char fullpathname_1[DSM_MAX_FILE_LEN] = {0};
     char fullpathname_2[DSM_MAX_FILE_LEN] = {0};
-    int32 ret;
-    fixR9_begin();
     get_filename(fullpathname_1, oldname);
     get_filename(fullpathname_2, newname);
     LOGI("mr_rename(%s to %s)", fullpathname_1, fullpathname_2);
-    ret = dsmInFuncs->rename(fullpathname_1, fullpathname_2);
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->rename(fullpathname_1, fullpathname_2);
 }
 
 int32 mr_mkDir(const char *name) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
-    int32 ret;
-    fixR9_begin();
     get_filename(fullpathname, name);
     LOGI("mr_mkDir(%s)", fullpathname);
-    ret = dsmInFuncs->mkDir(fullpathname);
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->mkDir(fullpathname);
 }
 
 int32 mr_rmDir(const char *name) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
-    int32 ret;
-    fixR9_begin();
     get_filename(fullpathname, name);
     LOGI("mr_rmDir(%s)", fullpathname);
-    ret = dsmInFuncs->rmDir(fullpathname);
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->rmDir(fullpathname);
 }
 
 int32 mr_findGetNext(int32 search_handle, char *buffer, uint32 len) {
     char *d_name;
-    fixR9_begin();
     d_name = dsmInFuncs->readdir(search_handle);
     if (d_name != NULL) {
         memset2(buffer, 0, len);
         UTF8ToGBString((uint8 *)d_name, (uint8 *)buffer, (int)len);
         LOGI("mr_findGetNext %d %s", search_handle, buffer);
-        fixR9_end();
         return MR_SUCCESS;
     }
     LOGI("mr_findGetNext %d (NULL)", search_handle);
-    fixR9_end();
     return MR_FAILED;
 }
 
 int32 mr_findStop(MR_SEARCH_HANDLE search_handle) {
-    int32 ret;
-    fixR9_begin();
-    ret = dsmInFuncs->closedir(search_handle);
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->closedir(search_handle);
 }
 
 int32 mr_findStart(const char *name, char *buffer, uint32 len) {
     int32 ret;
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
 
-    fixR9_begin();
     get_filename(fullpathname, name);
     LOGI("mr_findStart(%s)", fullpathname);
 
     ret = dsmInFuncs->opendir(fullpathname);
     if (ret != MR_FAILED) {
         mr_findGetNext(ret, buffer, len);
-        fixR9_end();
         return ret;
     }
     LOGE("mr_findStart %s: opendir FAIL!", fullpathname);
-    fixR9_end();
     return MR_FAILED;
 }
 
@@ -551,11 +474,7 @@ int32 mr_ferrno(void) {
 
 int32 mr_getLen(const char *filename) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
-    int32 ret;
-    fixR9_begin();
-    ret = dsmInFuncs->getLen(get_filename(fullpathname, filename));
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->getLen(get_filename(fullpathname, filename));
 }
 
 int32 mr_getScreenInfo(mr_screeninfo *s) {
@@ -569,24 +488,16 @@ int32 mr_getScreenInfo(mr_screeninfo *s) {
 }
 
 void mr_drawBitmap(uint16 *bmp, int16 x, int16 y, uint16 w, uint16 h) {
-    fixR9_begin();
     dsmInFuncs->drawBitmap(bmp, x, y, w, h);
-    fixR9_end();
 }
 
 const char *mr_getCharBitmap(uint16 ch, uint16 fontSize, int *width, int *height) {
-    char *ret;
-    fixR9_begin();
     xl_font_sky16_charWidthHeight(ch, width, height);
-    ret = xl_font_sky16_getChar(ch);
-    fixR9_end();
-    return ret;
+    return xl_font_sky16_getChar(ch);
 }
 
 void mr_platDrawChar(uint16 ch, int32 x, int32 y, uint32 color) {
-    fixR9_begin();
     xl_font_sky16_drawChar(ch, x, y, (uint16)color);
-    fixR9_end();
 }
 
 int32 mr_startShake(int32 ms) {
@@ -690,18 +601,13 @@ int32 mr_winRelease(int32 win) {
 }
 
 int32 mr_rand(void) {
-    int32 ret;
-    fixR9_begin();
-    ret = dsmInFuncs->rand();
-    fixR9_end();
-    return ret;
+    return dsmInFuncs->rand();
 }
 //----------------------------------------------------
 /*平台扩展接口*/
 int32 mr_plat(int32 code, int32 param) {
     int32 ret = MR_IGNORE;
 
-    fixR9_begin();
     LOGI("mr_plat code=%d param=%d", code, param);
 
     switch (code) {
@@ -727,14 +633,12 @@ int32 mr_plat(int32 code, int32 param) {
             LOGW("mr_plat(code:%d, param:%d) not impl!", code, param);
             break;
     }
-    fixR9_end();
     return ret;
 }
 
 /*增强的平台扩展接口*/
 int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32 *output_len, MR_PLAT_EX_CB *cb) {
     int32 ret = MR_IGNORE;
-    fixR9_begin();
     LOGI("mr_platEx code=%d in=%p inlen=%d out=%p outlen=%p cb=%p", code, input, input_len, output, output_len, cb);
 
     switch (code) {
@@ -819,8 +723,6 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
     //         LOGW("mr_platEx(code=%d, input=%p, il=%d) not impl!", code, (void *)input, input_len);
     //         break;
     // }
-
-    fixR9_end();
     return ret;
 }
 

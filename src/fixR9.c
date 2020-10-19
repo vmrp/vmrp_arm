@@ -167,11 +167,10 @@ void fixR9_setIsInMythroad(BOOL v) {
     }
 }
 
-BOOL isInExt() {
-    void *r9v = getR9();
+static BOOL isInExt(void *r9v) {
     if ((uint32)r9v > sizeof(fixR9_st)) {
         fixR9_st *ctx = (fixR9_st *)((char *)r9v - sizeof(fixR9_st));
-        if (ctx && (r9v == ctx->rwMem)) {      // 注意，ctx有可能会是个无效的内存地址，目前还不知道怎样获得有效地址的范围
+        if (ctx && (r9v == ctx->rwMem)) {      // todo 注意，ctx有可能会是个无效的内存地址，目前还不知道怎样获得有效地址的范围
             if (ctx->isInMythroad == FALSE) {  // 加多一层，避免误判
                 return TRUE;
             }
@@ -180,27 +179,30 @@ BOOL isInExt() {
     return FALSE;
 }
 
-int32 fixR9_begin() {
-    if (isInExt()) {
-        void *r9v = getR9();
+/*
+todo 如果mythroad函数的参数大于4个，可能会在调用之前使用了r10，
+而此函数需要在目标函数的入口处第一时间执行，相当于还在ext空间
+如果遇到这种情况直接执行此函数将会导致mythroad空间的r10再次被破坏
+对于这样的函数需要用汇编才能解决
+*/
+void fixR9_begin() {
+    void *r9v = getR9();
+    void *r10v = getR10();
+    if (isInExt(r9v)) {
         fixR9_st *ctx = (fixR9_st *)((char *)r9v - sizeof(fixR9_st));
-        register void *newR9v = ctx->r9Mythroad;  // 必需先用寄存器保存
-        register void *newR10v = ctx->r10Mythroad;
+        void *newR9v = ctx->r9Mythroad;  // 必需先用寄存器保存
+        void *newR10v = ctx->r10Mythroad;
         // 注意，这里在ext空间，不能直接使用context
         ctx->r9Ext = r9v;
-        ctx->r10Ext = getR10();
-        setR9(newR9v);
-        setR10(newR10v);
+        ctx->r10Ext = r10v;
+        setR9R10(newR9v, newR10v);
     }
-    return MR_SUCCESS;
 }
 
-int32 fixR9_end() {
+void fixR9_end() {
     if (context && (context->isInMythroad == FALSE)) {
-        register void *newR9v = context->r9Ext;  // 必需先用寄存器保存
-        register void *newR10v = context->r10Ext;
-        setR9(newR9v);
-        setR10(newR10v);
+        void *newR9v = context->r9Ext;  // 必需先用寄存器保存
+        void *newR10v = context->r10Ext;
+        setR9R10(newR9v, newR10v);
     }
-    return MR_SUCCESS;
 }
