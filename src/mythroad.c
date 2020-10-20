@@ -5,7 +5,6 @@
 #include "mr_auxlib.h"
 #include "mr_encode.h"
 #include "mr_forvm.h"
-#include "mr_gb2312.h"
 #include "mr_graphics.h"
 #include "mr_gzip.h"
 #include "mr_lib.h"

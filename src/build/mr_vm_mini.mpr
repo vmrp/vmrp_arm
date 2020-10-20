@@ -37,7 +37,7 @@ file37 = ..\strtol.c
 file38 = ..\strtoul.c
 file39 = ..\dsm.c
 file40 = ..\fixR9.c
-file41 = .\r9r10.s
+file41 = ..\asm\r9r10.s
 file42 = ..\md5.c
 
 

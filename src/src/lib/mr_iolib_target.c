@@ -14,7 +14,6 @@
 #include "mr_auxlib.h"
 #include "mr_lib.h"
 #include "mr_forvm.h"
-#include "mr_gb2312.h"
 #include "mrporting.h"
 
 #include "mythroad.h"

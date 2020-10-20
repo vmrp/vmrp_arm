@@ -1,11 +1,13 @@
 
-#include "mr_gb2312.h"
 #include "encode.h"
 
 #include "mr.h"
 #include "mr_forvm.h"
 
 #define MR_PLAT_U2C
+
+// typedef  unsigned short unicode_char;
+#define unicode_char uint16
 
 //#if !(defined(MTK_MOD) && defined(MR_V2000))
 #ifndef MR_PLAT_U2C

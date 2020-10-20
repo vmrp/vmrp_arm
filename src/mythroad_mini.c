@@ -4,7 +4,6 @@
 #include "mr_auxlib.h"
 #include "mr_encode.h"
 #include "mr_forvm.h"
-#include "mr_gb2312.h"
 #include "mr_graphics.h"
 #include "mr_gzip.h"
 #include "mr_lib.h"
@@ -162,37 +161,21 @@ int8 mr_flagReadFileForPlat = FALSE;
 
 //************read file form mrp plat
 //int32 _mr_decode(unsigned char *in, unsigned int len, unsigned char *out);
-//int32 _mr_encode(unsigned char *in, unsigned int len, unsigned char *out);
 
-static int32 _mr_smsSetBytes(int32 pos, char* p, int32 len);
-static int32 _mr_smsAddNum(int32 index, char* pNum);
-static int32 _mr_load_sms_cfg(void);
-static int32 _mr_save_sms_cfg(int32 f);
-static int32 _mr_newSIMInd(int16 type, uint8* old_IMSI);
-
-static int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h);
-static int _mr_isMr(char* input);
-
+int _mr_isMr(char* input);
+int32 _mr_newSIMInd(int16 type, uint8* old_IMSI);
+int32 _mr_load_sms_cfg(void);
+int32 _mr_save_sms_cfg(int32 f);
+int32 _mr_smsAddNum(int32 index, char* pNum);
 void _DrawPoint(int16 x, int16 y, uint16 nativecolor);
-static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw);
-static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler);
-static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b);
+void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b);
 int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font);
 int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transcoler, uint16 color_check);
-
 void* _mr_readFile(const char* filename, int* filelen, int lookfor);
 int mr_wstrlen(char* txt);
 int32 mr_registerAPP(uint8* p, int32 len, int32 index);
-
 int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len);
-static int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb);
-static int _mr_TestCom(mrp_State* L, int input0, int input1);
-static int32 _DrawTextEx(char* pcText, int16 x, int16 y,
-                         mr_screenRectSt rect, mr_colourSt colorst, int flag, uint16 font);
-
-static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len);
 static int _mr_TestComC(int input0, char* input1, int32 len, int32 code);
-
 int32 mr_stop_ex(int16 freemem);
 static int32 _mr_getMetaMemLimit(void);
 
@@ -206,41 +189,12 @@ const void* _mr_c_function_table[];
 static const void* _mr_c_function_table[150];
 #endif
 
-unicode_char* mr_c2u(const char* cp, int* err, int* size) {
-    unicode_char* ret;
-    ret = c2u(cp, err, size);
-    return ret;
-}
-
 static int32 _mr_div(int32 a, int32 b) {
     return a / b;
 }
 
 static int32 _mr_mod(int32 a, int32 b) {
     return a % b;
-}
-
-static ulg _mr_updcrc(uch* s, unsigned n) {
-    ulg ret;
-    ret = mr_updcrc(s, n);
-    return ret;
-}
-
-static int _mr_unzip(void) {
-    int ret;
-    ret = mr_unzip();
-    return ret;
-}
-static int32 _mr_transbitmapDraw(mr_transBitmap* hTransBmp, uint16* dstBuf, int32 dest_max_w, int32 dest_max_h, int32 sx, int32 sy,
-                                 int32 width, int32 height, int32 dx, int32 dy) {
-    int32 ret;
-    ret = mr_transbitmapDraw(hTransBmp, dstBuf, dest_max_w, dest_max_h, sx, sy, width, height, dx, dy);
-    return ret;
-}
-
-static void _mr_drawRegion(mr_jgraphics_context_t* gContext, mr_jImageSt* src,
-                           int sx, int sy, int w, int h, int transform, int x, int y, int anchor) {
-    mr_drawRegion(gContext, src, sx, sy, w, h, transform, x, y, anchor);
 }
 
 void mythroad_init(void) {
@@ -264,18 +218,18 @@ void mythroad_init(void) {
     _mr_c_internal_table[10] = (void*)&LG_gzoutcnt;
 
     _mr_c_internal_table[11] = (void*)&mr_sms_cfg_need_save;
-    _mr_c_internal_table[12] = (void*)_mr_smsSetBytes;
-    _mr_c_internal_table[13] = (void*)_mr_smsAddNum;
-    _mr_c_internal_table[14] = (void*)_mr_newSIMInd;
+    _mr_c_internal_table[12] = (void*)asm_mr_smsSetBytes;
+    _mr_c_internal_table[13] = (void*)asm_mr_smsAddNum;
+    _mr_c_internal_table[14] = (void*)asm_mr_newSIMInd;
 
-    _mr_c_internal_table[15] = (void*)_mr_isMr;
+    _mr_c_internal_table[15] = (void*)asm_mr_isMr;
     _mr_c_internal_table[16] = NULL;
 
     ///////////////////////////////////////////////////////////////////////
-
-    _mr_c_function_table[0] = (void*)mr_malloc;
-    _mr_c_function_table[1] = (void*)mr_free;
-    _mr_c_function_table[2] = (void*)mr_realloc;  // 3
+    // 如果函数使用了全局变量，必需用asm_xxx
+    _mr_c_function_table[0] = (void*)asm_mr_malloc;
+    _mr_c_function_table[1] = (void*)asm_mr_free;
+    _mr_c_function_table[2] = (void*)asm_mr_realloc;  // 3
 
     _mr_c_function_table[3] = (void*)memcpy2;
     _mr_c_function_table[4] = (void*)memmove2;
@@ -294,55 +248,55 @@ void mythroad_init(void) {
     _mr_c_function_table[17] = (void*)sprintf_;
     _mr_c_function_table[18] = (void*)atoi2;
     _mr_c_function_table[19] = (void*)strtoul2;  // 20
-    _mr_c_function_table[20] = (void*)mr_rand;
+    _mr_c_function_table[20] = (void*)asm_mr_rand;
 
     _mr_c_function_table[21] = (void*)NULL;
-    _mr_c_function_table[22] = (void*)mr_stop_ex;  //V1939
+    _mr_c_function_table[22] = (void*)asm_mr_stop_ex;  //V1939
     _mr_c_function_table[23] = (void*)_mr_c_internal_table;
 
     _mr_c_function_table[24] = (void*)_mr_c_port_table;
     _mr_c_function_table[25] = (void*)_mr_c_function_new;  //26
-    _mr_c_function_table[26] = (void*)mr_printf;
-    _mr_c_function_table[27] = (void*)mr_mem_get;
-    _mr_c_function_table[28] = (void*)mr_mem_free;
-    _mr_c_function_table[29] = (void*)mr_drawBitmap;
-    _mr_c_function_table[30] = (void*)mr_getCharBitmap;
-    _mr_c_function_table[31] = (void*)mr_timerStart;
-    _mr_c_function_table[32] = (void*)mr_timerStop;
-    _mr_c_function_table[33] = (void*)mr_getTime;
-    _mr_c_function_table[34] = (void*)mr_getDatetime;
-    _mr_c_function_table[35] = (void*)mr_getUserInfo;
-    _mr_c_function_table[36] = (void*)mr_sleep;  //37
+    _mr_c_function_table[26] = (void*)asm_mr_printf;
+    _mr_c_function_table[27] = (void*)asm_mr_mem_get;
+    _mr_c_function_table[28] = (void*)asm_mr_mem_free;
+    _mr_c_function_table[29] = (void*)asm_mr_drawBitmap;
+    _mr_c_function_table[30] = (void*)asm_mr_getCharBitmap;
+    _mr_c_function_table[31] = (void*)asm_mr_timerStart;
+    _mr_c_function_table[32] = (void*)asm_mr_timerStop;
+    _mr_c_function_table[33] = (void*)asm_mr_getTime;
+    _mr_c_function_table[34] = (void*)asm_mr_getDatetime;
+    _mr_c_function_table[35] = (void*)asm_mr_getUserInfo;
+    _mr_c_function_table[36] = (void*)asm_mr_sleep;  //37
 
-    _mr_c_function_table[37] = (void*)mr_plat;
-    _mr_c_function_table[38] = (void*)mr_platEx;  //39
+    _mr_c_function_table[37] = (void*)asm_mr_plat;
+    _mr_c_function_table[38] = (void*)asm_mr_platEx;  //39
 
     _mr_c_function_table[39] = (void*)mr_ferrno;
-    _mr_c_function_table[40] = (void*)mr_open;
-    _mr_c_function_table[41] = (void*)mr_close;
-    _mr_c_function_table[42] = (void*)mr_info;
-    _mr_c_function_table[43] = (void*)mr_write;
-    _mr_c_function_table[44] = (void*)mr_read;
-    _mr_c_function_table[45] = (void*)mr_seek;
-    _mr_c_function_table[46] = (void*)mr_getLen;
-    _mr_c_function_table[47] = (void*)mr_remove;
-    _mr_c_function_table[48] = (void*)mr_rename;
-    _mr_c_function_table[49] = (void*)mr_mkDir;
-    _mr_c_function_table[50] = (void*)mr_rmDir;
-    _mr_c_function_table[51] = (void*)mr_findStart;
-    _mr_c_function_table[52] = (void*)mr_findGetNext;
-    _mr_c_function_table[53] = (void*)mr_findStop;  //54
+    _mr_c_function_table[40] = (void*)asm_mr_open;
+    _mr_c_function_table[41] = (void*)asm_mr_close;
+    _mr_c_function_table[42] = (void*)asm_mr_info;
+    _mr_c_function_table[43] = (void*)asm_mr_write;
+    _mr_c_function_table[44] = (void*)asm_mr_read;
+    _mr_c_function_table[45] = (void*)asm_mr_seek;
+    _mr_c_function_table[46] = (void*)asm_mr_getLen;
+    _mr_c_function_table[47] = (void*)asm_mr_remove;
+    _mr_c_function_table[48] = (void*)asm_mr_rename;
+    _mr_c_function_table[49] = (void*)asm_mr_mkDir;
+    _mr_c_function_table[50] = (void*)asm_mr_rmDir;
+    _mr_c_function_table[51] = (void*)asm_mr_findStart;
+    _mr_c_function_table[52] = (void*)asm_mr_findGetNext;
+    _mr_c_function_table[53] = (void*)asm_mr_findStop;  //54
 
-    _mr_c_function_table[54] = (void*)mr_exit;
+    _mr_c_function_table[54] = (void*)asm_mr_exit;
     _mr_c_function_table[55] = (void*)mr_startShake;
     _mr_c_function_table[56] = (void*)mr_stopShake;
     _mr_c_function_table[57] = (void*)mr_playSound;
     _mr_c_function_table[58] = (void*)mr_stopSound;  //59
 
-    _mr_c_function_table[59] = (void*)mr_sendSms;
-    _mr_c_function_table[60] = (void*)mr_call;
+    _mr_c_function_table[59] = (void*)asm_mr_sendSms;
+    _mr_c_function_table[60] = (void*)asm_mr_call;
     _mr_c_function_table[61] = (void*)mr_getNetworkID;
-    _mr_c_function_table[62] = (void*)mr_connectWAP;
+    _mr_c_function_table[62] = (void*)asm_mr_connectWAP;
 
     _mr_c_function_table[63] = (void*)mr_menuCreate;
     _mr_c_function_table[64] = (void*)mr_menuSetItem;
@@ -362,18 +316,18 @@ void mythroad_init(void) {
     _mr_c_function_table[78] = (void*)mr_winCreate;
     _mr_c_function_table[79] = (void*)mr_winRelease;
 
-    _mr_c_function_table[80] = (void*)mr_getScreenInfo;
+    _mr_c_function_table[80] = (void*)asm_mr_getScreenInfo;
 
-    _mr_c_function_table[81] = (void*)mr_initNetwork;
-    _mr_c_function_table[82] = (void*)mr_closeNetwork;
+    _mr_c_function_table[81] = (void*)asm_mr_initNetwork;
+    _mr_c_function_table[82] = (void*)asm_mr_closeNetwork;
     _mr_c_function_table[83] = (void*)mr_getHostByName;
-    _mr_c_function_table[84] = (void*)mr_socket;
-    _mr_c_function_table[85] = (void*)mr_connect;
-    _mr_c_function_table[86] = (void*)mr_closeSocket;
-    _mr_c_function_table[87] = (void*)mr_recv;
-    _mr_c_function_table[88] = (void*)mr_recvfrom;
-    _mr_c_function_table[89] = (void*)mr_send;
-    _mr_c_function_table[90] = (void*)mr_sendto;
+    _mr_c_function_table[84] = (void*)asm_mr_socket;
+    _mr_c_function_table[85] = (void*)asm_mr_connect;
+    _mr_c_function_table[86] = (void*)asm_mr_closeSocket;
+    _mr_c_function_table[87] = (void*)asm_mr_recv;
+    _mr_c_function_table[88] = (void*)asm_mr_recvfrom;
+    _mr_c_function_table[89] = (void*)asm_mr_send;
+    _mr_c_function_table[90] = (void*)asm_mr_sendto;
 
     _mr_c_function_table[91] = (void*)&mr_screenBuf;
     _mr_c_function_table[92] = (void*)&mr_screen_w;
@@ -405,42 +359,42 @@ void mythroad_init(void) {
     _mr_c_function_table[113] = (void*)mr_md5_init;
     _mr_c_function_table[114] = (void*)mr_md5_append;
     _mr_c_function_table[115] = (void*)mr_md5_finish;
-    _mr_c_function_table[116] = (void*)_mr_load_sms_cfg;
-    _mr_c_function_table[117] = (void*)_mr_save_sms_cfg;
-    _mr_c_function_table[118] = (void*)_DispUpEx;
+    _mr_c_function_table[116] = (void*)asm_mr_load_sms_cfg;
+    _mr_c_function_table[117] = (void*)asm_mr_save_sms_cfg;
+    _mr_c_function_table[118] = (void*)asm_DispUpEx;
 
-    _mr_c_function_table[119] = (void*)_DrawPoint;
-    _mr_c_function_table[120] = (void*)_DrawBitmap;
-    _mr_c_function_table[121] = (void*)_DrawBitmapEx;
-    _mr_c_function_table[122] = (void*)DrawRect;
+    _mr_c_function_table[119] = (void*)asm_DrawPoint;
+    _mr_c_function_table[120] = (void*)asm_DrawBitmap;
+    _mr_c_function_table[121] = (void*)asm_DrawBitmapEx;
+    _mr_c_function_table[122] = (void*)asm_DrawRect;
     _mr_c_function_table[123] = (void*)asm_DrawText;
-    _mr_c_function_table[124] = (void*)_BitmapCheck;
-    _mr_c_function_table[125] = (void*)_mr_readFile;
+    _mr_c_function_table[124] = (void*)asm_BitmapCheck;
+    _mr_c_function_table[125] = (void*)asm_mr_readFile;
     _mr_c_function_table[126] = (void*)mr_wstrlen;
-    _mr_c_function_table[127] = (void*)mr_registerAPP;
-    _mr_c_function_table[128] = (void*)_DrawTextEx;  //1936
-    _mr_c_function_table[129] = (void*)_mr_EffSetCon;
-    _mr_c_function_table[130] = (void*)_mr_TestCom;
-    _mr_c_function_table[131] = (void*)_mr_TestCom1;  //1938
-    _mr_c_function_table[132] = (void*)mr_c2u;        //1939
-    _mr_c_function_table[133] = (void*)_mr_div;       //1941
+    _mr_c_function_table[127] = (void*)asm_mr_registerAPP;
+    _mr_c_function_table[128] = (void*)asm_DrawTextEx;  //1936
+    _mr_c_function_table[129] = (void*)asm_mr_EffSetCon;
+    _mr_c_function_table[130] = (void*)asm_mr_TestCom;
+    _mr_c_function_table[131] = (void*)asm_mr_TestCom1;  //1938
+    _mr_c_function_table[132] = (void*)asm_c2u;          //1939
+    _mr_c_function_table[133] = (void*)_mr_div;          //1941
     _mr_c_function_table[134] = (void*)_mr_mod;
 
     _mr_c_function_table[135] = (void*)&LG_mem_min;
     _mr_c_function_table[136] = (void*)&LG_mem_top;
-    _mr_c_function_table[137] = (void*)_mr_updcrc;           //1943
+    _mr_c_function_table[137] = (void*)asm_mr_updcrc;        //1943
     _mr_c_function_table[138] = (void*)start_fileparameter;  //1945
     _mr_c_function_table[139] = (void*)&mr_sms_return_flag;  //1949
     _mr_c_function_table[140] = (void*)&mr_sms_return_val;
-    _mr_c_function_table[141] = (void*)_mr_unzip;         //1950
-    _mr_c_function_table[142] = (void*)&mr_exit_cb;       //1951
-    _mr_c_function_table[143] = (void*)&mr_exit_cb_data;  //1951
-    _mr_c_function_table[144] = (void*)mr_entry;          //1952
-    _mr_c_function_table[145] = (void*)mr_platDrawChar;   //2004
-    _mr_c_function_table[146] = (void*)&LG_mem_free;      //1967,2009
+    _mr_c_function_table[141] = (void*)asm_mr_unzip;         //1950
+    _mr_c_function_table[142] = (void*)&mr_exit_cb;          //1951
+    _mr_c_function_table[143] = (void*)&mr_exit_cb_data;     //1951
+    _mr_c_function_table[144] = (void*)mr_entry;             //1952
+    _mr_c_function_table[145] = (void*)asm_mr_platDrawChar;  //2004
+    _mr_c_function_table[146] = (void*)&LG_mem_free;         //1967,2009
 
-    _mr_c_function_table[147] = (void*)_mr_transbitmapDraw;
-    _mr_c_function_table[148] = (void*)_mr_drawRegion;
+    _mr_c_function_table[147] = (void*)asm_mr_transbitmapDraw;
+    _mr_c_function_table[148] = (void*)asm_mr_drawRegion;
     _mr_c_function_table[149] = NULL;
 }
 
@@ -607,7 +561,7 @@ void _DrawPoint(int16 x, int16 y, uint16 nativecolor) {
     *MR_SCREEN_CACHE_POINT(x, y) = nativecolor;
 }
 
-static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw) {
+void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw) {
     uint16 *dstp, *srcp;
     uint16 dx, dy;
     int MinX, MinY, MaxX, MaxY;
@@ -783,7 +737,7 @@ static void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 
     }
 }
 
-static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler) {
+void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler) {
     int32 A = pTrans->A;
     int32 B = pTrans->B;
     int32 C = pTrans->C;
@@ -838,7 +792,7 @@ static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint
     }
 }
 
-static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b) {
+void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b) {
     uint16 *dstp, *srcp;
     int MaxY, MaxX, MinY, MinX;
     uint16 dx, dy;
@@ -1076,7 +1030,7 @@ end:
     return 0;
 }
 
-static int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, mr_colourSt colorst, int flag, uint16 font) {
+int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, mr_colourSt colorst, int flag, uint16 font) {
     int TextSize, endchar_index;
     uint16* tempBuf;
     uint16 ch;
@@ -1320,7 +1274,7 @@ int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transco
     return nResult;
 }
 
-static int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb) {
+int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb) {
     uint16* dstp;
     uint32 color_old, coloer_new;
     int MaxY, MaxX, MinY, MinX;
@@ -1830,7 +1784,7 @@ void* _mrc_readFile(const char* mrpname, const char* filename, int* filelen, int
 }
 #endif
 
-static int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h) {
+int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h) {
     if (!(mr_state == MR_STATE_RUN)) {
         goto end;
     }
@@ -1849,7 +1803,7 @@ end:
     return 0;
 }
 
-static int _mr_TestCom(mrp_State* L, int input0, int input1) {
+int _mr_TestCom(mrp_State* L, int input0, int input1) {
     int ret = 0;
     switch (input0) {
         case 1:
@@ -2029,7 +1983,7 @@ int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len) {
     return MR_SUCCESS;
 }
 
-static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
+int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
     int ret = 0;
 
     switch (input0) {
@@ -2161,9 +2115,9 @@ static int _mr_TestComC(int input0, char* input1, int32 len, int32 code) {
             int32 output_len = 0;
             uint8* output = NULL;
             fixR9_save();
-            fixR9_setIsInMythroad(FALSE);
+            fixR9_setIsInExt(TRUE);
             ret = mr_c_function(mr_c_function_P, code, (uint8*)input1, len, (uint8**)&output, &output_len);
-            fixR9_setIsInMythroad(TRUE);
+            fixR9_setIsInExt(FALSE);
         } break;
 #endif
     }
@@ -2962,7 +2916,7 @@ static int32 _mr_change_to_current(void) {
 }
 #endif
 
-static int32 _mr_save_sms_cfg(int32 f) {
+int32 _mr_save_sms_cfg(int32 f) {
     int32 ret;
 
     if (mr_sms_cfg_need_save) {
@@ -2995,7 +2949,7 @@ err:
 }
 
 //查看DSM配置文件是否存在，不存在则创建之
-static int32 _mr_load_sms_cfg(void) {
+int32 _mr_load_sms_cfg(void) {
     int32 f;
     int32 ret;
 
@@ -3049,7 +3003,7 @@ int32 _mr_smsGetBytes(int32 pos, char* p, int32 len) {
     return MR_SUCCESS;
 }
 
-static int32 _mr_smsSetBytes(int32 pos, char* p, int32 len) {
+int32 _mr_smsSetBytes(int32 pos, char* p, int32 len) {
     if ((pos >= MR_SMS_CFG_BUF_LEN) || (pos < 0) || ((pos + len) >= MR_SMS_CFG_BUF_LEN)) {
         return MR_FAILED;
     }
@@ -3101,7 +3055,7 @@ a)   120×32个字节，每120个字节存放一条DSM更新短消息的全部�
 *                  MR_IGNORE--already exist
 *Note: 
 ***********************************************/
-static int32 _mr_smsAddNum(int32 index, char* pNum) {
+int32 _mr_smsAddNum(int32 index, char* pNum) {
     int32 len = STRLEN(pNum);
     char num[MR_MAX_NUM_LEN];
     if (len > (((MR_MAX_NUM_LEN - 1) / 4 * 3))) {
@@ -3497,7 +3451,7 @@ int32 mr_smsIndiaction(uint8* pContent, int32 nLen, uint8* pNum, int32 type)  //
     return ret;
 }
 
-static int32 _mr_newSIMInd(int16 type, uint8* old_IMSI) {
+int32 _mr_newSIMInd(int16 type, uint8* old_IMSI) {
     int32 id;
     uint8 flag;
     char num[MR_MAX_NUM_LEN];
@@ -3592,7 +3546,7 @@ static void encode02(char* value, int len, unsigned char cBgnInit, unsigned char
     }
 }
 
-static int _mr_isMr(char* input) {
+int _mr_isMr(char* input) {
     mr_userinfo info;
     char enc[16];
     int appid, appver;

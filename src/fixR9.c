@@ -76,7 +76,7 @@ void mr_free2(void *p) {
 }
 
 typedef struct fixR9_st {
-    BOOL isInMythroad;
+    BOOL isInExt;
     void *r9Mythroad;
     void *r10Mythroad;
     void *r9Ext;
@@ -87,6 +87,7 @@ typedef struct fixR9_st {
 } fixR9_st;
 
 static fixR9_st *context;
+static void *lr;
 
 int32 fixR9_init() {
     context = NULL;
@@ -116,7 +117,7 @@ int32 fixR9_hack(mr_c_function_P_st *mr_c_function_P) {
     context->rwMemCheck = (uint32 *)mr_c_function_P->start_of_ER_RW - 1;
     context->rwMem = mr_c_function_P->start_of_ER_RW;
     context->rwLen = mr_c_function_P->ER_RW_Length;
-    context->isInMythroad = TRUE;
+    context->isInExt = FALSE;
     // MRDBGPRINTF("test:---%X %X", context->rwMemCheck, &context->rwLen); // 两个值应该是相等的
     return MR_SUCCESS;
 }
@@ -126,34 +127,6 @@ BOOL fixR9_checkFree(void *p) {
     return (context && (p == context->rwMemCheck));
 }
 
-#ifdef __GNUC__
-void *getR9() {
-    register void *ret;
-    asm("MOV %[result], r9"
-        : [ result ] "=r"(ret));
-    return ret;
-}
-
-void setR9(void *value) {
-    asm("MOV r9, %[input_value]"
-        :
-        : [ input_value ] "r"(value));
-}
-
-void *getR10() {
-    register void *ret;
-    asm("MOV %[result], r10"
-        : [ result ] "=r"(ret));
-    return ret;
-}
-
-void setR10(void *value) {
-    asm("MOV r10, %[input_value]"
-        :
-        : [ input_value ] "r"(value));
-}
-#endif
-
 void fixR9_save() {
     if (context) {
         context->r9Mythroad = getR9();
@@ -161,38 +134,44 @@ void fixR9_save() {
     }
 }
 
-void fixR9_setIsInMythroad(BOOL v) {
+void fixR9_saveLR(void *v) {
+    lr = v;
+}
+
+void *fixR9_getLR() {
+    return lr;
+}
+
+void fixR9_setIsInExt(BOOL v) {
     if (context) {
-        context->isInMythroad = v;
+        context->isInExt = v;
     }
 }
 
 static BOOL isInExt(void *r9v) {
     if ((uint32)r9v > sizeof(fixR9_st)) {
         fixR9_st *ctx = (fixR9_st *)((char *)r9v - sizeof(fixR9_st));
-        if (ctx && (r9v == ctx->rwMem)) {      // todo 注意，ctx有可能会是个无效的内存地址，目前还不知道怎样获得有效地址的范围
-            if (ctx->isInMythroad == FALSE) {  // 加多一层，避免误判
-                return TRUE;
-            }
+        if (ctx && (r9v == ctx->rwMem)) {  // todo 注意，ctx有可能会是个无效的内存地址，目前还不知道怎样获得有效地址的范围
+            return ctx->isInExt;           // 加多一层，避免误判
         }
     }
     return FALSE;
 }
 
 /*
-todo 如果mythroad函数的参数大于4个，可能会在调用之前使用了r10，
+注意 如果mythroad函数的参数大于4个，可能会在调用之前使用了r10，
 而此函数需要在目标函数的入口处第一时间执行，相当于还在ext空间
 如果遇到这种情况直接执行此函数将会导致mythroad空间的r10再次被破坏
 对于这样的函数需要用汇编才能解决
 */
 void fixR9_begin() {
+    // 注意，这里在ext空间，不能直接使用context
     void *r9v = getR9();
     void *r10v = getR10();
     if (isInExt(r9v)) {
         fixR9_st *ctx = (fixR9_st *)((char *)r9v - sizeof(fixR9_st));
-        void *newR9v = ctx->r9Mythroad;  // 必需先用寄存器保存
+        void *newR9v = ctx->r9Mythroad;
         void *newR10v = ctx->r10Mythroad;
-        // 注意，这里在ext空间，不能直接使用context
         ctx->r9Ext = r9v;
         ctx->r10Ext = r10v;
         setR9R10(newR9v, newR10v);
@@ -200,8 +179,8 @@ void fixR9_begin() {
 }
 
 void fixR9_end() {
-    if (context && (context->isInMythroad == FALSE)) {
-        void *newR9v = context->r9Ext;  // 必需先用寄存器保存
+    if (context && context->isInExt) {
+        void *newR9v = context->r9Ext;
         void *newR10v = context->r10Ext;
         setR9R10(newR9v, newR10v);
     }
