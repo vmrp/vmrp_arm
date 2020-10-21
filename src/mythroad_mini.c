@@ -46,9 +46,7 @@ static char start_filename[MR_MAX_FILENAME_SIZE];
 static char start_fileparameter[MR_MAX_FILENAME_SIZE];
 static char old_pack_filename[MR_MAX_FILENAME_SIZE];
 static char old_start_filename[MR_MAX_FILENAME_SIZE];
-
 static char mr_entry[MR_MAX_FILENAME_SIZE];
-
 static int32 mr_screen_w;
 static int32 mr_screen_h;
 static int32 mr_screen_bit;
@@ -2393,12 +2391,9 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     mr_stop_function = NULL;
     mr_pauseApp_function = NULL;
     mr_resumeApp_function = NULL;
-
     mr_ram_file = NULL;
-
     mr_c_function_P = NULL;
     mr_c_function_P_len = 0;
-
     mr_exception_str = NULL;
 
 #ifdef SDK_MOD
@@ -2446,19 +2441,14 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
         mr_tile[i].y2 = (int16)MR_SCREEN_H;
     }
 
-    //入口变量
     if (!entry) {
         entry = "_dsm";
     }
     STRNCPY(mr_entry, entry, sizeof(mr_entry) - 1);
-    //入口变量
-
 #ifdef SDK_MOD
     MRDBGPRINTF("Used by VM(include screen buffer):%d bytes", LG_mem_len - LG_mem_left);
 #endif
-
     mr_state = MR_STATE_RUN;
-
     ret = mr_doExt(appExName);
     if (0 != ret)
         ret = mr_doExt("logo.ext");  //尝试加载 logo.ext
@@ -2471,11 +2461,10 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
         mr_connectWAP(MR_ERROR_WAP);
         return MR_FAILED;
     }
-
     return MR_SUCCESS;
 }
 
-int32 mr_start_dsm_ex(const char* filename, const char* entry) {
+int32 mr_start_dsm(char* filename, char* ext, char* entry) {
     mr_screeninfo screeninfo;
     if (mr_getScreenInfo(&screeninfo) != MR_SUCCESS) {
         return MR_FAILED;
@@ -2488,104 +2477,28 @@ int32 mr_start_dsm_ex(const char* filename, const char* entry) {
     if (filename && (*filename == '*')) {
         STRCPY(pack_filename, filename);
     } else if (filename && (*filename == '%')) {
-        STRCPY(pack_filename, filename + 1);
-    } else if (filename && (*filename == '#') && (*(filename + 1) == '<')) {
-        STRCPY(pack_filename, filename + 2);
-    } else {
-        STRCPY(pack_filename, MR_DEFAULT_PACK_NAME);
-    }
-
-    MEMSET(old_pack_filename, 0, sizeof(old_pack_filename));
-    MEMSET(old_start_filename, 0, sizeof(old_start_filename));
-
-    MEMSET(start_fileparameter, 0, sizeof(start_fileparameter));
-    mrc_appInfo_st.ram = 0;
-
-#ifdef SDK_MOD
-    return _mr_intra_start("cfunction.ext", entry);
-#else
-    //#if defined(MR_BREW_MOD)
-    //   return _mr_intra_start("cfunction.ext", entry);
-    //#else
-    return _mr_intra_start("logo.ext", entry);
-    //#endif
-#endif
-}
-
-int32 mr_start_dsmB(const char* entry) {
-    mr_screeninfo screeninfo;
-    if (mr_getScreenInfo(&screeninfo) != MR_SUCCESS) {
-        return MR_FAILED;
-    }
-    mr_screen_w = screeninfo.width;
-    mr_screen_h = screeninfo.height;
-    mr_screen_bit = screeninfo.bit;
-
-    MEMSET(pack_filename, 0, sizeof(pack_filename));
-    if (entry && (*entry == '*')) {
-        STRCPY(pack_filename, entry);
-        //以后%的方式要从VM 中去掉
-    } else if (entry && (*entry == '%')) {
-        char* loc;
-        loc = (char*)strchr2(entry, ',');
+        char* loc = strchr2(entry, ',');
         if (loc != NULL) {
-            *loc = 0;
+            *loc = '\0';
             STRCPY(pack_filename, entry + 1);
             *loc = ',';
         } else {
             STRCPY(pack_filename, entry + 1);
         }
-    } else if (entry && (*entry == '#') && (*(entry + 1) == '<')) {
-        STRCPY(pack_filename, entry + 2);
+    } else if (filename && (*filename == '#') && (*(filename + 1) == '<')) {
+        STRCPY(pack_filename, filename + 2);
     } else {
-        STRCPY(pack_filename, MR_DEFAULT_PACK_NAME);
-    }
-    //strcpy(pack_filename,"*A");
-    MRDBGPRINTF(pack_filename);
-
-    MEMSET(old_pack_filename, 0, sizeof(old_pack_filename));
-    MEMSET(old_start_filename, 0, sizeof(old_start_filename));
-
-    MEMSET(start_fileparameter, 0, sizeof(start_fileparameter));
-
-    mrc_appInfo_st.ram = 0;
-
-#ifdef SDK_MOD
-    return _mr_intra_start("cfunction.ext", entry);
-#else
-    return _mr_intra_start("logo.ext", entry);
-#endif
-}
-
-int32 mr_start_dsm(const char* entry) {
-    mr_screeninfo screeninfo;
-    if (mr_getScreenInfo(&screeninfo) != MR_SUCCESS) {
-        return MR_FAILED;
-    }
-    mr_screen_w = screeninfo.width;
-    mr_screen_h = screeninfo.height;
-    mr_screen_bit = screeninfo.bit;
-
-    MEMSET(pack_filename, 0, sizeof(pack_filename));
-    if (entry && (*entry == '*')) {
-        STRCPY(pack_filename, entry);
-        //以后%的方式要从VM 中去掉
-    } else if (entry && (*entry == '%')) {
-        STRCPY(pack_filename, entry + 1);
-    } else if (entry && (*entry == '#') && (*(entry + 1) == '<')) {
-        STRCPY(pack_filename, entry + 2);
-    } else {
-        STRCPY(pack_filename, entry);
+        STRCPY(pack_filename, filename);
+        // STRCPY(pack_filename, MR_DEFAULT_PACK_NAME);
     }
     MRDBGPRINTF(pack_filename);
-
     MEMSET(old_pack_filename, 0, sizeof(old_pack_filename));
     MEMSET(old_start_filename, 0, sizeof(old_start_filename));
-
     MEMSET(start_fileparameter, 0, sizeof(start_fileparameter));
-
     mrc_appInfo_st.ram = 0;
-    return _mr_intra_start("cfunction.ext", entry);
+    // return _mr_intra_start("cfunction.ext", entry);
+    // return _mr_intra_start("logo.ext", filename);
+    return _mr_intra_start(ext, entry);
 }
 
 int32 mr_stop_ex(int16 freemem) {

@@ -5051,6 +5051,10 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     return MR_SUCCESS;
 }
 
+/*
+与函数mr_start_dsm功能相似，区别是可以分别设置启动文件
+和启动参数。
+*/
 int32 mr_start_dsm_ex(const char* filename, const char* entry) {
     mr_screeninfo screeninfo;
     if (mr_getScreenInfo(&screeninfo) != MR_SUCCESS) {
@@ -5080,6 +5084,13 @@ int32 mr_start_dsm_ex(const char* filename, const char* entry) {
     return _mr_intra_start(MR_START_FILE, entry);
 }
 
+/*
+与函数mr_start_dsm功能相似，区别是mr_start_dsmB会处理以','分割的
+启动文件及参数
+如:
+若entry为"%applist.mrp,reload"，则mr_start_dsmB认为"applist.mrp"是启动文件
+而"%applist.mrp,reload"为启动字串
+*/
 int32 mr_start_dsmB(const char* entry) {
     mr_screeninfo screeninfo;
     if (mr_getScreenInfo(&screeninfo) != MR_SUCCESS) {
@@ -5119,6 +5130,7 @@ int32 mr_start_dsmB(const char* entry) {
     return _mr_intra_start(MR_START_FILE, entry);
 }
 
+/*当启动DSM应用的时候，应该调用DSM的初始化函数， 用以对DSM平台进行初始化*/
 int32 mr_start_dsm(const char* entry) {
     mr_screeninfo screeninfo;
     if (mr_getScreenInfo(&screeninfo) != MR_SUCCESS) {
@@ -5151,6 +5163,9 @@ int32 mr_start_dsm(const char* entry) {
     return _mr_intra_start(MR_START_FILE, entry);
 }
 
+/*
+与函数mr_start_dsm功能相似，区别是mr_start_dsmC可以设置mrp初始
+加载的文件名，在精简VM中，默认加载文件为"logo.ext"*/
 int32 mr_start_dsmC(char* start_file, const char* entry) {
     mr_screeninfo screeninfo;
     if (mr_getScreenInfo(&screeninfo) != MR_SUCCESS) {
