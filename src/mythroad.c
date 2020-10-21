@@ -154,19 +154,11 @@ MR_RESUMEAPP_FUNCTION mr_resumeApp_function = NULL;
 static mrc_timerCB mr_exit_cb = NULL;
 static int32 mr_exit_cb_data;
 
-//*********************性能测试
-//#define NU_Retrieve_Clock TMT_Retrieve_Clock
 
-//unsigned long  TMT_Retrieve_Clock(void);
-
-//*********************性能测试
-
-//************read file form mrp plat
 #ifdef MR_PLAT_READFILE
 int8 mr_flagReadFileForPlat = FALSE;
 #endif
 
-//************read file form mrp plat
 
 #ifdef MR_CHECK_CODE
 int32 mr_check_code_val;

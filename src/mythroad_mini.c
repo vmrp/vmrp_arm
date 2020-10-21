@@ -14,8 +14,6 @@
 #include "mythroad.h"
 #include "string.h"
 
-const unsigned char* mr_m0_files[50];
-
 typedef struct _mini_mr_c_event_st {
     int32 code;
     int32 param0;
@@ -145,19 +143,10 @@ typedef struct {
 
 mrc_appInfoSt_st mrc_appInfo_st;
 
-//*********************性能测试
-//#define NU_Retrieve_Clock TMT_Retrieve_Clock
-
-//unsigned long  TMT_Retrieve_Clock(void);
-
-//*********************性能测试
-
-//************read file form mrp plat
 #ifdef MR_PLAT_READFILE
 int8 mr_flagReadFileForPlat = FALSE;
 #endif
 
-//************read file form mrp plat
 //int32 _mr_decode(unsigned char *in, unsigned int len, unsigned char *out);
 
 int _mr_isMr(char* input);
@@ -177,15 +166,10 @@ static int _mr_TestComC(int input0, char* input1, int32 len, int32 code);
 int32 mr_stop_ex(int16 freemem);
 static int32 _mr_getMetaMemLimit(void);
 
+static const unsigned char* mr_m0_files[50];
 static const void* _mr_c_internal_table[17];
 static void* _mr_c_port_table[4];
-
-#ifdef SDK_MOD
-void* sdk_mr_c_function_table;
-const void* _mr_c_function_table[];
-#else
-static const void* _mr_c_function_table[150];
-#endif
+static void* _mr_c_function_table[150];
 
 static int32 _mr_div(int32 a, int32 b) {
     return a / b;
@@ -1972,12 +1956,7 @@ int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len) {
     MEMSET(mr_c_function_P, 0, mr_c_function_P_len);
     mr_c_function = f;
     MRDBGPRINTF("mr_c_function: 0x%X, mr_c_function_P: 0x%X, len: %d", mr_c_function, mr_c_function_P, len);
-#ifdef SDK_MOD
-    *((void**)(sdk_mr_c_function_table)-1) = mr_c_function_P;
-#else
     *((void**)(mr_load_c_function)-1) = mr_c_function_P;
-#endif
-
     return MR_SUCCESS;
 }
 
@@ -2052,49 +2031,9 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
     return ret;
 }
 
-#ifdef SDK_MOD
-extern void mr_c_function_load(void);
-#endif
-
 static int _mr_TestComC(int input0, char* input1, int32 len, int32 code) {
     int ret = 0;
-
     switch (input0) {
-#ifdef SDK_MOD
-        case 800: {
-            int32 input_len, output_len, ret;
-            //int code = ((int)  mr_L_optint(L,3,0));
-            mr_load_c_function = mr_c_function_load;
-            *((void**)(input1)) = _mr_c_function_table;
-            sdk_mr_c_function_table = input1 + 8;
-
-            ret = mr_load_c_function(code);
-
-#if 0
-			mrp_pushnumber(L, ret);
-			return 1;
-#endif
-        } break;
-        case 801: {
-            int32 input_len, output_len, ret;
-            //int code = ((int)  to_mr_tonumber(L,3,0));
-            uint8* output = NULL;
-            output_len = 0;
-
-            ret = mr_c_function(mr_c_function_P, code, input1, len, &output, &output_len);
-
-#if 0
-			if(output&&output_len){
-				mrp_pushlstring(L, (const char *)output, output_len);
-			}else{
-				mrp_pushstring(L, "");
-			}
-
-			mrp_pushnumber(L, ret);
-			return 2;
-#endif
-        } break;
-#else  // #ifdef SDK_MOD
         case 800: {
             mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1 + 8);
             *((void**)(input1)) = (void*)_mr_c_function_table;
@@ -2117,7 +2056,6 @@ static int _mr_TestComC(int input0, char* input1, int32 len, int32 code) {
             ret = mr_c_function(mr_c_function_P, code, (uint8*)input1, len, (uint8**)&output, &output_len);
             fixR9_setIsInExt(FALSE);
         } break;
-#endif
     }
     return ret;
 }
@@ -2381,10 +2319,12 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     //ret = mr_plat(1250, mrc_appInfo_st.ram);
 
     Origin_LG_mem_len = _mr_getMetaMemLimit();
+    MRDBGPRINTF("Origin_LG_mem_len:%d", Origin_LG_mem_len);
 
     if (_mr_mem_init_ex(mrc_appInfo_st.ram) != MR_SUCCESS) {
         return MR_FAILED;
     }
+    MRDBGPRINTF("Total memory:%d", LG_mem_len);
 
     mr_event_function = NULL;
     mr_timer_function = NULL;
@@ -2395,10 +2335,6 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     mr_c_function_P = NULL;
     mr_c_function_P_len = 0;
     mr_exception_str = NULL;
-
-#ifdef SDK_MOD
-    MRDBGPRINTF("Total memory:%d", LG_mem_len);
-#endif
 
     {
         int32 len = 0;
@@ -2445,9 +2381,7 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
         entry = "_dsm";
     }
     STRNCPY(mr_entry, entry, sizeof(mr_entry) - 1);
-#ifdef SDK_MOD
     MRDBGPRINTF("Used by VM(include screen buffer):%d bytes", LG_mem_len - LG_mem_left);
-#endif
     mr_state = MR_STATE_RUN;
     ret = mr_doExt(appExName);
     if (0 != ret)
@@ -2739,17 +2673,6 @@ int mr_wstrlen(char* txt) {
     }
     return lenth;
 }
-
-#ifdef SDK_MOD
-
-uint32* mr_get_helper(void) {
-    return (*(((uint32**)sdk_mr_c_function_table) - 2));
-}
-uint32* mr_get_c_function_p(void) {
-    return (*(((uint32**)sdk_mr_c_function_table) - 1));
-}
-
-#endif
 
 //****************************短信
 
