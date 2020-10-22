@@ -1,8 +1,9 @@
 // node getR9R10.js
 
 const obj = {
-    'asm_mr_malloc': 'mr_malloc',
-    'asm_mr_free': 'mr_free',
+    'asm_mr_malloc': 'mr_malloc_ext',
+    'asm_mr_free': 'mr_free_ext',
+    'asm_mr_realloc': 'mr_realloc_ext',
     'asm_mr_getDatetime': 'mr_getDatetime',
     'asm_mr_sleep': 'mr_sleep',
     'asm_DrawRect': 'DrawRect',
@@ -13,7 +14,6 @@ const obj = {
     'asm_mr_smsAddNum': '_mr_smsAddNum',
     'asm_mr_newSIMInd': '_mr_newSIMInd',
     'asm_mr_isMr': '_mr_isMr',
-    'asm_mr_realloc': 'mr_realloc',
     'asm_mr_rand': 'mr_rand',
     'asm_mr_stop_ex': 'mr_stop_ex',
     'asm_mr_printf': 'mr_printf',

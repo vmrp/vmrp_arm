@@ -47,91 +47,61 @@ ext调用mythroad时在mythroad空间通过r9 恢复 r9 r10
 因为ext中始终都是以mr_c_function_P.start_of_ER_RW为基址向上访问，因此我们重新分配它，向下访问将能达到我们的目的
 在mr_c_function_load()之后重新对此内存进行分配
 
-
-
+20201021上面的方案证实在非插件化的mrp中有效，但是插件化mrp因为又套了一层ext，所以r9r10又失效了，mmp
+套娃的ext我们不知道它在何时设置mr_c_function_P.start_of_ER_RW，也没办法在它设置之后实施上面的方案，如果它又套一层呢？
+因为mr_c_function_P.start_of_ER_RW也是用malloc获取的内存，因此在所有malloc上都加上我们的数据，效率可能会低，没办法了
 
 */
 
 #include "./include/fixR9.h"
 
-#define MRDBGPRINTF mr_printf
+// 加上4是因为ext的内存申请是通过mrc_malloc()，而mrc_malloc()包装过返回的是实际地址+4的值
+#define CTX_POS (4 + sizeof(fixR9_st))
+typedef struct fixR9_st {
+    void *r9Mythroad;
+    void *r10Mythroad;
+    void *rwMem1;
+    void *rwMem2;
+} fixR9_st;
+
+static void *r9Mythroad;
+static void *r10Mythroad;
+static void *r9Ext;
+static void *r10Ext;
+static void *lr;
+static BOOL isInExt;
 
 extern void *mr_malloc(uint32 len);
 extern void mr_free(void *p, uint32 len);
+extern void *mr_realloc(void *p, uint32 oldlen, uint32 len);
 
-void *mr_malloc2(uint32 len) {
-    uint32 *p = mr_malloc(len + sizeof(uint32));
-    if (p) {
-        *p = len;
-        return (void *)(p + 1);
-    }
-    return p;
+void *mr_malloc_ext(uint32 len) {
+    char *mem;
+    fixR9_st *ctx;
+    len += sizeof(fixR9_st);
+    mem = mr_malloc(len);
+    ctx = (fixR9_st *)mem;
+    ctx->r10Mythroad = r10Mythroad;
+    ctx->r9Mythroad = r9Mythroad;
+    ctx->rwMem1 = mem + CTX_POS;
+    ctx->rwMem2 = ctx->rwMem1;
+    return (char *)mem + sizeof(fixR9_st);
 }
 
-void mr_free2(void *p) {
-    if (p) {
-        uint32 *t = (uint32 *)p - 1;
-        mr_free(t, *t);
-    }
+void mr_free_ext(void *p, uint32 len) {
+    len += sizeof(fixR9_st);
+    mr_free((char *)p - sizeof(fixR9_st), len);
 }
 
-typedef struct fixR9_st {
-    BOOL isInExt;
-    void *r9Mythroad;
-    void *r10Mythroad;
-    void *r9Ext;
-    void *r10Ext;
-    void *rwMemCheck;
-    void *rwMem;
-    uint32 rwLen;  // 保持在最后一个
-} fixR9_st;
-
-static fixR9_st *context;
-static void *lr;
-
-int32 fixR9_init() {
-    context = NULL;
-    return MR_SUCCESS;
+void *mr_realloc_ext(void *p, uint32 oldlen, uint32 len) {
+    oldlen += sizeof(fixR9_st);
+    len += sizeof(fixR9_st);
+    return mr_realloc((char *)p - sizeof(fixR9_st), oldlen, len);
 }
 
-int32 fixR9_hack(mr_c_function_P_st *mr_c_function_P) {
-    char *mem, *newRw;
-
-    MRDBGPRINTF("fixR9_init-----------------start_of_ER_RW:0x%X, len:0x%X", mr_c_function_P->start_of_ER_RW, mr_c_function_P->ER_RW_Length);
-    if (context) {
-        return MR_FAILED;
-    }
-
-    mem = mr_malloc2(mr_c_function_P->ER_RW_Length + sizeof(fixR9_st));
-    if (!mem) {
-        return MR_FAILED;
-    }
-    newRw = mem + sizeof(fixR9_st);
-    memcpy2(newRw, mr_c_function_P->start_of_ER_RW, mr_c_function_P->ER_RW_Length);
-    mr_free2(mr_c_function_P->start_of_ER_RW);
-
-    // 不用管mr_c_function_P->ER_RW_Length
-    mr_c_function_P->start_of_ER_RW = newRw;
-
-    context = (fixR9_st *)mem;
-    context->rwMemCheck = (uint32 *)mr_c_function_P->start_of_ER_RW - 1;
-    context->rwMem = mr_c_function_P->start_of_ER_RW;
-    context->rwLen = mr_c_function_P->ER_RW_Length;
-    context->isInExt = FALSE;
-    // MRDBGPRINTF("test:---%X %X", context->rwMemCheck, &context->rwLen); // 两个值应该是相等的
-    return MR_SUCCESS;
-}
-
-// 检测是否对mr_c_function_P->start_of_ER_RW进行了free()操作，目前还不知道什么时候会free()，也许并不会在ext中free()
-BOOL fixR9_checkFree(void *p) {
-    return (context && (p == context->rwMemCheck));
-}
-
-void fixR9_save() {
-    if (context) {
-        context->r9Mythroad = getR9();
-        context->r10Mythroad = getR10();
-    }
+void fixR9_saveMythroad() {
+    r9Mythroad = getR9();
+    r10Mythroad = getR10();
 }
 
 void fixR9_saveLR(void *v) {
@@ -142,46 +112,23 @@ void *fixR9_getLR() {
     return lr;
 }
 
-void fixR9_setIsInExt(BOOL v) {
-    if (context) {
-        context->isInExt = v;
-    }
-}
-
-static BOOL isInExt(void *r9v) {
-    if ((uint32)r9v > sizeof(fixR9_st)) {
-        fixR9_st *ctx = (fixR9_st *)((char *)r9v - sizeof(fixR9_st));
-        if (ctx && (r9v == ctx->rwMem)) {  // todo 注意，ctx有可能会是个无效的内存地址，目前还不知道怎样获得有效地址的范围
-            return ctx->isInExt;           // 加多一层，避免误判
-        }
-    }
-    return FALSE;
-}
-
-/*
-注意 如果mythroad函数的参数大于4个，可能会在调用之前使用了r10，
-而此函数需要在目标函数的入口处第一时间执行，相当于还在ext空间
-如果遇到这种情况直接执行此函数将会导致mythroad空间的r10再次被破坏
-对于这样的函数需要用汇编才能解决
-*/
-void fixR9_begin() {
-    // 注意，这里在ext空间，不能直接使用context
+void fixR9_begin() {  // 注意，这里可能在ext空间执行，不能直接使用context
     void *r9v = getR9();
     void *r10v = getR10();
-    if (isInExt(r9v)) {
-        fixR9_st *ctx = (fixR9_st *)((char *)r9v - sizeof(fixR9_st));
-        void *newR9v = ctx->r9Mythroad;
-        void *newR10v = ctx->r10Mythroad;
-        ctx->r9Ext = r9v;
-        ctx->r10Ext = r10v;
-        setR9R10(newR9v, newR10v);
+    if ((uint32)r9v > CTX_POS) {
+        // todo 注意，因为r9的值不确实，所以ctx有可能会是个无效的内存地址，导致程序崩溃，目前还不知道怎样获得有效地址的范围
+        fixR9_st *ctx = (fixR9_st *)((char *)r9v - CTX_POS);
+        if (ctx && (r9v == ctx->rwMem1) && (r9v == ctx->rwMem2)) {  // 是在ext空间
+            setR9R10(ctx->r9Mythroad, ctx->r10Mythroad);
+            r9Ext = r9v;
+            r10Ext = r10v;
+            isInExt = TRUE;
+        }
     }
 }
 
 void fixR9_end() {
-    if (context && context->isInExt) {
-        void *newR9v = context->r9Ext;
-        void *newR10v = context->r10Ext;
-        setR9R10(newR9v, newR10v);
+    if (isInExt) {
+        setR9R10(r9Ext, r10Ext);
     }
 }

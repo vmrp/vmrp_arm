@@ -198,7 +198,7 @@ int32 mr_getUserInfo(mr_userinfo *info) {
 }
 
 int32 mr_cacheSync(void *addr, int32 len) {
-    LOGE("mr_cacheSync(%#p, %d)", addr, len);
+    LOGW("mr_cacheSync(%#p, %d)", addr, len);
 #if defined(__arm__)
     // cacheflush((long)addr, (long)(addr + len), 0);
 #endif
@@ -312,7 +312,7 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
             } else {
                 snprintf_(dsmSwitchPathBuf, sizeof(dsmSwitchPathBuf), "c:/%s", dsmWorkPath);
             }
-            LOGE("dsmSwitchPathBuf: y '%s'", dsmSwitchPathBuf);
+            LOGW("dsmSwitchPathBuf: y '%s'", dsmSwitchPathBuf);
             *output = (uint8 *)dsmSwitchPathBuf;
             *output_len = strlen2(dsmSwitchPathBuf);
             break;

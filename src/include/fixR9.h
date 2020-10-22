@@ -7,16 +7,9 @@
 #include "mythroad.h"
 #include "type.h"
 
-typedef struct {  // 从ext反汇编而来，并不是完整的定义，为了使用方便只定义了已知用途的字段
-    void *start_of_ER_RW;
-    uint32 ER_RW_Length;
-} mr_c_function_P_st;
+void fixR9_saveMythroad(void);
 
-int32 fixR9_init(void);
-int32 fixR9_hack(mr_c_function_P_st *mr_c_function_P);
-void fixR9_setIsInExt(BOOL v);
-void fixR9_save(void);
-BOOL fixR9_checkFree(void *p);
+// 以下函数全部在汇编代码实现
 
 extern void *getR9(void);
 extern void setR9(void *value);

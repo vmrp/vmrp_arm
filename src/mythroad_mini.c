@@ -180,7 +180,6 @@ static int32 _mr_mod(int32 a, int32 b) {
 }
 
 void mythroad_init(void) {
-    fixR9_init();
     memset2(_mr_c_port_table, 0, sizeof(_mr_c_port_table));
     memset2(mr_m0_files, 0, sizeof(mr_m0_files));
 
@@ -426,7 +425,7 @@ void* mr_malloc(uint32 len) {
         MRDBGPRINTF("mr_malloc corrupted memory");
         goto err;
     }
-    MRDBGPRINTF("R9:%X malloc(0x%X[%d]) LG_mem_base:0x%X  LG_mem_free.next:0x%X  LG_mem_end:0x%X", getR9(), len, len, LG_mem_base, LG_mem_free.next, LG_mem_end);
+    MRDBGPRINTF("R9:%X malloc(0x%X[%d]) base:0x%X free.next:0x%X end:0x%X", getR9(), len, len, LG_mem_base, LG_mem_free.next, LG_mem_end);
 
     previous = &LG_mem_free;
     nextfree = (LG_mem_free_t*)(LG_mem_base + previous->next);
@@ -473,11 +472,6 @@ void mr_free(void* p, uint32 len) {
     // 	assert(0);
     // }
     LG_mem_free_t *free, *n;
-
-    if (fixR9_checkFree(p)) {
-        mr_panic("!!!fixR9_checkFree() return true!!!");
-        return;
-    }
 
     len = (uint32)realLGmemSize(len);
 #ifdef MYTHROAD_DEBUG
@@ -2043,18 +2037,14 @@ static int _mr_TestComC(int input0, char* input1, int32 len, int32 code) {
             // invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
             MRDBGPRINTF("mr_load_c_function: 0x%X", mr_load_c_function);
+            fixR9_saveMythroad();
             ret = mr_load_c_function(code);
-            if (ret == MR_SUCCESS) {
-                ret = fixR9_hack(mr_c_function_P);
-            }
         } break;
         case 801: {
             int32 output_len = 0;
             uint8* output = NULL;
-            fixR9_save();
-            fixR9_setIsInExt(TRUE);
+            fixR9_saveMythroad();
             ret = mr_c_function(mr_c_function_P, code, (uint8*)input1, len, (uint8**)&output, &output_len);
-            fixR9_setIsInExt(FALSE);
         } break;
     }
     return ret;
@@ -2304,9 +2294,6 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     mr_flagReadFileForPlat = FALSE;
 #endif
 
-    //MRDBGPRINTF("restart timer15");
-    //mr_sleep(50);
-
 #if defined(MR_BREW_OTA_MOD)
     {
         extern int32 __rt_lib_init(char* heapbase, char* heaptop);
@@ -2407,6 +2394,7 @@ int32 mr_start_dsm(char* filename, char* ext, char* entry) {
     mr_screen_h = screeninfo.height;
     mr_screen_bit = screeninfo.bit;
 
+    MRDBGPRINTF("filename:%s, ext:%s, entry:%s", filename, ext, entry ? entry : "(NULL)");
     MEMSET(pack_filename, 0, sizeof(pack_filename));
     if (filename && (*filename == '*')) {
         STRCPY(pack_filename, filename);

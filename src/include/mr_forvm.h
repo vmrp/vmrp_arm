@@ -98,14 +98,6 @@ extern int mr_wstrlen(char * txt);
 extern void * _mr_readFile(const char* filename, int *filelen, int lookfor);
 
 
-#if 0 /*老的内存管理形式，由厂商提供函数*/
-/*内存申请*/
-extern void* mr_malloc(uint32 len);
-/*内存释放*/
-extern void mr_free(void* p, uint32 len);
-/*内存重新分配*/
-extern void* mr_realloc(void* p, uint32 oldlen, uint32 len);
-#endif
 
 /*下面是当不能取得屏幕缓冲指针时使用的接口 (不完全)   */
 //extern void mr_drawBitmap(uint16* bmp, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcolor);
