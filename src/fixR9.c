@@ -66,10 +66,7 @@ typedef struct fixR9_st {
 
 static void *r9Mythroad;
 static void *r10Mythroad;
-static void *r9Ext;
-static void *r10Ext;
 static void *lr;
-static BOOL isInExt;
 
 extern void *mr_malloc(uint32 len);
 extern void mr_free(void *p, uint32 len);
@@ -99,17 +96,23 @@ void *mr_realloc_ext(void *p, uint32 oldlen, uint32 len) {
     return mr_realloc((char *)p - sizeof(fixR9_st), oldlen, len);
 }
 
-void fixR9_saveMythroad() {
-    r9Mythroad = getR9();
-    r10Mythroad = getR10();
-}
-
 void fixR9_saveLR(void *v) {
     lr = v;
 }
 
 void *fixR9_getLR() {
     return lr;
+}
+
+#ifndef __GNUC__
+
+static BOOL isInExt;
+static void *r9Ext;
+static void *r10Ext;
+
+void fixR9_saveMythroad() {
+    r9Mythroad = getR9();
+    r10Mythroad = getR10();
 }
 
 void fixR9_begin() {  // 注意，这里可能在ext空间执行，不能直接使用context
@@ -132,3 +135,32 @@ void fixR9_end() {
         setR9R10(r9Ext, r10Ext);
     }
 }
+
+#else
+
+void *getR9() {
+    register void *ret;
+    asm("MOV %[result], r9"
+        : [ result ] "=r"(ret));
+    return ret;
+}
+
+void setR9(void *value) {
+    asm("MOV r9, %[input_value]"
+        :
+        : [ input_value ] "r"(value));
+}
+
+void *getR10() {
+    register void *ret;
+    asm("MOV %[result], r10"
+        : [ result ] "=r"(ret));
+    return ret;
+}
+
+void setR10(void *value) {
+    asm("MOV r10, %[input_value]"
+        :
+        : [ input_value ] "r"(value));
+}
+#endif
