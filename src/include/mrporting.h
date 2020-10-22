@@ -443,11 +443,7 @@ typedef int32 (*MR_GET_HOST_CB)(int32 ip);
 /*调试打印*/
 extern void mr_printf(const char* format, ...);
 
-/*内存申请*/
 extern int32 mr_mem_get(char** mem_base, uint32* mem_len);
-/*内存申请*/
-extern int32 mr_mem_get_ex(int32 ram, char** mem_base, uint32* mem_len);
-/*内存释放*/
 extern int32 mr_mem_free(char* mem, uint32 mem_len);
 
 /*当使用本地屏幕缓冲时使用的接口*/

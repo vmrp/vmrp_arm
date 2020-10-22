@@ -170,7 +170,7 @@ int32 mr_checkCode(void);
 static int32 _mr_smsSetBytes(int32 pos, char* p, int32 len);
 static int32 _mr_smsAddNum(int32 index, char* pNum);
 static int32 _mr_load_sms_cfg(void);
-static int32 _mr_save_sms_cfg(MR_FILE_HANDLE f);
+static int32 _mr_save_sms_cfg(int32 f);
 static int32 _mr_newSIMInd(int16 type, uint8* old_IMSI);
 
 static int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h);
@@ -1556,7 +1556,7 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
     int32 oldlen, nTmp;
     uint32 len;
     void* filebuf;
-    MR_FILE_HANDLE f;
+    int32 f;
     char TempName[MR_MAX_FILENAME_SIZE];
     char* mr_m0_file;
     int is_rom_file = FALSE;
@@ -1970,10 +1970,10 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
 }
 
 #ifdef MR_PLAT_READFILE
-extern MR_FILE_HANDLE mr_openForPlat(const char* filename, uint32 mode);
-extern int32 mr_closeForPlat(MR_FILE_HANDLE f);
-extern int32 mr_readForPlat(MR_FILE_HANDLE f, void* p, uint32 l);
-extern int32 mr_seekForPlat(MR_FILE_HANDLE f, int32 pos, int method);
+extern int32 mr_openForPlat(const char* filename, uint32 mode);
+extern int32 mr_closeForPlat(int32 f);
+extern int32 mr_readForPlat(int32 f, void* p, uint32 l);
+extern int32 mr_seekForPlat(int32 f, int32 pos, int method);
 extern void* mr_mallocForPlat(uint32 len);
 extern void mr_freeForPlat(void* p, uint32 len);
 
@@ -1984,7 +1984,7 @@ void* _mr_readFileForPlat(const char* mrpname, const char* filename, int* filele
     int32 oldlen, nTmp;
     uint32 len;
     void* filebuf;
-    MR_FILE_HANDLE f;
+    int32 f;
     char TempName[MR_MAX_FILENAME_SIZE];
     char* mr_m0_file;
     int is_rom_file = FALSE;
@@ -3558,7 +3558,7 @@ static int LoadPack(mrp_State* L) {
 
 #ifdef MR_AUTHORIZATION
     char input[24];
-    MR_FILE_HANDLE f;
+    int32 f;
     int nTmp;
 
     //这里还要判断是否是ROM或RAM中的MRP文件，若是则不用进行
@@ -4097,7 +4097,7 @@ static int LoadFile2Ram(char* filename) {
     mr_asyn_fs_param param;
     int32 ret;
     int32 nTmp;
-    MR_FILE_HANDLE f;
+    int32 f;
     MRDBGPRINTF("LoadFile2Ram enter!");
     if (filename[0] == '*') {
         if (mr_ram_file) {
@@ -5633,7 +5633,7 @@ static int32 _mr_change_to_current(void) {
 
 /*
 #ifndef ADI_MOD
-static int32 _mr_save_sms_cfg(MR_FILE_HANDLE f)
+static int32 _mr_save_sms_cfg(int32 f)
 {
    int32 ret;
 
@@ -5669,7 +5669,7 @@ static int32 _mr_save_sms_cfg(MR_FILE_HANDLE f)
 
 #else
 */
-static int32 _mr_save_sms_cfg(MR_FILE_HANDLE f) {
+static int32 _mr_save_sms_cfg(int32 f) {
     int32 ret;
 
     //MRDBGPRINTF("mr_save_sms_cfg begin!");
@@ -5715,7 +5715,7 @@ static int32 _mr_save_sms_cfg(MR_FILE_HANDLE f) {
 
 //查看DSM配置文件是否存在，不存在则创建之
 static int32 _mr_load_sms_cfg(void) {
-    MR_FILE_HANDLE f;
+    int32 f;
     int32 ret;
 
     mr_sms_cfg_need_save = FALSE;
@@ -5825,7 +5825,7 @@ static int32 _mr_smsSetBytes(int32 pos, char* p, int32 len) {
 
 int32 _mr_smsGetNum(int32 index, char* pNum) {
     //   int nTmp;
-    //   MR_FILE_HANDLE filehandle;
+    //   int32 filehandle;
     char num[MR_MAX_NUM_LEN];
     uint32 len;
 
@@ -6114,7 +6114,7 @@ int32 _mr_smsReplyServer(char* pNum, uint8* old_IMSI) {
     mr_userinfo info;
     uint32 offset = 0;
     // uint32 i;
-    //MR_FILE_HANDLE f;
+    //int32 f;
 
     if (mr_getUserInfo(&info) != MR_SUCCESS) {
         return MR_FAILED;
@@ -6211,7 +6211,7 @@ int32 _mr_smsReplyServer(char* pNum, uint8* old_IMSI) {
 /*
 int32 _mr_checkSMSFile(void)
 {
-   MR_FILE_HANDLE f;
+   int32 f;
    int32 i,ret;
 
    f = _mr_load_sms_cfg();
@@ -6481,7 +6481,7 @@ static int32 mr_write_asyn_cb_save_mrp(int32 result, uint32 cb_param) {
 
 int32 mr_save_mrp(void* p, uint32 l) {
     char filename[15];
-    MR_FILE_HANDLE f;
+    int32 f;
 
     if (p == NULL || l == 0) {
         return MR_FAILED;
