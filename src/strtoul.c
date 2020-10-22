@@ -29,7 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#include "./include/mr.h"
 #include "./include/other.h"
 
 #define ISSPACE(ch) ((ch == ' ') || (ch == '\t') || (ch == '\r') || (ch == '\n') || (ch == '\f') || (ch == '\v'))

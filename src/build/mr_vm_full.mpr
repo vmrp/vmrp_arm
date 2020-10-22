@@ -52,7 +52,6 @@ file25=..\mythroad.c
 file26=..\mr_gb2312.c     
 file27=..\mr_pluto.c	
 file28=..\mr_unzip.c	
-file29=..\mr_util.c	
 file30=..\mr_encode.c	
 file31=..\mr_graphics.c 
 file32=..\mr_inflate.c 

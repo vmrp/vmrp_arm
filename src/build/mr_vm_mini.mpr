@@ -25,7 +25,6 @@ plat=mtk
 file06 = ..\mythroad_mini.c
 file07 = ..\mr_gb2312.c
 file08 = ..\mr_unzip.c
-file09 = ..\mr_util.c
 file10 = ..\mr_encode.c
 file11 = ..\mr_inflate.c
 file12 = ..\mr_graphics.c

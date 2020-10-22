@@ -163,7 +163,7 @@ extern int asm_mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int1
 extern int asm_mr_TestCom(mrp_State *L, int input0, int input1);
 extern int asm_mr_TestCom1(mrp_State *L, int input0, char *input1, int32 len);
 extern uint16 *asm_c2u(const char *cp, int *err, int *size);
-extern ulg asm_mr_updcrc(uch *s, unsigned n);
+extern uint32 asm_mr_updcrc(uint8 *s, unsigned n);
 extern int asm_mr_unzip(void);
 extern int32 asm_mr_transbitmapDraw(mr_transBitmap *hTransBmp, uint16 *dstBuf, int32 dest_max_w, int32 dest_max_h, int32 sx, int32 sy, int32 width, int32 height, int32 dx, int32 dy);
 extern void asm_mr_drawRegion(mr_jgraphics_context_t *gContext, mr_jImageSt *src, int sx, int sy, int w, int h, int transform, int x, int y, int anchor);

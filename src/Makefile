@@ -42,7 +42,6 @@ LOCAL_SRC_FILES_FULL += mythroad.c \
                     mr_gb2312.c     \
                     mr_pluto.c	\
                     mr_unzip.c	\
-                    mr_util.c	\
                     mr_encode.c	\
 		    		mr_graphics.c \
                     mr_inflate.c \
@@ -78,7 +77,6 @@ LOCAL_CFLAGS :=  -fPIC -march=armv5te -marm -g -Wall -c -littleend  -DTARGET_MOD
 LOCAL_SRC_FILES := mythroad_mini.c \
                     mr_gb2312.c     \
                     mr_unzip.c	\
-                    mr_util.c	\
                     mr_encode.c	\
                     mr_inflate.c \
                     mr_graphics.c \
