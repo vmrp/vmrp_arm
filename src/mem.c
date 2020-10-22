@@ -1,28 +1,21 @@
-#include "./include/mrporting.h"
-typedef struct {
-    uint32 next; 
-    uint32 len;
-} LG_mem_free_t;
+#include "./include/mem.h"
 
-//*****************************
-#ifdef MYTHROAD_DEBUG
-static uint32 LG_mem_min;
-static uint32 LG_mem_top;
-#endif
+#include "./include/mythroad.h"
 
-static LG_mem_free_t LG_mem_free;
-static char* LG_mem_base;
-static uint32 LG_mem_len;
-static char* Origin_LG_mem_base;
-static uint32 Origin_LG_mem_len;
-static char* LG_mem_end;
-static uint32 LG_mem_left;
+uint32 LG_mem_min;
+uint32 LG_mem_top;
+LG_mem_free_t LG_mem_free;
+char* LG_mem_base;
+uint32 LG_mem_len;
+char* Origin_LG_mem_base;
+uint32 Origin_LG_mem_len;
+char* LG_mem_end;
+uint32 LG_mem_left;
 
-//*****************************
-#define realLGmemSize(x) (((x)+7)&(0xfffffff8))
+#define realLGmemSize(x) (((x) + 7) & (0xfffffff8))
 #define MRDBGPRINTF mr_printf
 
-static int32 _mr_mem_init(int32 ram) {
+int32 _mr_mem_init(int32 ram) {
     MRDBGPRINTF("ask Origin_LG_mem_len:%d", Origin_LG_mem_len);
 
     if (mr_mem_get(&Origin_LG_mem_base, &Origin_LG_mem_len) != MR_SUCCESS) {

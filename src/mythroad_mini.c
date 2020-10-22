@@ -1,5 +1,6 @@
 #include "fixR9.h"
 #include "md5.h"
+#include "mem.h"
 #include "mr.h"
 #include "mr_auxlib.h"
 #include "mr_encode.h"
@@ -80,7 +81,6 @@ int32 mr_zipType;
 #endif
 
 //*******************************
-
 
 //************************************短信
 #define MR_MAX_NUM_LEN 32     //手机号码最大长度
@@ -368,7 +368,6 @@ void mythroad_init(void) {
     _mr_c_function_table[148] = (void*)asm_mr_drawRegion;
     _mr_c_function_table[149] = NULL;
 }
-
 
 void _DrawPoint(int16 x, int16 y, uint16 nativecolor) {
     if (x < 0 || y < 0 || x >= MR_SCREEN_W || y >= MR_SCREEN_H) {

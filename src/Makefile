@@ -53,6 +53,9 @@ LOCAL_SRC_FILES_FULL += mythroad.c \
                     strtol.c	\
                     strtoul.c	\
                     dsm.c	\
+                    fixR9.c	\
+                    md5.c	\
+                    mem.c	\
 #                    src/mr_maketo.c	
 #                    src/MySprite.c   \
 #                    src/pluto.c	\
@@ -88,6 +91,7 @@ LOCAL_SRC_FILES := mythroad_mini.c \
                     dsm.c	\
                     fixR9.c	\
                     md5.c	\
+                    mem.c	\
 
 mini:
 	gcc $(LOCAL_CFLAGS) $(LOCAL_SRC_FILES) -I./include -I.

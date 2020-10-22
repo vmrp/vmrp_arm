@@ -1,5 +1,6 @@
 #include "mythroad.h"
 
+#include "mem.h"
 #include "md5.h"
 #include "mr.h"
 #include "mr_auxlib.h"
@@ -4517,7 +4518,7 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
 
     Origin_LG_mem_len = _mr_getMetaMemLimit();
 
-    if (_mr_mem_init() != MR_SUCCESS) {
+    if (_mr_mem_init(0) != MR_SUCCESS) {
         return MR_FAILED;
     }
 
