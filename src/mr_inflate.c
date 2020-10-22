@@ -178,11 +178,6 @@ static int dbits = 6;          /* bits in base distance lookup table */
 static unsigned hufts;         /* track memory usage */
 
 
-#ifdef MR_PLAT_READFILE
-extern int8 mr_flagReadFileForPlat;
-extern void* mr_mallocForPlat(uint32 len);
-extern void mr_freeForPlat(void* p, uint32 len);
-#endif
 
 #if 0
 static int huft_build(b, n, s, d, e, t, m)
@@ -331,28 +326,12 @@ static int huft_build(unsigned *b,            /* code lengths in bits (all assum
         z = 1 << j;             /* table entries for j-bit table */
 
         /* allocate and link in new table */
-#ifdef MR_PLAT_READFILE
-        if (mr_flagReadFileForPlat){
-          q = (struct huft *)mr_mallocForPlat((z + 1)*sizeof(struct huft));
-        }else{
-          q = (struct huft *)MR_MALLOC((z + 1)*sizeof(struct huft));
-        }
-        if ( q ==
-            (struct huft *)NULL)
+        if ((q = (struct huft *)MR_MALLOC((z + 1)*sizeof(struct huft))) == (struct huft *)NULL)
         {
           if (h)
             huft_free(u[0]);
           return 3;             /* not enough memory */
         }
-#else
-        if ((q = (struct huft *)MR_MALLOC((z + 1)*sizeof(struct huft))) ==
-            (struct huft *)NULL)
-        {
-          if (h)
-            huft_free(u[0]);
-          return 3;             /* not enough memory */
-        }
-#endif
 
         q->l = (z + 1)*sizeof(struct huft);
         hufts += z + 1;         /* track memory usage */
@@ -428,15 +407,7 @@ struct huft *t         /* table to free */)
   while (p != (struct huft *)NULL)
   {
     q = (--p)->v.t;
-#ifdef MR_PLAT_READFILE
-    if (mr_flagReadFileForPlat){
-      mr_freeForPlat((char*)p, p->l);
-    }else{
-      MR_FREE((char*)p, p->l);
-      }
-#else
     MR_FREE((char*)p, p->l);
-#endif
     p = q;
   } 
   return 0;

@@ -1,24 +1,23 @@
-#include "mythroad.h"
+#include "./include/mythroad.h"
 
-#include "md5.h"
-#include "mem.h"
-#include "mr.h"
-#include "mr_auxlib.h"
-#include "mr_encode.h"
-#include "mr_forvm.h"
-#include "mr_graphics.h"
-#include "mr_gzip.h"
-#include "mr_lib.h"
-// #include "mr_maketo.h"
-#include "mr_socket_target.h"
-#include "mr_store.h"
-#include "mr_tcp_target.h"
-#include "mrcomm.h"
-#include "mrporting.h"
-#include "other.h"
-#include "printf.h"
-#include "string.h"
-#include "tomr.h"
+#include "./include/md5.h"
+#include "./include/mem.h"
+#include "./include/mr.h"
+#include "./include/mr_auxlib.h"
+#include "./include/mr_encode.h"
+#include "./include/mr_forvm.h"
+#include "./include/mr_graphics.h"
+#include "./include/mr_gzip.h"
+#include "./include/mr_lib.h"
+#include "./include/mr_socket_target.h"
+#include "./include/mr_store.h"
+#include "./include/mr_tcp_target.h"
+#include "./include/mrcomm.h"
+#include "./include/mrporting.h"
+#include "./include/other.h"
+#include "./include/printf.h"
+#include "./include/string.h"
+#include "./tomr/tomr.h"
 
 const unsigned char* mr_m0_files[50];
 //#endif
@@ -137,10 +136,6 @@ MR_RESUMEAPP_FUNCTION mr_resumeApp_function = NULL;
 
 static mrc_timerCB mr_exit_cb = NULL;
 static int32 mr_exit_cb_data;
-
-#ifdef MR_PLAT_READFILE
-int8 mr_flagReadFileForPlat = FALSE;
-#endif
 
 #ifdef MR_CHECK_CODE
 int32 mr_check_code_val;
@@ -1778,203 +1773,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
     //MRDBGPRINTF("5base=%d,end=%d",  (int32)LG_mem_base, (int32)LG_mem_end);
     return mr_gzOutBuf;
 }
-
-#ifdef MR_PLAT_READFILE
-extern int32 mr_openForPlat(const char* filename, uint32 mode);
-extern int32 mr_closeForPlat(int32 f);
-extern int32 mr_readForPlat(int32 f, void* p, uint32 l);
-extern int32 mr_seekForPlat(int32 f, int32 pos, int method);
-extern void* mr_mallocForPlat(uint32 len);
-extern void mr_freeForPlat(void* p, uint32 len);
-
-void* _mr_readFileForPlat(const char* mrpname, const char* filename, int* filelen, int lookfor) {
-    int ret;
-    int method;
-    uint32 reallen, found = 0;
-    int32 oldlen, nTmp;
-    uint32 len;
-    void* filebuf;
-    int32 f;
-    char TempName[MR_MAX_FILENAME_SIZE];
-    char* mr_m0_file;
-    int is_rom_file = FALSE;
-
-    f = mr_openForPlat(mrpname, MR_FILE_RDONLY);
-    if (f == 0) {
-        //MRDBGPRINTF( "file  \"%s\" can not be opened!", filename);
-        _mr_readFileShowInfo(filename, 2002);
-        return 0;
-    }
-
-    // 从这里开始是新版的mrp处理
-    {
-        uint32 headbuf[4];
-        MEMSET(headbuf, 0, sizeof(headbuf));
-        nTmp = mr_readForPlat(f, &headbuf, sizeof(headbuf));
-        if ((nTmp != 16) || (headbuf[0] != 1196446285)) {
-            mr_closeForPlat(f);
-            _mr_readFileShowInfo(filename, 3001);
-            return 0;
-        }
-        if (headbuf[1] > 232) {  //新版mrp
-            uint32 indexlen = headbuf[1] + 8 - headbuf[3];
-            uint8* indexbuf = mr_mallocForPlat(indexlen);
-            uint32 pos = 0;
-            uint32 file_pos, file_len;
-            if (!indexbuf) {
-                mr_closeForPlat(f);
-                _mr_readFileShowInfo(filename, 3003);
-                return 0;
-            }
-            nTmp = mr_seekForPlat(f, headbuf[3] - 16, MR_SEEK_CUR);
-            if (nTmp < 0) {
-                mr_closeForPlat(f);
-                mr_freeForPlat(indexbuf, indexlen);
-                _mr_readFileShowInfo(filename, 3002);
-                return 0;
-            }
-
-            nTmp = mr_readForPlat(f, indexbuf, indexlen);
-
-            if ((nTmp != (int32)indexlen)) {
-                mr_closeForPlat(f);
-                mr_freeForPlat(indexbuf, indexlen);
-                _mr_readFileShowInfo(filename, 3003);
-                return 0;
-            }
-
-            //MRDBGPRINTF("str1=%s",filename);
-            while (!found) {
-                MEMCPY(&len, &indexbuf[pos], 4);
-                pos = pos + 4;
-                if (((len + pos) > indexlen) || (len < 1) || (len >= MR_MAX_FILENAME_SIZE)) {
-                    mr_closeForPlat(f);
-                    mr_freeForPlat(indexbuf, indexlen);
-                    _mr_readFileShowInfo(filename, 3004);
-                    return 0;
-                }
-                MEMSET(TempName, 0, sizeof(TempName));
-                MEMCPY(TempName, &indexbuf[pos], len);
-                pos = pos + len;
-                if (STRCMP(filename, TempName) == 0) {
-                    if (lookfor == 1) {
-                        mr_closeForPlat(f);
-                        mr_freeForPlat(indexbuf, indexlen);
-                        return (void*)1;
-                    }
-                    found = 1;
-                    MEMCPY(&file_pos, &indexbuf[pos], 4);
-                    pos = pos + 4;
-                    MEMCPY(&file_len, &indexbuf[pos], 4);
-                    pos = pos + 4;
-                    if ((file_pos + file_len) > headbuf[2]) {
-                        mr_closeForPlat(f);
-                        mr_freeForPlat(indexbuf, indexlen);
-                        _mr_readFileShowInfo(filename, 3005);
-                        return 0;
-                    }
-                } else {
-                    pos = pos + 12;
-                    if (pos >= indexlen) {
-                        mr_closeForPlat(f);
-                        mr_freeForPlat(indexbuf, indexlen);
-                        _mr_readFileShowInfo(filename, 3006);
-                        return 0;
-                    }
-                } /*if (STRCMP(filename, TempName)==0)*/
-            }
-
-            mr_freeForPlat(indexbuf, indexlen);
-
-            *filelen = file_len;
-
-            if (lookfor == 5) {
-                mr_closeForPlat(f);
-                return (void*)file_pos;
-            }
-
-            //MRDBGPRINTF("Debug:_mr_readFile:old filelen = %d",file_len);
-            filebuf = mr_mallocForPlat((uint32)*filelen);
-            if (filebuf == NULL) {
-                mr_closeForPlat(f);
-                _mr_readFileShowInfo(filename, 3007);
-                return 0;
-            }
-
-            nTmp = mr_seekForPlat(f, file_pos, MR_SEEK_SET);
-            if (nTmp < 0) {
-                mr_freeForPlat(filebuf, *filelen);
-                mr_closeForPlat(f);
-                _mr_readFileShowInfo(filename, 3008);
-                return 0;
-            }
-
-            oldlen = 0;
-            //MRDBGPRINTF("oldlen=%d",oldlen);
-            while (oldlen < *filelen) {
-                //MRDBGPRINTF("oldlen=%d",oldlen);
-                nTmp = mr_readForPlat(f, (char*)filebuf + oldlen, *filelen - oldlen);
-                //MRDBGPRINTF("Debug:_mr_readFile:readlen = %d,oldlen=%d",nTmp,oldlen);
-                //MRDBGPRINTF("oldlen=%d",oldlen);
-                if (nTmp <= 0) {
-                    //MRDBGPRINTF("oldlen=%d",oldlen);
-                    mr_freeForPlat(filebuf, *filelen);
-                    mr_closeForPlat(f);
-                    _mr_readFileShowInfo(filename, 3009);
-                    return 0;
-                }
-                oldlen = oldlen + nTmp;
-            }
-
-            mr_closeForPlat(f);
-        }
-    }
-    // 新版的mrp处理
-
-    mr_gzInBuf = filebuf;
-    LG_gzoutcnt = 0;
-    LG_gzinptr = 0;
-
-    method = mr_get_method(*filelen);
-    if (method < 0) {
-        return filebuf;
-    }
-
-    reallen = (uint32)(((uch*)filebuf)[*filelen - 4]);
-    reallen |= (uint32)(((uch*)filebuf)[*filelen - 3]) << 8;
-    reallen |= (uint32)(((uch*)filebuf)[*filelen - 2]) << 16;
-    reallen |= (uint32)(((uch*)filebuf)[*filelen - 1]) << 24;
-
-    mr_gzOutBuf = mr_mallocForPlat(reallen);
-    oldlen = *filelen;
-    *filelen = reallen;
-    if (mr_gzOutBuf == NULL) {
-        mr_freeForPlat(mr_gzInBuf, oldlen);
-        return 0;
-    }
-
-    if (mr_unzip() != 0) {
-        mr_freeForPlat(mr_gzInBuf, oldlen);
-        mr_freeForPlat(mr_gzOutBuf, reallen);
-        MRDBGPRINTF("_mr_readFile: \"%s\" Unzip err!", filename);
-        return 0;
-    }
-
-    mr_freeForPlat(mr_gzInBuf, oldlen);
-
-    return mr_gzOutBuf;
-}
-
-void* _mrc_readFile(const char* mrpname, const char* filename, int* filelen, int lookfor) {
-    void* ret;
-    mr_flagReadFileForPlat = TRUE;
-    //MEMSET(pack_filename,0,sizeof(pack_filename));
-    //STRCPY(pack_filename,mrpname);
-    ret = _mr_readFileForPlat(mrpname, filename, filelen, lookfor);
-    mr_flagReadFileForPlat = FALSE;
-    return ret;
-}
-#endif
 
 #define CHECK_MRP_BUF_SIZE 10240
 int32 mr_checkMrp(char* mrp_name) {
@@ -4502,10 +4300,6 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
 #ifdef MR_SCREEN_CACHE_BITMAP
     char* bm_header;
     uint32 bmsize;
-#endif
-
-#ifdef MR_PLAT_READFILE
-    mr_flagReadFileForPlat = FALSE;
 #endif
 
 #ifdef MR_CHECK_CODE
