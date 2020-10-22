@@ -8,9 +8,7 @@
 #include "mr_do.h"
 #include "mr_func.h"
 #include "mr_gc.h"
-#ifndef SYMBIAN_MOD
 #include "mr_lex.h"
-#endif
 #include "mr_mem.h"
 #include "mr_state.h"
 #include "mr_string.h"

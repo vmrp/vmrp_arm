@@ -1937,14 +1937,6 @@ int32 mr_doExt(char* extName) {
 static int32 _mr_intra_start(char* appExName, const char* entry) {
     int i, ret;
 
-#if defined(MR_BREW_OTA_MOD)
-    {
-        extern int32 __rt_lib_init(char* heapbase, char* heaptop);
-        static char buf[96];
-        __rt_lib_init(buf, buf + 96);
-    }
-#endif
-
     getAppInfo();
     //ret = mr_plat(1250, mrc_appInfo_st.ram);
 
@@ -3090,18 +3082,6 @@ int FF_Divide(int dividend, int divisor) {
 
     return result;
 }
-
-#if defined(MR_BREW_OTA_MOD)
-int mrp_sprintf(char* s, const char* format, ...) {
-    int ret;
-    va_list ap;
-
-    va_start(ap, format);
-    ret = VSPRINTF(s, format, ap);
-    va_end(ap);
-    return ret;
-}
-#endif
 
 uint32 mr_ltoh(char* startAddr) {
     return (startAddr[3] << 24) | ((startAddr[2] & 0xff) << 16) | ((startAddr[1] & 0xff) << 8) | (startAddr[0] & 0xff);

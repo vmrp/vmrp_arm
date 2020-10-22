@@ -100,306 +100,13 @@ extern void *mr_realloc(void *p, uint32 oldlen, uint32 len);
 #define MR_FREE(a, b) mr_free(a, b)
 #define MR_REALLOC(b, os, s) mr_realloc(b, os, s)
 
-#if defined(MR_BREW_MOD)
-
-typedef unsigned long int AECHAR;          /* Unsigned 32 bit value */
-typedef unsigned long int boolean;         /* Unsigned 32 bit value */
-typedef unsigned long int byte;            /* Unsigned 32 bit value */
-typedef unsigned long int TChType;         /* Unsigned 32 bit value */
-typedef unsigned long int IApplet;         /* Unsigned 32 bit value */
-typedef unsigned long int IQueryInterface; /* Unsigned 32 bit value */
-typedef unsigned long int AEECLSID;        /* Unsigned 32 bit value */
-typedef unsigned long int AEEImageInfo;    /* Unsigned 32 bit value */
-typedef unsigned long int JulianType;      /* Unsigned 32 bit value */
-typedef unsigned long int AEEOldVaList;    /* Unsigned 32 bit value */
-typedef unsigned long int AEEEvent;        /* Unsigned 32 bit value */
-typedef unsigned long int IModule;         /* Unsigned 32 bit value */
-typedef unsigned long int IShell;          /* Unsigned 32 bit value */
-
-typedef int (*PFNQSORTCOMPARE)(const void *s1, const void *s2);
-
-typedef struct AEEHelperFuncs AEEHelperFuncs;
-
-struct AEEHelperFuncs {
-    void *(*memmove)(void *pd, const void *ps, size_t s);
-    void *(*memset)(void *pd, int c, size_t s);
-
-    // Standard String Functions...
-    char *(*strcpy)(char *dst, const char *src);
-    char *(*strcat)(char *dst, const char *src);
-    int (*strcmp)(const char *s1, const char *s2);
-    size_t (*strlen)(const char *s);
-    char *(*strchr)(const char *s1, int ch);
-    char *(*strrchr)(const char *s1, int ch);
-    int (*sprintf)(char *pszDest, const char *pszFormat, ...);
-
-    // Wide String Functions...
-
-    AECHAR *(*wstrcpy)(AECHAR *pDest, const AECHAR *pSrc);
-    AECHAR *(*wstrcat)(AECHAR *pDest, const AECHAR *pSrc);
-    int (*wstrcmp)(const AECHAR *s1, const AECHAR *s2);
-    int (*wstrlen)(const AECHAR *p);
-    AECHAR *(*wstrchr)(const AECHAR *s1, AECHAR ch);
-    AECHAR *(*wstrrchr)(const AECHAR *s1, AECHAR ch);
-    void (*wsprintf)(AECHAR *pDest, int nSize, const AECHAR *pFormat,
-                     ...);
-
-    // String Conversions...
-
-    AECHAR *(*strtowstr)(const char *pszIn, AECHAR *pDest, int nSize);
-    char *(*wstrtostr)(const AECHAR *pIn, char *pszDest, int nSize);
-    double (*wstrtofloat)(const AECHAR *pszNum);
-    boolean (*floattowstr)(double val, AECHAR *psz, int nSize);
-    boolean (*utf8towstr)(const byte *pszIn, int nLen, AECHAR *pszDest,
-                          int nSizeDestBytes);
-    boolean (*wstrtoutf8)(const AECHAR *pszIn, int nLen, byte *pszDest,
-                          int nSizeDestBytes);
-    void (*wstrlower)(AECHAR *pszDest);
-    void (*wstrupper)(AECHAR *pszDest);
-    TChType (*chartype)(AECHAR ch);
-
-    // Bitmap Conversions...
-
-    void *(*SetupNativeImage)(AEECLSID cls, void *pBuffer,
-                              AEEImageInfo *pii, boolean *pbRealloc);
-
-    // Memory allocation routines
-
-    void *(*malloc)(uint32 dwSize);
-    void (*free)(void *pObj);
-    AECHAR *(*wstrdup)(const AECHAR *pIn);
-    void *(*realloc)(void *pSrc, uint32 dwSize);
-
-    // Additional Wide String Helpers
-
-    AECHAR *(*wwritelongex)(AECHAR *pszBuf, long n, int nPad,
-                            int *pnRemaining);
-    int (*wstrsize)(const AECHAR *p);
-    int (*wstrncopyn)(AECHAR *pszDest, int cbDest,
-                      const AECHAR *pszSource, int lenSource);
-
-    // OEM String Routines
-
-    int (*OEMStrLen)(const byte *p);
-    int (*OEMStrSize)(const byte *p);
-
-    // AEE/BREW version, See above for flags
-
-    uint32 (*GetAEEVersion)(byte *pszFormatted, int nSize,
-                            uint16 wFlags);
-
-    // ATOI
-
-    int (*atoi)(const char *psz);
-
-    // Floating point - covers issues related to floating point usage across
-    //  ARM/THUMB
-
-    double (*f_op)(double v1, double v2, int nType);
-    boolean (*f_cmp)(double v1, double v2, int nType);
-
-    // Debug
-
-    void (*dbgprintf)(const char *psz, ...);
-    void (*wstrcompress)(const AECHAR *pIn, int nChars, byte *pDest, int nSize);
-
-    // time
-
-    int32 (*LocalTimeOffset)(boolean *pbDaylightSavings);
-    void (*GetRand)(byte *pDest, int nSize);
-    uint32 (*GetTimeMS)(void);
-    uint32 (*GetUpTimeMS)(void);
-    uint32 (*GetSeconds)(void);
-    void (*GetJulianDate)(uint32 dwSecs, JulianType *pDate);
-
-    void (*sysfree)(void *pb);
-
-    // Applet helper function - current applet
-
-    IApplet *(*GetAppInstance)(void);
-
-    uint32 (*strtoul)(const char *nptr, char **endptr, int base);
-    char *(*strncpy)(char *strDest, const char *strSource, int32 count);
-    int (*strncmp)(const char *a, const char *b, size_t length);
-    int (*stricmp)(const char *a, const char *b);
-    int (*strnicmp)(const char *a, const char *b, size_t length);
-    char *(*strstr)(const char *haystack, const char *needle);
-    int (*memcmp)(const void *a, const void *b, size_t length);
-    void *(*memchr)(const void *src, int c, size_t length);
-    void (*strexpand)(const byte *pSrc, int nCount, AECHAR *pDest, int nSize);
-    char *(*stristr)(const char *cpszHaystack, const char *cpszNeedle);
-    char *(*memstr)(const char *cpHaystack, const char *cpszNeedle, size_t nHaystackLen);
-    int (*wstrncmp)(const AECHAR *s1, const AECHAR *s2, size_t nLen);
-    char *(*strdup)(const char *psz);
-    boolean (*strbegins)(const char *cpszPrefix, const char *psz);
-    boolean (*strends)(const char *cpszSuffic, const char *psz);
-    char *(*strchrend)(const char *pszSrc, char c);
-    char *(*strchrsend)(const char *pszSrc, const char *pszChars);
-    char *(*memrchr)(const char *pcSrch, int c, size_t nLen);
-    char *(*memchrend)(const char *pcSrch, int c, size_t nLen);
-    char *(*memrchrbegin)(const char *pcSrch, int c, size_t nLen);
-    char *(*strlower)(char *psz);
-    char *(*strupper)(char *psz);
-    int (*wstricmp)(const AECHAR *p1, const AECHAR *p2);
-    int (*wstrnicmp)(const AECHAR *p1, const AECHAR *p2, size_t length);
-    boolean (*inet_aton)(const char *pc, uint32 *pulAddr);
-    void (*inet_ntoa)(uint32 ulAddr, char *pc, size_t nLen);
-    uint32 (*swapl)(uint32 ul);
-    uint16 (*swaps)(uint16 us);
-
-    // Heap/File query functions.
-
-    uint32 (*GetFSFree)(uint32 *pdwTotal);
-    uint32 (*GetRAMFree)(uint32 *pdwTotal, uint32 *pdwLargest);
-
-    int (*vsprintf)(char *pszDest, const char *pszFormat, va_list arg);
-    int32 (*vsnprintf)(char *buf, uint32 f, const char *format, AEEOldVaList list);
-    int32 (*snprintf)(char *buf, uint32 f, const char *format, ...);
-
-    // Added for 2.0
-    uint32 (*JulianToSeconds)(JulianType *pDate);
-    size_t (*strlcpy)(char *dst, const char *src, size_t nSize);
-    size_t (*strlcat)(char *dst, const char *src, size_t nSize);
-    size_t (*wstrlcpy)(AECHAR *dst, const AECHAR *src, size_t nSize);
-    size_t (*wstrlcat)(AECHAR *dst, const AECHAR *src, size_t nSize);
-    void *(*setstaticptr)(int nSPId, void *pNew);
-
-    //More floating point operations
-    double (*f_assignstr)(const char *pszFloat);
-    double (*f_assignint)(int32 val);
-    AECHAR *(*wwritelong)(AECHAR *pszBuf, long n);
-    void *(*dbgheapmark)(void *ptr, const char *pszFile, int nLine);
-    int (*lockmem)(void **ppHandle);
-    int (*unlockmem)(void **ppHandle);
-    void (*dumpheap)(void);
-    double (*strtod)(const char *pszFloat, char **ppszEnd);
-    double (*f_calc)(double x, int calcType);
-    void (*sleep)(uint32 msecs);
-    int (*getlasterror)(int errRegion);
-    double (*wgs84_to_degrees)(int32 latlon);
-    void (*dbgevent)(AEEEvent evt, AEECLSID cls, uint32 pl);
-    boolean (*AEEOS_IsBadPtr)(int chkType, void *pBuf, uint32 len);
-    char *(*aee_basename)(const char *cpszPath);
-    int (*aee_makepath)(const char *cpszDir, const char *cpszFile,
-                        char *pszOut, int *pnOutLen);
-    char *(*aee_splitpath)(const char *cpszPath, const char *cpszDir);
-    boolean (*aee_stribegins)(const char *cpszPrefix, const char *psz);
-    uint32 (*GetUTCSeconds)(void);
-    int (*f_toint)(double val);
-    double (*f_get)(uint32 fgetType);
-    void (*qsort)(void *base, size_t nmemb, size_t size, PFNQSORTCOMPARE pfn);
-    int32 (*trunc)(double x);
-    uint32 (*utrunc)(double x);
-    int (*err_realloc)(uint32 uSize, void **pp);
-    int (*err_strdup)(const char *pszSrc, char **pp);
-
-    // Utility functions for IPV6.
-    int (*inet_pton)(int af, const char *src, void *dst);
-    const char *(*inet_ntop)(int af, const void *src, char *dst, size_t size);
-    IQueryInterface *(*GetALSContext)(void);
-};
-
-extern int AEEMod_Load(IShell *ps, void *pszRes, IModule **pm);
-
-/*lint -emacro(611,GET_HELPER) doesn't like cast from function ptr*/
-/*lint -emacro(740,GET_HELPER) doesn't like cast from function ptr*/
-#define GET_HELPER() (*(((AEEHelperFuncs **)AEEMod_Load) - 1))
-#define GET_HELPER_VER() (*((uint32 *)(((byte *)AEEMod_Load) - sizeof(AEEHelperFuncs *) - sizeof(uint32))))
-
-#if 0
-#define MEMMOVE GET_HELPER()->memmove
-#define MEMCPY MEMMOVE
-#define MEMSET GET_HELPER()->memset
-#define MEMCMP GET_HELPER()->memcmp
-#define MEMCHR GET_HELPER()->memchr
-#define MEMSTR GET_HELPER()->memstr
-#define MEMRCHR GET_HELPER()->memrchr
-#define MEMCHREND GET_HELPER()->memchrend
-#define MEMRCHRBEGIN GET_HELPER()->memrchrbegin
-#define MSLEEP GET_HELPER()->sleep
-#define STRCPY GET_HELPER()->strcpy
-#define STRNCPY(dest, src, count) GET_HELPER()->strncpy((dest), (char *)(src), (count))
-#define STRNCMP GET_HELPER()->strncmp
-#define STRICMP GET_HELPER()->stricmp
-#define STRNICMP GET_HELPER()->strnicmp
-#define STRCAT GET_HELPER()->strcat
-#define STRCMP GET_HELPER()->strcmp
-#define STRCOLL STRCMP
-#define STRLEN GET_HELPER()->strlen
-#define STRNLEN(s1, n) ((GET_HELPER()->strlen((char *)(s1)) > n) ? n : strlen((char *)(s1)))
-#define STRCHR GET_HELPER()->strchr
-#define STRCHREND GET_HELPER()->strchrend
-#define STRCHRSEND GET_HELPER()->strchrsend
-#define STRRCHR GET_HELPER()->strrchr
-#define STRSTR GET_HELPER()->strstr
-#define STRISTR GET_HELPER()->stristr
-#define STRBEGINS GET_HELPER()->strbegins
-#define STRIBEGINS GET_HELPER()->aee_stribegins
-#define STRENDS GET_HELPER()->strends
-#define STRLOWER GET_HELPER()->strlower
-#define STRUPPER GET_HELPER()->strupper
-#define SPRINTF GET_HELPER()->sprintf
-#define SNPRINTF GET_HELPER()->snprintf
-#define STRTOUL GET_HELPER()->strtoul
-#define STRTOD GET_HELPER()->strtod
-#define STRLCPY GET_HELPER()->strlcpy
-#define STRLCAT GET_HELPER()->strlcat
-#define WSTRCPY GET_HELPER()->wstrcpy
-#define WSTRCAT GET_HELPER()->wstrcat
-#define WSTRCMP GET_HELPER()->wstrcmp
-#define WSTRNCMP GET_HELPER()->wstrncmp
-#define WSTRICMP GET_HELPER()->wstricmp
-#define WSTRNICMP GET_HELPER()->wstrnicmp
-#define WSTRLEN GET_HELPER()->wstrlen
-#define WSTRCHR GET_HELPER()->wstrchr
-#define WSTRRCHR GET_HELPER()->wstrrchr
-#define WSPRINTF GET_HELPER()->wsprintf
-#define STRTOWSTR GET_HELPER()->strtowstr
-#define WSTRTOSTR GET_HELPER()->wstrtostr
-#define WSTRTOFLOAT GET_HELPER()->wstrtofloat
-#define FLOATTOWSTR GET_HELPER()->floattowstr
-#define UTF8TOWSTR GET_HELPER()->utf8towstr
-#define WSTRTOUTF8 GET_HELPER()->wstrtoutf8
-#define WSTRLOWER GET_HELPER()->wstrlower
-#define WSTRUPPER GET_HELPER()->wstrupper
-#define WSTRLCPY GET_HELPER()->wstrlcpy
-#define WSTRLCAT GET_HELPER()->wstrlcat
-#define GETCHTYPE GET_HELPER()->chartype
-#define ATOI GET_HELPER()->atoi
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define MIN(x, y) (((x) < (y)) ? (x) : (y))
-
-#define STRCSPN(a, b) (unsigned int)(STRSTR(a, b) - a)
-#define STRNCAT(a, b, c) STRLCAT(a, b, c + STRLEN(a))
-#define STRCOLL STRCMP
-#define STRPBRK(a, b) ((STRCHRSEND(a, b) == a + STRLEN(a)) ? NULL : STRCHRSEND(a, b))
-
-#define STRTOL(n, e, b) STRTOD((const char *)n, (char **)e)
-
-#ifndef ABS
-#define ABS(VAL) (((VAL) > 0) ? (VAL) : (-(VAL)))
-#endif
-#endif
-
-#endif  //#if (defined(BREW_MOD) || defined(MR_BREW_MOD))
-
 #define STRCSPN strcspn2
 #define STRNCAT strncat2
 #define STRPBRK strpbrk2
 
 #define ABS(VAL) (((VAL) > 0) ? (VAL) : (-(VAL)))
-//#define REALLOC(a, s) MR_FREE(a),MALLOC(s)  //ouli TI
 
-#ifdef UNDER_CE
-#define STRCOLL strcmp
-#else
-#ifdef MTK_MOD
 #define STRCOLL strcmp2
-#else
-#define STRCOLL strcmp2
-#endif
-#endif
-
 #define MEMCPY(dest, src, size) memcpy2((dest), (src), (size))
 #define MEMMOVE(dest, src, size) memmove2((dest), (src), (size))
 #define MEMSET(dest, ch, size) memset2((dest), (ch), (size))
@@ -409,7 +116,6 @@ extern int AEEMod_Load(IShell *ps, void *pszRes, IModule **pm);
 #define MEMRCHR(s, c, sl) memrchr2((s), (c), (sl))
 #define MEMCHREND(s, c, sl) memchrend2((s), (c), (sl))
 #define MEMRCHRBEGIN(s, c, sl) memrchrbegin2((s), (c), (sl))
-//#define MSLEEP(n)                   sleep((n))
 #define STRCPY(dest, src) strcpy2((dest), (src))
 #define STRNCPY(dest, src, count) strncpy2((dest), (char *)(src), (count))
 #define STRNCMP(a, b, count) strncmp2((a), (b), (count))
@@ -430,33 +136,7 @@ extern int AEEMod_Load(IShell *ps, void *pszRes, IModule **pm);
 #define STRLOWER(s) strlower2((s))
 #define STRUPPER(s) strupper2((s))
 #define SNPRINTF snprintf
-
-#if !defined(MR_BREW_MOD)
 #define SPRINTF sprintf_
-#define VSPRINTF vsprintf
-
-#else  //if !defined(MR_BREW_MOD)
-
-#if !defined(MR_BREW_OTA_MOD)
-#define VSPRINTF vsprintf
-extern int aee_sprintf(char *pszDest, const char *pszFormat, ...);
-#define SPRINTF aee_sprintf
-#else  //if !defined(MR_BREW_OTA_MOD)
-
-#define VSPRINTF GET_HELPER()->vsprintf
-
-//static __inline int VSPRINTF(char *buf, const char *fmt, va_list arg)
-//{
-//   return GET_HELPER()->vsprintf(buf, fmt, AEEOldVaList_From_va_list((va_list *)&(arg)));
-//}
-
-extern int mrp_sprintf(char *pszDest, const char *pszFormat, ...);
-#define SPRINTF mrp_sprintf
-
-#endif
-
-#endif  // #if !defined(MR_BREW_MOD)
-
 #define STRTOUL(s1, s2, n) strtoul2((s1), (s2), (n))
 #define STRTOD(s, ps) strtod((s), (ps))
 #define STRLCPY(d, s, n) strlcpy((d), (s), (n))
@@ -492,8 +172,6 @@ extern int mrp_sprintf(char *pszDest, const char *pszFormat, ...);
 #ifndef ABS
 #define ABS(VAL) (((VAL) > 0) ? (VAL) : (-(VAL)))
 #endif
-//#define LOCALTIMEOFFSET(pb)         LocalTimeOffset((pb))
-//#define GETAPPINSTANCE()            GetAppInstance()
 
 #define STRTOL strtol2
 

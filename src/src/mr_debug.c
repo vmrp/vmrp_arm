@@ -5,9 +5,7 @@
 #include "mr.h"
 
 #include "mr_api.h"
-#ifndef SYMBIAN_MOD
 #include "mr_code.h"
-#endif
 #include "mr_debug.h"
 #include "mr_do.h"
 #include "mr_func.h"

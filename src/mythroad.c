@@ -3862,57 +3862,32 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             //1948 add exception set
 
         case 9:
-#ifdef SYMBIAN_MOD
-        {
-            extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
+            // extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
+            // clean_arm9_dcache((uint32)input1, len);
 
-            clean_arm9_dcache((uint32)input1, len);
+#ifdef MR_VIA_MOD
+        {
+            extern void CacheClean(void);
+            extern void HwdMsDelay(uint16);
+#ifdef MR_VIA_DELAY
+            HwdMsDelay(MR_VIA_DELAY);
+#endif
         }
 #endif
 
-#ifdef MR_VIA_MOD
-            {
-                extern void CacheClean(void);
-                extern void HwdMsDelay(uint16);
-#ifdef MR_VIA_DELAY
-                HwdMsDelay(MR_VIA_DELAY);
-#endif
-            }
-#endif
+            //extern void sys_Invalidate_data_cache(void);
+            //           sys_Invalidate_data_cache();
+            // mr_cacheSync((void*)input1, len);
 
-#ifdef MR_MSTAR_MOD
-            {
-                //extern void sys_Invalidate_data_cache(void);
+            //extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
+            //extern int32 invalidate_arm9_icache(int32 addr, int32 len);
 
-                //           sys_Invalidate_data_cache();
+            //clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)),
+            //                                          ((len+0x0000001F*3)&(~0x0000001F)));
+            //invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)),
+            //                                          ((len+0x0000001F*3)&(~0x0000001F)));
 
-                mr_cacheSync((void*)input1, len);
-            }
-#endif
-
-#ifndef MR_MSTAR_MOD
-#ifndef MR_BREW_MOD
-#ifdef MTK_MOD
-            {
-                //extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
-                //extern int32 invalidate_arm9_icache(int32 addr, int32 len);
-
-                //clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)),
-                //                                          ((len+0x0000001F*3)&(~0x0000001F)));
-                //invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)),
-                //                                          ((len+0x0000001F*3)&(~0x0000001F)));
-
-                mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)),
-                             ((len + 0x0000001F * 3) & (~0x0000001F)));
-            }
-#endif
-#endif
-#endif
-
-#ifdef MR_BREW_MOD
-            mr_cacheSync(NULL, 0);
-#endif
-
+            mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
             return 0;
 
         case 100:
@@ -4141,19 +4116,10 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             mr_check_code_len = len;
 #endif
 
-#ifdef MR_MSTAR_MOD
-            {
-                //extern void sys_Invalidate_data_cache(void);
+            //extern void sys_Invalidate_data_cache(void);
+            //           sys_Invalidate_data_cache();
+            // mr_cacheSync((void*)input1, len);
 
-                //           sys_Invalidate_data_cache();
-                mr_cacheSync((void*)input1, len);
-            }
-#endif
-
-#ifndef MR_MSTAR_MOD
-#ifndef MR_BREW_MOD
-#ifdef MTK_MOD
-            {
                 //extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
                 //extern int32 invalidate_arm9_icache(int32 addr, int32 len);
 
@@ -4161,12 +4127,7 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
                 //                                          ((len+0x0000001F*3)&(~0x0000001F)));
                 //invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)),
                 //                                          ((len+0x0000001F*3)&(~0x0000001F)));
-                mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)),
-                             ((len + 0x0000001F * 3) & (~0x0000001F)));
-            }
-#endif
-#endif
-#endif
+                mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
 
 #ifdef MR_VIA_MOD
             //mr_sleep(1000);
@@ -4179,20 +4140,9 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
 #endif
             }
 #endif
-#ifdef SYMBIAN_MOD
-            {
-                extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
-
-                clean_arm9_dcache((uint32)input1, len);
-            }
-#endif
-
-#ifdef MR_BREW_MOD
-            mr_cacheSync(NULL, 0);
-#endif
-
+            // extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
+            // clean_arm9_dcache((uint32)input1, len);
             ret = mr_load_c_function(code);
-
             mrp_pushnumber(L, ret);
             return 1;
         } break;
@@ -4222,29 +4172,17 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             mr_c_function_fix_p = ((int32*)mr_L_optint(L, 4, 0));
             mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1 + 8);
             *((void**)(mr_c_function_fix_p)) = (void*)_mr_c_function_table;
+            //extern void sys_Invalidate_data_cache(void);
+            //         sys_Invalidate_data_cache();
+            // mr_cacheSync((void*)input1, len);
+            //extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
+            //extern int32 invalidate_arm9_icache(int32 addr, int32 len);
 
-#ifdef MR_MSTAR_MOD
-            {
-                //extern void sys_Invalidate_data_cache(void);
-
-                //         sys_Invalidate_data_cache();
-                mr_cacheSync((void*)input1, len);
-            }
-#endif
-
-#ifdef MTK_MOD
-            {
-                //extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
-                //extern int32 invalidate_arm9_icache(int32 addr, int32 len);
-
-                //clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)),
-                //                                          ((len+0x0000001F*3)&(~0x0000001F)));
-                //invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)),
-                //                                          ((len+0x0000001F*3)&(~0x0000001F)));
-                mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)),
-                             ((len + 0x0000001F * 3) & (~0x0000001F)));
-            }
-#endif
+            //clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)),
+            //                                          ((len+0x0000001F*3)&(~0x0000001F)));
+            //invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)),
+            //                                          ((len+0x0000001F*3)&(~0x0000001F)));
+            mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
             ret = mr_load_c_function(code);
             mrp_pushnumber(L, ret);
             return 1;

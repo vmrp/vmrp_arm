@@ -1,7 +1,5 @@
 
-#ifndef SYMBIAN_MOD
 #include "mr_lex.h"
-#endif
 #include "mr_parser.h"
 #include "mr_zio.h"
 

@@ -42,6 +42,7 @@ int32 _mr_mem_init(int32 ram) {
 
 void* mr_malloc(uint32 len) {
     LG_mem_free_t *previous, *nextfree, *l;
+    void* ret;
 
     len = (uint32)realLGmemSize(len);
     if (len >= LG_mem_left) {
@@ -57,7 +58,6 @@ void* mr_malloc(uint32 len) {
         MRDBGPRINTF("mr_malloc corrupted memory");
         goto err;
     }
-    MRDBGPRINTF("R9:%X malloc(0x%X[%d]) base:0x%X free.next:0x%X end:0x%X", getR9(), len, len, LG_mem_base, LG_mem_free.next, LG_mem_end);
 
     previous = &LG_mem_free;
     nextfree = (LG_mem_free_t*)(LG_mem_base + previous->next);
@@ -71,7 +71,8 @@ void* mr_malloc(uint32 len) {
             if (LG_mem_top < previous->next)
                 LG_mem_top = previous->next;
 #endif
-            return (void*)nextfree;
+            ret = (void*)nextfree;
+            goto end;
         }
         if (nextfree->len > len) {
             l = (LG_mem_free_t*)((char*)nextfree + len);
@@ -85,7 +86,8 @@ void* mr_malloc(uint32 len) {
             if (LG_mem_top < previous->next)
                 LG_mem_top = previous->next;
 #endif
-            return (void*)nextfree;
+            ret = (void*)nextfree;
+            goto end;
         }
         previous = nextfree;
         nextfree = (LG_mem_free_t*)(LG_mem_base + nextfree->next);
@@ -93,13 +95,16 @@ void* mr_malloc(uint32 len) {
     MRDBGPRINTF("mr_malloc no memory");
 err:
     return 0;
+end:
+    MRDBGPRINTF("R9:%X malloc(0x%X[%d]): 0x%X", getR9(), len, len, ret);
+    return ret;
 }
 
 void mr_free(void* p, uint32 len) {
     LG_mem_free_t *free, *n;
 
-    MRDBGPRINTF("R9:%X free(0x%X, %u)", getR9(), p, len);
     len = (uint32)realLGmemSize(len);
+    MRDBGPRINTF("R9:%X free(0x%X, %u)", getR9(), p, len);
 #ifdef MYTHROAD_DEBUG
     if (!len || !p || (char*)p < LG_mem_base || (char*)p >= LG_mem_end || (char*)p + len > LG_mem_end || (char*)p + len <= LG_mem_base) {
         MRDBGPRINTF("mr_free invalid");
