@@ -1,6 +1,10 @@
-.PHONY: vmrp
-vmrp:
-	gcc -o $@ -g -fPIE  -march=armv5te -marm -Wall main.c -L. -lmr_vm -lSDL2 -lm -lz 
+.PHONY: full
+full:
+	gcc -o vmrp -g -fPIE  -march=armv5te -marm -Wall main.c -L. -lmr_vm -lSDL2 -lm -lz -DDSM_FULL
+
+.PHONY: mini
+mini:
+	gcc -o vmrp -g -fPIE  -march=armv5te -marm -Wall main.c -L. -lmr_vm -lSDL2 -lm -lz 
 
 .PHONY: clean
 clean:

@@ -318,7 +318,11 @@ int64 get_time_ms(void) {
 void j2n_startMrp(char *path) {
     printf("vm_loadMrp entry:%s\n", path);
     // mr_registerAPP((uint8 *)buf, (int32)len, (int32)index);
+#ifdef DSM_FULL
+    mythroad->mr_start_dsm(path, NULL, NULL);
+#else
     mythroad->mr_start_dsm(path, "cfunction.ext", NULL);
+#endif
 }
 
 void j2n_pause() {

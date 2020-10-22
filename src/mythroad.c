@@ -1,7 +1,7 @@
 #include "mythroad.h"
 
-#include "mem.h"
 #include "md5.h"
+#include "mem.h"
 #include "mr.h"
 #include "mr_auxlib.h"
 #include "mr_encode.h"
@@ -98,7 +98,6 @@ int32 mr_zipType;
 
 //*******************************
 
-
 //************************************短信
 #define MR_MAX_NUM_LEN 32     //手机号码最大长度
 #define MR_MAX_TRACE_BUF 100  //TRACE 大小
@@ -139,11 +138,9 @@ MR_RESUMEAPP_FUNCTION mr_resumeApp_function = NULL;
 static mrc_timerCB mr_exit_cb = NULL;
 static int32 mr_exit_cb_data;
 
-
 #ifdef MR_PLAT_READFILE
 int8 mr_flagReadFileForPlat = FALSE;
 #endif
-
 
 #ifdef MR_CHECK_CODE
 int32 mr_check_code_val;
@@ -477,7 +474,6 @@ static int32 _mr_div(int32 a, int32 b) {
 static int32 _mr_mod(int32 a, int32 b) {
     return a % b;
 }
-
 
 /*
 typedef struct
@@ -4857,16 +4853,12 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     return MR_SUCCESS;
 }
 
-/*
-与函数mr_start_dsm功能相似，区别是可以分别设置启动文件
-和启动参数。
-*/
-int32 mr_start_dsm_ex(const char* filename, const char* entry) {
+/*当启动DSM应用的时候，应该调用DSM的初始化函数， 用以对DSM平台进行初始化*/
+int32 mr_start_dsm(char* filename, char* ext, char* entry) {
     mr_screeninfo screeninfo;
     if (mr_getScreenInfo(&screeninfo) != MR_SUCCESS) {
         return MR_FAILED;
     }
-
     mr_screen_w = screeninfo.width;
     mr_screen_h = screeninfo.height;
     mr_screen_bit = screeninfo.bit;
@@ -4874,89 +4866,21 @@ int32 mr_start_dsm_ex(const char* filename, const char* entry) {
     MEMSET(pack_filename, 0, sizeof(pack_filename));
     if (filename && (*filename == '*')) {
         STRCPY(pack_filename, filename);
+        //以后%的方式要从VM 中去掉
     } else if (filename && (*filename == '%')) {
-        STRCPY(pack_filename, filename + 1);
+        char* loc = (char*)strchr2(filename, ',');
+        if (loc != NULL) {
+            *loc = 0;
+            STRCPY(pack_filename, filename + 1);
+            *loc = ',';
+        } else {
+            STRCPY(pack_filename, filename + 1);
+        }
     } else if (filename && (*filename == '#') && (*(filename + 1) == '<')) {
         STRCPY(pack_filename, filename + 2);
     } else {
-        STRCPY(pack_filename, MR_DEFAULT_PACK_NAME);
-    }
-
-    MEMSET(old_pack_filename, 0, sizeof(old_pack_filename));
-    MEMSET(old_start_filename, 0, sizeof(old_start_filename));
-
-    MEMSET(start_fileparameter, 0, sizeof(start_fileparameter));
-
-    return _mr_intra_start(MR_START_FILE, entry);
-}
-
-/*
-与函数mr_start_dsm功能相似，区别是mr_start_dsmB会处理以','分割的
-启动文件及参数
-如:
-若entry为"%applist.mrp,reload"，则mr_start_dsmB认为"applist.mrp"是启动文件
-而"%applist.mrp,reload"为启动字串
-*/
-int32 mr_start_dsmB(const char* entry) {
-    mr_screeninfo screeninfo;
-    if (mr_getScreenInfo(&screeninfo) != MR_SUCCESS) {
-        return MR_FAILED;
-    }
-    mr_screen_w = screeninfo.width;
-    mr_screen_h = screeninfo.height;
-    mr_screen_bit = screeninfo.bit;
-
-    MEMSET(pack_filename, 0, sizeof(pack_filename));
-    if (entry && (*entry == '*')) {
-        STRCPY(pack_filename, entry);
-        //以后%的方式要从VM 中去掉
-    } else if (entry && (*entry == '%')) {
-        char* loc;
-        loc = (char*)strchr2(entry, ',');
-        if (loc != NULL) {
-            *loc = 0;
-            STRCPY(pack_filename, entry + 1);
-            *loc = ',';
-        } else {
-            STRCPY(pack_filename, entry + 1);
-        }
-    } else if (entry && (*entry == '#') && (*(entry + 1) == '<')) {
-        STRCPY(pack_filename, entry + 2);
-    } else {
-        STRCPY(pack_filename, MR_DEFAULT_PACK_NAME);
-    }
-    //strcpy(pack_filename,"*A");
-    MRDBGPRINTF(pack_filename);
-
-    MEMSET(old_pack_filename, 0, sizeof(old_pack_filename));
-    MEMSET(old_start_filename, 0, sizeof(old_start_filename));
-
-    MEMSET(start_fileparameter, 0, sizeof(start_fileparameter));
-
-    return _mr_intra_start(MR_START_FILE, entry);
-}
-
-/*当启动DSM应用的时候，应该调用DSM的初始化函数， 用以对DSM平台进行初始化*/
-int32 mr_start_dsm(const char* entry) {
-    mr_screeninfo screeninfo;
-    if (mr_getScreenInfo(&screeninfo) != MR_SUCCESS) {
-        return MR_FAILED;
-    }
-    mr_screen_w = screeninfo.width;
-    mr_screen_h = screeninfo.height;
-    mr_screen_bit = screeninfo.bit;
-
-    MEMSET(pack_filename, 0, sizeof(pack_filename));
-    if (entry && (*entry == '*')) {
-        STRCPY(pack_filename, entry);
-        //以后%的方式要从VM 中去掉
-    } else if (entry && (*entry == '%')) {
-        STRCPY(pack_filename, entry + 1);
-    } else if (entry && (*entry == '#') && (*(entry + 1) == '<')) {
-        STRCPY(pack_filename, entry + 2);
-    } else {
         // STRCPY(pack_filename,MR_DEFAULT_PACK_NAME);
-        STRCPY(pack_filename, entry);
+        STRCPY(pack_filename, filename);
     }
     //strcpy(pack_filename,"*A");
     MRDBGPRINTF(pack_filename);
@@ -4965,43 +4889,11 @@ int32 mr_start_dsm(const char* entry) {
     MEMSET(old_start_filename, 0, sizeof(old_start_filename));
 
     MEMSET(start_fileparameter, 0, sizeof(start_fileparameter));
-
-    return _mr_intra_start(MR_START_FILE, entry);
-}
-
-/*
-与函数mr_start_dsm功能相似，区别是mr_start_dsmC可以设置mrp初始
-加载的文件名，在精简VM中，默认加载文件为"logo.ext"*/
-int32 mr_start_dsmC(char* start_file, const char* entry) {
-    mr_screeninfo screeninfo;
-    if (mr_getScreenInfo(&screeninfo) != MR_SUCCESS) {
-        return MR_FAILED;
+    if (!ext) {
+        ext = MR_START_FILE;
     }
-    mr_screen_w = screeninfo.width;
-    mr_screen_h = screeninfo.height;
-    mr_screen_bit = screeninfo.bit;
-
-    MEMSET(pack_filename, 0, sizeof(pack_filename));
-    if (entry && (*entry == '*')) {
-        STRCPY(pack_filename, entry);
-        //以后%的方式要从VM 中去掉
-    } else if (entry && (*entry == '%')) {
-        STRCPY(pack_filename, entry + 1);
-    } else if (entry && (*entry == '#') && (*(entry + 1) == '<')) {
-        STRCPY(pack_filename, entry + 2);
-    } else {
-        // STRCPY(pack_filename,MR_DEFAULT_PACK_NAME);
-        STRCPY(pack_filename, entry);
-    }
-    //strcpy(pack_filename,"*A");
-    MRDBGPRINTF(pack_filename);
-
-    MEMSET(old_pack_filename, 0, sizeof(old_pack_filename));
-    MEMSET(old_start_filename, 0, sizeof(old_start_filename));
-
-    MEMSET(start_fileparameter, 0, sizeof(start_fileparameter));
-
-    return _mr_intra_start(start_file, entry);
+    // return _mr_intra_start(ext, filename);
+    return _mr_intra_start(ext, entry);
 }
 
 int32 mr_stop_ex(int16 freemem) {
