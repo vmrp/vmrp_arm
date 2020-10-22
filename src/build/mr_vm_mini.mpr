@@ -38,6 +38,7 @@ file39 = ..\dsm.c
 file40 = ..\fixR9.c
 file41 = ..\asm\r9r10.s
 file42 = ..\md5.c
+file43 = ..\mem.c
 
 
 

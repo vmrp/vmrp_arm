@@ -161,7 +161,6 @@ static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b
 int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transcoler, uint16 color_check);
 
 void* _mr_readFile(const char* filename, int* filelen, int lookfor);
-int mr_wstrlen(char* txt);
 int32 mr_registerAPP(uint8* p, int32 len, int32 index);
 
 void* mr_malloc(uint32 len);
@@ -434,7 +433,7 @@ static void _mr_c_function_table_init() {
     _mr_c_function_table[123] = (void*)_DrawText;
     _mr_c_function_table[124] = (void*)_BitmapCheck;
     _mr_c_function_table[125] = (void*)_mr_readFile;
-    _mr_c_function_table[126] = (void*)mr_wstrlen;
+    _mr_c_function_table[126] = (void*)wstrlen;
     _mr_c_function_table[127] = (void*)mr_registerAPP;
     _mr_c_function_table[128] = (void*)_DrawTextEx;  //1936
     _mr_c_function_table[129] = (void*)_mr_EffSetCon;
@@ -1180,11 +1179,11 @@ static int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, m
         if (!ch) {
             if (flag & DRAW_TEXT_EX_IS_AUTO_NEWLINE) {
                 if ((chy + mh) < (y + rect.h)) {
-                    endchar_index = mr_wstrlen((char*)tempBuf);
+                    endchar_index = wstrlen((char*)tempBuf);
                 }
             } else {
                 if (!((chx > (x + rect.w)) || (ch == 0x0a))) {
-                    endchar_index = mr_wstrlen((char*)tempBuf);
+                    endchar_index = wstrlen((char*)tempBuf);
                 }
             }
         }
@@ -3503,11 +3502,6 @@ static int _mr_TestCom(mrp_State* L, int input0, int input1) {
         case 500:
 #ifdef MR_SM_SURPORT
             ret = _mr_load_sms_cfg();  //only for sm dsm;
-//#ifndef ADI_MOD
-//         if(ret != MR_FAILED){
-//            mr_close(ret);
-//         }
-//#endif
 #endif
             break;
         case 501:
@@ -4969,27 +4963,6 @@ int32 mr_registerAPP(uint8* p, int32 len, int32 index) {
     return MR_SUCCESS;
 }
 
-int mr_wstrlen(char* txt) {
-    int lenth = 0;
-    unsigned char* ss = (unsigned char*)txt;
-
-    while ((*ss << 8) + *(ss + 1) != 0) {
-        lenth += 2;
-        ss += 2;
-    }
-    return lenth;
-}
-
-#ifdef SDK_MOD
-
-uint32* mr_get_helper(void) {
-    return (*(((uint32**)sdk_mr_c_function_table) - 2));
-}
-uint32* mr_get_c_function_p(void) {
-    return (*(((uint32**)sdk_mr_c_function_table) - 1));
-}
-
-#endif
 
 //****************************短信
 
@@ -5068,45 +5041,6 @@ static int32 _mr_change_to_current(void) {
     return MR_SUCCESS;
 }
 #endif
-
-/*
-#ifndef ADI_MOD
-static int32 _mr_save_sms_cfg(int32 f)
-{
-   int32 ret;
-
-   //MRDBGPRINTF("mr_save_sms_cfg begin!");
-   if((f == MR_FAILED)){
-      return MR_FAILED;
-   }
-
-   //MRDBGPRINTF("mr_save_sms_cfg before check!");
-   if(mr_sms_cfg_need_save){
-      mr_sms_cfg_need_save = FALSE;
-      //MRDBGPRINTF("mr_save_sms_cfg before mr_seek!");
-      ret = mr_seek(f, 0, MR_SEEK_SET);
-      if(ret == MR_FAILED)
-      {
-         //MRDBGPRINTF("mr_save_sms_cfg mr_seek err!");
-         mr_close(f);
-         return MR_FAILED;
-      }
-      //MRDBGPRINTF("mr_save_sms_cfg before mr_write!");
-      ret = mr_write(f, mr_sms_cfg_buf, MR_SMS_CFG_BUF_LEN);
-      if(ret == MR_FAILED)
-      {
-         //MRDBGPRINTF("mr_save_sms_cfg mr_write err!");
-         mr_close(f);
-         return MR_FAILED;
-      }
-   }
-   //MRDBGPRINTF("mr_save_sms_cfg end!");
-   mr_close(f);
-   return MR_SUCCESS;
-}
-
-#else
-*/
 static int32 _mr_save_sms_cfg(int32 f) {
     int32 ret;
 
@@ -5165,27 +5099,6 @@ static int32 _mr_load_sms_cfg(void) {
 #endif
 
     if (mr_info(DSM_CFG_FILE_NAME) == MR_IS_FILE) {
-        /*
-//#ifndef ADI_MOD
-      f = mr_open(DSM_CFG_FILE_NAME, MR_FILE_RDWR);
-      if(f == 0)
-      {
-         return MR_FAILED;
-      }
-      ret = mr_read(f, mr_sms_cfg_buf, MR_SMS_CFG_BUF_LEN);
-      if (ret != MR_SMS_CFG_BUF_LEN){
-         mr_close(f);
-         f = mr_open(DSM_CFG_FILE_NAME, MR_FILE_RDWR|MR_FILE_CREATE);
-         if(f == 0)
-         {
-            return MR_FAILED;
-         }
-         _mr_smsAddNum(0, "518869058");
-         _mr_smsAddNum(1, "918869058");
-         _mr_smsAddNum(3, "620129511058");
-      }
-//#else
-*/
         f = mr_open(DSM_CFG_FILE_NAME, MR_FILE_RDONLY);
         if (f == 0) {
 #ifdef MR_CFG_USE_A_DISK
@@ -5208,16 +5121,7 @@ static int32 _mr_load_sms_cfg(void) {
             _mr_smsAddNum(1, "918869058");
             _mr_smsAddNum(3, "aa");
         }
-        //#endif
     } else {
-        //#ifndef ADI_MOD
-        //      f = mr_open(DSM_CFG_FILE_NAME, MR_FILE_RDWR|MR_FILE_CREATE);
-        //      if(f == 0)
-        //      {
-        //         return MR_FAILED;
-        //      }
-        //#endif
-
         _mr_smsAddNum(0, "518869058");
         _mr_smsAddNum(1, "918869058");
         _mr_smsAddNum(3, "aa");

@@ -24,6 +24,7 @@ int mr_unzip(void) {
     int n;
     uch buf[EXTHDR]; /* extended local header */
 
+    MRDBGPRINTF("mr_unzip");
     mr_updcrc(NULL, 0); /* initialize crc */
 
     /* Decompress */
@@ -112,6 +113,7 @@ int mr_get_method(int32 buf_len) {
     ulg stamp;     /* time stamp */
     int method;    /* compression method */
 
+    MRDBGPRINTF("mr_get_method(%d)", buf_len);
 #ifdef MR_PKZIP_MAGIC
     mr_zipType = DEFLATED;
 #endif

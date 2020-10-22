@@ -1,19 +1,19 @@
-#include "fixR9.h"
-#include "md5.h"
-#include "mem.h"
-#include "mr.h"
-#include "mr_auxlib.h"
-#include "mr_encode.h"
-#include "mr_forvm.h"
-#include "mr_graphics.h"
-#include "mr_gzip.h"
-#include "mr_lib.h"
-#include "mr_socket_target.h"
-#include "mr_tcp_target.h"
-#include "mrcomm.h"
-#include "mrporting.h"
-#include "mythroad.h"
-#include "string.h"
+#include "./include/fixR9.h"
+#include "./include/md5.h"
+#include "./include/mem.h"
+#include "./include/mr.h"
+#include "./include/mr_auxlib.h"
+#include "./include/mr_encode.h"
+#include "./include/mr_forvm.h"
+#include "./include/mr_graphics.h"
+#include "./include/mr_gzip.h"
+#include "./include/mr_lib.h"
+#include "./include/mr_socket_target.h"
+#include "./include/mr_tcp_target.h"
+#include "./include/mrcomm.h"
+#include "./include/mrporting.h"
+#include "./include/mythroad.h"
+#include "./include/string.h"
 
 typedef struct _mini_mr_c_event_st {
     int32 code;
@@ -149,7 +149,6 @@ void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b);
 int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font);
 int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transcoler, uint16 color_check);
 void* _mr_readFile(const char* filename, int* filelen, int lookfor);
-int mr_wstrlen(char* txt);
 int32 mr_registerAPP(uint8* p, int32 len, int32 index);
 int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len);
 static int _mr_TestComC(int input0, char* input1, int32 len, int32 code);
@@ -341,7 +340,7 @@ void mythroad_init(void) {
     _mr_c_function_table[123] = (void*)asm_DrawText;
     _mr_c_function_table[124] = (void*)asm_BitmapCheck;
     _mr_c_function_table[125] = (void*)asm_mr_readFile;
-    _mr_c_function_table[126] = (void*)mr_wstrlen;
+    _mr_c_function_table[126] = (void*)wstrlen;
     _mr_c_function_table[127] = (void*)asm_mr_registerAPP;
     _mr_c_function_table[128] = (void*)asm_DrawTextEx;  //1936
     _mr_c_function_table[129] = (void*)asm_mr_EffSetCon;
@@ -1045,11 +1044,11 @@ int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, mr_colou
         if (!ch) {
             if (flag & DRAW_TEXT_EX_IS_AUTO_NEWLINE) {
                 if ((chy + mh) < (y + rect.h)) {
-                    endchar_index = mr_wstrlen((char*)tempBuf);
+                    endchar_index = wstrlen((char*)tempBuf);
                 }
             } else {
                 if (!((chx > (x + rect.w)) || (ch == 0x0a))) {
-                    endchar_index = mr_wstrlen((char*)tempBuf);
+                    endchar_index = wstrlen((char*)tempBuf);
                 }
             }
         }
@@ -1549,11 +1548,6 @@ int _mr_TestCom(mrp_State* L, int input0, int input1) {
         case 500:
 #ifdef MR_SM_SURPORT
             ret = _mr_load_sms_cfg();  //only for sm dsm;
-                                       //#ifndef ADI_MOD
-                                       //         if(ret != MR_FAILED){
-                                       //            mr_close(ret);
-                                       //         }
-                                       //#endif
 #endif
             break;
         case 503:
@@ -2286,16 +2280,6 @@ int32 mr_registerAPP(uint8* p, int32 len, int32 index) {
     return MR_SUCCESS;
 }
 
-int mr_wstrlen(char* txt) {
-    int lenth = 0;
-    unsigned char* ss = (unsigned char*)txt;
-
-    while ((*ss << 8) + *(ss + 1) != 0) {
-        lenth += 2;
-        ss += 2;
-    }
-    return lenth;
-}
 
 //****************************短信
 
