@@ -87,3 +87,31 @@ else
 end
 
 
+/*
+def pay_getVersion(mrpfilename)
+local firstchar = string.sub(mrpfilename,1,1)
+local sId,appId,appVer
+
+if firstchar == "*" || firstchar == "$" then
+sId = _strCom(600,mrpfilename,68,4)
+appId = _strCom(600,mrpfilename,192,4)
+appVer = _strCom(600,mrpfilename,196,4)
+else
+local f = file.open(mrpfilename, 1)
+if f then
+f:seek(0, 68)
+sId = f:read(4) 
+f:seek(0, 192)
+appId = f:read(4) 
+f:seek(0, 196)
+appVer = f:read(4) 
+f:close()
+end       
+end
+if sId then
+return sId,appId,appVer
+else
+return
+end
+end
+*/

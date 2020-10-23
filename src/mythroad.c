@@ -666,60 +666,6 @@ void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, ui
     }
 }
 
-static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler) {
-    int32 A = pTrans->A;
-    int32 B = pTrans->B;
-    int32 C = pTrans->C;
-    int32 D = pTrans->D;
-    //uint16 rop = pTrans->rop;
-    uint16 *dstp, *srcp;
-    int16 CenterX = dstbmp->x + w / 2;
-    int16 CenterY = dstbmp->y + h / 2;
-    int32 dx, dy;
-    int32 I = A * D - B * C;
-    int16 MaxY = (ABS(C) * w + ABS(D) * h) >> 9;
-    int16 MinY = 0 - MaxY;
-
-    MaxY = MIN(MaxY, dstbmp->h - CenterY);
-    MinY = MAX(MinY, 0 - CenterY);
-
-    for (dy = MinY; dy < MaxY; dy++) {
-        int16 MaxX = (int16)MIN(D == 0 ? 999 : (MAX((((w * I) >> 9) + B * dy) / D, (B * dy - ((w * I) >> 9)) / D)),
-                                C == 0 ? 999 : (MAX((A * dy + ((h * I) >> 9)) / C, (A * dy - ((h * I) >> 9)) / C)));
-        int16 MinX = (int16)MAX(D == 0 ? -999 : (MIN((B * dy - ((w * I) >> 9)) / D, (((w * I) >> 9) + B * dy) / D)),
-                                C == 0 ? -999 : (MIN((A * dy - ((h * I) >> 9)) / C, (A * dy + ((h * I) >> 9)) / C)));
-        MaxX = MIN(MaxX, dstbmp->w - CenterX);
-        MinX = MAX(MinX, 0 - CenterX);
-        dstp = dstbmp->p + (dy + CenterY) * dstbmp->w + (MinX + CenterX);
-        switch (pTrans->rop) {
-            case BM_TRANSPARENT:
-                for (dx = MinX; dx < MaxX; dx++) {
-                    int32 offsety = ((A * dy - C * dx) << 8) / I + h / 2;
-                    int32 offsetx = ((D * dx - B * dy) << 8) / I + w / 2;
-                    if (((offsety < h) && (offsety >= 0)) && ((offsetx < w) && (offsetx >= 0))) {
-                        srcp = srcbmp->p + (offsety + srcbmp->y) * srcbmp->w + (offsetx + srcbmp->x);
-                        //if (!((rop == BM_TRANSPARENT) && (*srcp == transcoler)))
-                        if (*srcp != transcoler)
-                            *dstp = *srcp;
-                    }
-                    dstp++;
-                }
-                break;
-            case BM_COPY:
-                for (dx = MinX; dx < MaxX; dx++) {
-                    int32 offsety = ((A * dy - C * dx) << 8) / I + h / 2;
-                    int32 offsetx = ((D * dx - B * dy) << 8) / I + w / 2;
-                    if (((offsety < h) && (offsety >= 0)) && ((offsetx < w) && (offsetx >= 0))) {
-                        srcp = srcbmp->p + (offsety + srcbmp->y) * srcbmp->w + (offsetx + srcbmp->x);
-                        //if (!((rop == BM_TRANSPARENT) && (*srcp == transcoler)))
-                        *dstp = *srcp;
-                    }
-                    dstp++;
-                }
-                break;
-        }
-    }
-}
 
 //static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b)
 void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b) {

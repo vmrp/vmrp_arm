@@ -551,61 +551,6 @@ void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, ui
     }
 }
 
-void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler) {
-    int32 A = pTrans->A;
-    int32 B = pTrans->B;
-    int32 C = pTrans->C;
-    int32 D = pTrans->D;
-    //uint16 rop = pTrans->rop;
-    uint16 *dstp, *srcp;
-    int16 CenterX = dstbmp->x + w / 2;
-    int16 CenterY = dstbmp->y + h / 2;
-    int32 dx, dy;
-    int32 I = A * D - B * C;
-    int16 MaxY = (ABS(C) * w + ABS(D) * h) >> 9;
-    int16 MinY = 0 - MaxY;
-
-    MaxY = MIN(MaxY, dstbmp->h - CenterY);
-    MinY = MAX(MinY, 0 - CenterY);
-
-    for (dy = MinY; dy < MaxY; dy++) {
-        int16 MaxX = (int16)MIN(D == 0 ? 999 : (MAX((((w * I) >> 9) + B * dy) / D, (B * dy - ((w * I) >> 9)) / D)),
-                                C == 0 ? 999 : (MAX((A * dy + ((h * I) >> 9)) / C, (A * dy - ((h * I) >> 9)) / C)));
-        int16 MinX = (int16)MAX(D == 0 ? -999 : (MIN((B * dy - ((w * I) >> 9)) / D, (((w * I) >> 9) + B * dy) / D)),
-                                C == 0 ? -999 : (MIN((A * dy - ((h * I) >> 9)) / C, (A * dy + ((h * I) >> 9)) / C)));
-        MaxX = MIN(MaxX, dstbmp->w - CenterX);
-        MinX = MAX(MinX, 0 - CenterX);
-        dstp = dstbmp->p + (dy + CenterY) * dstbmp->w + (MinX + CenterX);
-        switch (pTrans->rop) {
-            case BM_TRANSPARENT:
-                for (dx = MinX; dx < MaxX; dx++) {
-                    int32 offsety = ((A * dy - C * dx) << 8) / I + h / 2;
-                    int32 offsetx = ((D * dx - B * dy) << 8) / I + w / 2;
-                    if (((offsety < h) && (offsety >= 0)) && ((offsetx < w) && (offsetx >= 0))) {
-                        srcp = srcbmp->p + (offsety + srcbmp->y) * srcbmp->w + (offsetx + srcbmp->x);
-                        //if (!((rop == BM_TRANSPARENT) && (*srcp == transcoler)))
-                        if (*srcp != transcoler)
-                            *dstp = *srcp;
-                    }
-                    dstp++;
-                }
-                break;
-            case BM_COPY:
-                for (dx = MinX; dx < MaxX; dx++) {
-                    int32 offsety = ((A * dy - C * dx) << 8) / I + h / 2;
-                    int32 offsetx = ((D * dx - B * dy) << 8) / I + w / 2;
-                    if (((offsety < h) && (offsety >= 0)) && ((offsetx < w) && (offsetx >= 0))) {
-                        srcp = srcbmp->p + (offsety + srcbmp->y) * srcbmp->w + (offsetx + srcbmp->x);
-                        //if (!((rop == BM_TRANSPARENT) && (*srcp == transcoler)))
-                        *dstp = *srcp;
-                    }
-                    dstp++;
-                }
-                break;
-        }
-    }
-}
-
 void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b) {
     uint16 *dstp, *srcp;
     int MaxY, MaxX, MinY, MinX;
@@ -1148,10 +1093,12 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
     void *filebuf, *retv;
     int32 f;
     char TempName[MR_MAX_FILENAME_SIZE];
-    char* mr_m0_file;
     int is_rom_file = FALSE;
 
-    if ((pack_filename[0] == '*') || (pack_filename[0] == '$')) {
+    MRDBGPRINTF("_mr_readFile('%s', %p, %d)", filename, filelen, lookfor);
+
+    if ((pack_filename[0] == '*') || (pack_filename[0] == '$')) { // 插件化mrp会使用到这部分代码
+        char* mr_m0_file;
         uint32 pos = 0;
         uint32 m0file_len;
 
@@ -1164,7 +1111,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
         if (mr_m0_file == NULL) {
             if ((char*)mr_m0_files[pack_filename[1] - 'A'] == NULL) MRDBGPRINTF("mr_m0_files[%d] nil!", pack_filename[1] - 'A');
             if (mr_ram_file == NULL) MRDBGPRINTF("mr_ram_file nil!");
-            //MRDBGPRINTF( "_mr_readFile:mr_m0_file nil at \"%s\"!",filename);
             _mr_readFileShowInfo(filename, 1001);
             goto err;
         }
@@ -1189,7 +1135,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
         pos = pos + len;
         while (!found) {
             if (((pos + 4) >= m0file_len) || (len < 1) || (len >= MR_MAX_FILE_SIZE)) {
-                //MRDBGPRINTF( "_mr_readFile:err 4 at \"%s\"!",filename);
                 _mr_readFileShowInfo(filename, 1004);
                 goto err;
             }
@@ -1197,13 +1142,11 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
 
             pos = pos + 4;
             if (((len + pos) >= m0file_len) || (len < 1) || (len >= MR_MAX_FILENAME_SIZE)) {
-                //MRDBGPRINTF( "_mr_readFile:err 2 at \"%s\"!",filename);
                 _mr_readFileShowInfo(filename, 1002);
                 goto err;
             }
             MEMSET(TempName, 0, sizeof(TempName));
             MEMCPY(TempName, &mr_m0_file[pos], len);
-            //MRDBGPRINTF(TempName);
             pos = pos + len;
             if (STRCMP(filename, TempName) == 0) {
                 if (lookfor == 1) {
@@ -1213,20 +1156,17 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                 MEMCPY(&len, &mr_m0_file[pos], 4);
                 pos = pos + 4;
                 if (((len + pos) > m0file_len) || (len < 1) || (len >= MR_MAX_FILE_SIZE)) {
-                    //MRDBGPRINTF( "_mr_readFile:err 4 at \"%s\"!",filename);
                     _mr_readFileShowInfo(filename, 1003);
                     goto err;
                 }
             } else {
                 MEMCPY(&len, &mr_m0_file[pos], 4);
-                //MRDBGPRINTF("l = %d,p = %d", len, pos);
                 pos = pos + 4 + len;
-            } /*if (STRCMP(filename, TempName)==0)*/
+            }
         }
 
         *filelen = len;
         if (*filelen <= 0) {
-            //MRDBGPRINTF("_mr_readFile  \"%s\" len err!", filename);
             _mr_readFileShowInfo(filename, 1005);
             goto err;
         }
@@ -1732,21 +1672,16 @@ static int32 mrc_GetMrpInfoOpen(char* MrpName, int32* IsFixed) {
     MRDBGPRINTF("mrc_GetMrpInfoOpen:%s", MrpName);
     if (!IsFixed || !MrpName)
         return 0;
-    //LIB_EXB_LOG(("mrc_GetMrpInfoOpen:Open file %s",MrpName));
     if (MrpName[0] == '*') { /*m0 file?*/
         *IsFixed = 1;
         Handle = (uint32)mr_m0_files[MrpName[1] - 'A'];
-        //LIB_EXB_LOG(("mrc_GetMrpInfoOpen:Open * file %s,Handle=%0x",MrpName,Handle));
     } else if (MrpName[0] == '$') {
         *IsFixed = 1;
         Handle = (uint32)mr_ram_file;
-        //LIB_EXB_LOG(("mrc_GetMrpInfoOpen:Open $ file %s,Handle=%0x",MrpName,Handle));
     } else {
         *IsFixed = 0;
         Handle = mr_open(MrpName, MR_FILE_RDONLY);
-        //LIB_EXB_LOG(("mrc_GetMrpInfoOpen:Open normal file %s,Handle=%0x",MrpName,Handle));
     }
-    //LIB_EXB_LOG(("mrc_GetMrpInfoOpen:ret Handle %d",Handle));
     return Handle;
 }
 
@@ -1858,35 +1793,6 @@ int32 mrc_GetMrpInfoEx(int32 IsFixed, int32 Handle, E_MRP_INFOID CMD, uint8* Rec
     }
     return ret;
 }
-
-/*
-def pay_getVersion(mrpfilename)
-local firstchar = string.sub(mrpfilename,1,1)
-local sId,appId,appVer
-
-if firstchar == "*" || firstchar == "$" then
-sId = _strCom(600,mrpfilename,68,4)
-appId = _strCom(600,mrpfilename,192,4)
-appVer = _strCom(600,mrpfilename,196,4)
-else
-local f = file.open(mrpfilename, 1)
-if f then
-f:seek(0, 68)
-sId = f:read(4) 
-f:seek(0, 192)
-appId = f:read(4) 
-f:seek(0, 196)
-appVer = f:read(4) 
-f:close()
-end       
-end
-if sId then
-return sId,appId,appVer
-else
-return
-end
-end
-*/
 
 static int32 getAppInfo() {
     int32 IsFixed = 0, Handle = 0;
@@ -2202,18 +2108,12 @@ int32 mr_event(int16 type, int32 param1, int32 param2) {
             if (status != MR_IGNORE)
                 return status;
         }
-
         c_event_st.code = type;
         c_event_st.param0 = param1;
         c_event_st.param1 = param2;
-
         _mr_TestComC(801, (char*)&c_event_st, sizeof(c_event_st), 1);
-
-        //MRDBGPRINTF("after event");
-
         return MR_SUCCESS;  //deal
     }
-
     return MR_IGNORE;  //didnot deal
 }
 
@@ -2279,7 +2179,6 @@ int32 mr_registerAPP(uint8* p, int32 len, int32 index) {
     MRDBGPRINTF("mr_registerAPP mr_m0_files[%d]:%d ", index, mr_m0_files[index]);
     return MR_SUCCESS;
 }
-
 
 //****************************短信
 
@@ -2524,13 +2423,8 @@ int32 _mr_smsAddNum(int32 index, char* pNum) {
 ***********************************************/
 int32 _mr_smsDelNum(int32 index) {
     char num[MR_MAX_NUM_LEN];
-
-    //MRDBGPRINTF("_mr_smsDelNum");
-
     MEMSET(num, 0, MR_MAX_NUM_LEN);
-
     _mr_smsSetBytes(MR_MAX_NUM_LEN * index + MR_SECTION_LEN, num, MR_MAX_NUM_LEN);
-
     return MR_SUCCESS;
 }
 
@@ -2549,18 +2443,14 @@ int32 _mr_smsUpdateURL(uint8* pURL, uint8 len) {
     uint8 flag = 128;
     uint8 out[MR_SECTION_LEN];
 
-    //MRDBGPRINTF("_mr_smsUpdateURL");
     if (len > (((MR_SECTION_LEN - 1) / 4 * 3))) {
         MRDBGPRINTF("url too long");
         return MR_FAILED;
     }
-
     _mr_smsSetBytes(CFG_USE_URL_UPDATE_OFFSET, (char*)&flag, 1);
-
     MEMSET(out, 0, sizeof(out));
     len = _mr_encode(pURL, len, out);
     _mr_smsSetBytes(MR_SECTION_LEN * 3, (char*)out, MR_SECTION_LEN);
-
     return MR_SUCCESS;
 }
 
@@ -2580,23 +2470,15 @@ int32 _mr_smsDsmSave(char* pSMSContent, int32 len) {
     uint8 flag = 128;
     int32 index;
 
-    MRDBGPRINTF("_mr_smsDsmSave");
-
     MEMSET(contnet, 0, MR_SECTION_LEN);
-
     MEMCPY((char*)contnet, (char*)pSMSContent, len);
     index = contnet[2];  //取得消息的位置号
-
     if ((index > 31)) {
         return MR_FAILED;
     }
-
     _mr_smsSetBytes(CFG_USE_SM_UPDATE_OFFSET, (char*)&flag, 1);
-
     _mr_smsSetBytes(CFG_SM_FLAG_OFFSET + index, (char*)&flag, 1);
-
     _mr_smsSetBytes(MR_SECTION_LEN * (index + 4), (char*)contnet, MR_SECTION_LEN);
-
     return MR_SUCCESS;
 }
 
