@@ -81,13 +81,6 @@ extern int32 mr_state;
 
 #define MRDBGPRINTF mr_printf
 
-extern void *mr_malloc_ext(uint32 len) ;
-extern void mr_free_ext(void *p, uint32 len) ;
-extern void *mr_realloc_ext(void *p, uint32 oldlen, uint32 len) ;
-
-// #define MR_MALLOC(a) mr_malloc_ext(a)
-// #define MR_FREE(a, b) mr_free_ext(a, b)
-// #define MR_REALLOC(b, os, s) mr_realloc_ext(b, os, s)
 #define MR_MALLOC(a) mr_malloc(a)
 #define MR_FREE(a, b) mr_free(a, b)
 #define MR_REALLOC(b, os, s) mr_realloc(b, os, s)

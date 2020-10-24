@@ -73,32 +73,31 @@ static void *r9Mythroad;
 static void *r10Mythroad;
 static void *lr;
 
-#define DATA_LEN (sizeof(fixR9_st) + 16)
+// #define DATA_LEN (sizeof(fixR9_st) + 16)
+#define DATA_LEN 0
 
 void *mr_malloc_ext(uint32 len) {
-    // return  mr_malloc(len);
-    char *mem;
-    fixR9_st *ctx;
-    len += DATA_LEN;
-    mem = mr_malloc(len);
-    ctx = (fixR9_st *)mem;
-    fixR9_saveMythroad();
-    ctx->r10Mythroad = r10Mythroad;
-    ctx->r9Mythroad = r9Mythroad;
-    ctx->rwMem1 = mem + CTX_POS;
-    ctx->rwMem2 = ctx->rwMem1;
+    return  mr_malloc(len);
+    // fixR9_st *ctx;
+    char *mem = mr_malloc(len + DATA_LEN);
+    // ctx = (fixR9_st *)mem;
+    // fixR9_saveMythroad();
+    // ctx->r10Mythroad = r10Mythroad;
+    // ctx->r9Mythroad = r9Mythroad;
+    // ctx->rwMem1 = mem + CTX_POS;
+    // ctx->rwMem2 = ctx->rwMem1;
     return (char *)mem + DATA_LEN;
 }
 
 void mr_free_ext(void *p, uint32 len) {
-    // return mr_free(p, len);
-    len += DATA_LEN;
-    mr_free((char *)p - DATA_LEN, len);
+    return mr_free(p, len);
+    mr_free((char *)p - DATA_LEN, len + DATA_LEN);
 }
 
 void *mr_realloc_ext(void *p, uint32 oldlen, uint32 len) {
     mr_printf("mr_realloc_ext");
-    return mr_realloc((char *)p - DATA_LEN, oldlen + DATA_LEN, len + DATA_LEN);
+    // return mr_realloc((char *)p - DATA_LEN, oldlen + DATA_LEN, len + DATA_LEN);
+    return NULL;
 }
 
 void fixR9_saveLR(void *v) {

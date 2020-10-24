@@ -3,29 +3,26 @@
 #include "./include/fixR9.h"
 #include "./include/mythroad.h"
 
-uint32 LG_mem_min;
-uint32 LG_mem_top;
+uint32 LG_mem_min;  // 从未分配过的长度？
+uint32 LG_mem_top;  // 动态申请到达的最高内存值
 LG_mem_free_t LG_mem_free;
 char* LG_mem_base;
 uint32 LG_mem_len;
 char* Origin_LG_mem_base;
 uint32 Origin_LG_mem_len;
 char* LG_mem_end;
-uint32 LG_mem_left;
+uint32 LG_mem_left;  // 剩余内存
 
 #define realLGmemSize(x) (((x) + 7) & (0xfffffff8))
 #define MRDBGPRINTF mr_printf
 
 int32 _mr_mem_init(int32 ram) {
     MRDBGPRINTF("ask Origin_LG_mem_len:%d", Origin_LG_mem_len);
-
     if (mr_mem_get(&Origin_LG_mem_base, &Origin_LG_mem_len) != MR_SUCCESS) {
         MRDBGPRINTF("mr_mem_get failed!");
         return MR_FAILED;
     }
-
     MRDBGPRINTF("got Origin_LG_mem_len:%d", Origin_LG_mem_len);
-
     LG_mem_base = (char*)((uint32)(Origin_LG_mem_base + 3) & (~3));
     LG_mem_len = (Origin_LG_mem_len - (LG_mem_base - Origin_LG_mem_base)) & (~3);
     LG_mem_end = LG_mem_base + LG_mem_len;
@@ -41,6 +38,12 @@ int32 _mr_mem_init(int32 ram) {
     return MR_SUCCESS;
 }
 
+void printMemoryInfo() {
+    mr_printf(".......total:%d, min:%d, free:%d, top:%d", LG_mem_len, LG_mem_min, LG_mem_left, LG_mem_top);
+    mr_printf(".......base:%p, end:%p", LG_mem_base, LG_mem_end);
+    mr_printf(".......obase:%p, olen:%d", Origin_LG_mem_base, Origin_LG_mem_len);
+}
+
 void* mr_malloc(uint32 len) {
     LG_mem_free_t *previous, *nextfree, *l;
     void* ret;
@@ -50,7 +53,6 @@ void* mr_malloc(uint32 len) {
         MRDBGPRINTF("mr_malloc no memory");
         goto err;
     }
-
     if (!len) {
         MRDBGPRINTF("mr_malloc invalid memory request");
         goto err;
@@ -59,7 +61,6 @@ void* mr_malloc(uint32 len) {
         MRDBGPRINTF("mr_malloc corrupted memory");
         goto err;
     }
-
     previous = &LG_mem_free;
     nextfree = (LG_mem_free_t*)(LG_mem_base + previous->next);
     while ((char*)nextfree < LG_mem_end) {
@@ -103,7 +104,6 @@ end:
 
 void mr_free(void* p, uint32 len) {
     LG_mem_free_t *free, *n;
-
     len = (uint32)realLGmemSize(len);
     MRDBGPRINTF("R9:%X free(0x%X, %u)", getR9(), p, len);
 #ifdef MYTHROAD_DEBUG
@@ -113,7 +113,6 @@ void mr_free(void* p, uint32 len) {
         return;
     }
 #endif
-
     free = &LG_mem_free;
     n = (LG_mem_free_t*)(LG_mem_base + free->next);
     while (((char*)n < LG_mem_end) && ((void*)n < p)) {
@@ -147,7 +146,6 @@ void* mr_realloc(void* p, uint32 oldlen, uint32 len) {
     if (p == NULL) {
         return mr_malloc(len);
     }
-
     if (len == 0) {
         mr_free(p, oldlen);
         return NULL;
@@ -156,7 +154,6 @@ void* mr_realloc(void* p, uint32 oldlen, uint32 len) {
     if (newblock == NULL) {
         return newblock;
     }
-
     MEMMOVE(newblock, p, minsize);
     mr_free(p, oldlen);
     return newblock;
