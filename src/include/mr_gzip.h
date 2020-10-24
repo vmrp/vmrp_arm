@@ -6,7 +6,6 @@
 #include "string.h"
 
 #define memzero(s, n) memset2((void *)(s), 0, (n))
-#define MRDBGPRINTF mr_printf
 
 #define local static
 

@@ -2,7 +2,6 @@
 #include "encode.h"
 
 #include "mr.h"
-#include "mr_forvm.h"
 
 #define MR_PLAT_U2C
 

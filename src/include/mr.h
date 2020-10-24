@@ -6,6 +6,7 @@
 #include "printf.h"
 #include "string.h"
 #include "type.h"
+#include "mrporting.h"
 
 #define MR_START_FILE "start.mr"
 #define MR_ERROR_WAP "https://github.com/zengming00/vmrp"
@@ -14,9 +15,7 @@
 #define COMPATIBILITY01
 
 #define MR_MAX_FILENAME_SIZE 128
-
-#define MR_MAX_FILE_SIZE 0x7FFFFFFF
-
+#define MR_MAX_FILE_SIZE 1024000
 #define MRP_L_BUFFERSIZE 256
 
 /*
@@ -64,7 +63,6 @@ int mr_islower(int ch);
 #define LUADBGPRINTF2(a, b, c)
 #endif
 
-#include "mr_forvm.h"
 
 //////////////////////////////////////////////
 enum {
@@ -76,12 +74,6 @@ enum {
     MR_STATE_ERROR
 };
 
-enum {
-    MR_TIMER_STATE_IDLE,
-    MR_TIMER_STATE_RUNNING,
-    MR_TIMER_STATE_SUSPENDED,
-    MR_TIMER_STATE_ERROR
-};
 
 extern int32 mr_state;
 //////////////////////////////////////////////

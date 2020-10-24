@@ -2,6 +2,7 @@
 #define HELPER_H_INCLUDED
 
 #include "mrporting.h"
+#include "md5.h"
 
 typedef void (*mrc_timerCB)(int32 data);
 
@@ -161,15 +162,6 @@ typedef struct {
 typedef struct {
     uint16 h;
 } mr_spriteSt;
-
-typedef unsigned char md5_byte_t; /* 8-bit byte */
-typedef unsigned int md5_word_t;  /* 32-bit word */
-
-typedef struct md5_state_s {
-    md5_word_t count[2]; /* message length in bits, lsw first */
-    md5_word_t abcd[4];  /* digest buffer */
-    md5_byte_t buf[64];  /* accumulate block */
-} md5_state_t;
 
 typedef struct {
     uint16* p;
@@ -552,9 +544,6 @@ typedef struct _mr_c_function_st {
     int32 stack;                    //stack shell 2008-2-28
 } mr_c_function_st;
 
-#define MR_MAX_FILENAME_SIZE 128
-
-#define MR_MAX_FILE_SIZE 1024000
 
 #define MR_MINIMUM_TIMER 10
 #define MR_MINIMUM_TIMER_OUT 50
@@ -565,10 +554,6 @@ typedef struct _mr_c_function_st {
 
 #define MR_SCREEN_DEEP 2
 
-/*下面的MAKERGB是MR平台内部的*/
-#define MAKERGB(r, g, b) (uint16)(((uint32)(r >> 3) << 11) + ((uint32)(g >> 2) << 5) + ((uint32)(b >> 3)))
-
-#define MR_SCREEN_CACHE_POINT(x, y) (mr_screenBuf + y * MR_SCREEN_MAX_W + x)
 
 /*
  *  zefang_wang 2010.12.21 :
@@ -617,22 +602,6 @@ enum {
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define ABS(VAL) (((VAL) > 0) ? (VAL) : (-(VAL)))
-
-enum {
-    MR_TIMER_STATE_IDLE,
-    MR_TIMER_STATE_RUNNING,
-    MR_TIMER_STATE_SUSPENDED,
-    MR_TIMER_STATE_ERROR
-};
-
-enum {
-    MR_STATE_IDLE,
-    MR_STATE_RUN,
-    MR_STATE_PAUSE,
-    MR_STATE_RESTART,
-    MR_STATE_STOP,
-    MR_STATE_ERROR
-};
 
 #define MRC_TIME_START(a)                        \
     {                                            \

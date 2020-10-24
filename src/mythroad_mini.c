@@ -4,9 +4,9 @@
 #include "./include/mr.h"
 #include "./include/mr_auxlib.h"
 #include "./include/mr_encode.h"
-#include "./include/mr_forvm.h"
 #include "./include/mr_graphics.h"
 #include "./include/mr_gzip.h"
+#include "./include/mr_helper.h"
 #include "./include/mr_lib.h"
 #include "./include/mr_socket_target.h"
 #include "./include/mr_tcp_target.h"
@@ -159,7 +159,6 @@ static const unsigned char* mr_m0_files[50];
 static const void* _mr_c_internal_table[17];
 static void* _mr_c_port_table[4];
 static void* _mr_c_function_table[150];
-
 
 void writeFile(char* filename, void* p, uint32 l) {
     int32 f = mr_open(filename, MR_FILE_WRONLY | MR_FILE_CREATE);
@@ -1590,7 +1589,7 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             // clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
             // invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
             mr_printf("[WARN]_mr_TestCom1 mr_cacheSyncRaw 0x%p, %d", input1, len);
-            writeFile("dump.data",input1, len );
+            // writeFile("dump.data", input1, len);
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
             break;
         }

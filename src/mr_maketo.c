@@ -13,7 +13,6 @@
 /* Exported function */
 TO_MR_API int to_mr_mythroad_open (mrp_State* to_mr_S);
 
-#include "mr_forvm.h"
 #include "mr_formaketo.h"
 
 /* function to register type */
