@@ -1097,7 +1097,8 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
 
     MRDBGPRINTF("_mr_readFile('%s', %p, %d)", filename, filelen, lookfor);
 
-    if ((pack_filename[0] == '*') || (pack_filename[0] == '$')) { // 插件化mrp会使用到这部分代码
+    // 插件化mrp会使用到这部分代码，pack_filename="$",构造一个特殊的mrp放到mr_ram_file和mr_ram_file_len传进来
+    if ((pack_filename[0] == '*') || (pack_filename[0] == '$')) {
         char* mr_m0_file;
         uint32 pos = 0;
         uint32 m0file_len;
@@ -1311,10 +1312,11 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
         goto end;
     }
 
-    reallen = (uint32)(((uch*)filebuf)[*filelen - 4]);
-    reallen |= (uint32)(((uch*)filebuf)[*filelen - 3]) << 8;
-    reallen |= (uint32)(((uch*)filebuf)[*filelen - 2]) << 16;
-    reallen |= (uint32)(((uch*)filebuf)[*filelen - 1]) << 24;
+    // reallen = (uint32)(((uch*)filebuf)[*filelen - 4]);
+    // reallen |= (uint32)(((uch*)filebuf)[*filelen - 3]) << 8;
+    // reallen |= (uint32)(((uch*)filebuf)[*filelen - 2]) << 16;
+    // reallen |= (uint32)(((uch*)filebuf)[*filelen - 1]) << 24;
+    reallen = *(uint32*)((uint8*)filebuf + *filelen - sizeof(uint32));
 
     oldlen = *filelen;
     *filelen = reallen;
