@@ -189,6 +189,14 @@ typedef struct {
 	uint32	ClrImportant;
 }mr_bitmap_file_header;
 */
+typedef struct SaveF {
+  int32 f;
+} SaveF;
+
+typedef struct LoadF {
+  int32 f;
+  char buff[MRP_L_BUFFERSIZE];
+} LoadF;
 
 
 #define MR_FLAGS_BI     1
@@ -197,6 +205,7 @@ typedef struct {
 #define MR_FLAGS_EI     8
 
 
+void * _mr_readFile(const char* filename, int *filelen, int lookfor);
 
 extern int32 _mr_smsGetBytes(int32 pos, char* p, int32 len);
 extern void _mr_showErrorInfo(const char *errstr);
@@ -242,5 +251,12 @@ extern int32 mr_c_function_load(int32 code);
 #endif
 
 void mr_getMemoryInfo(uint32 *total, uint32 *free, uint32 *top);
+
+/*下面是当不能取得屏幕缓冲指针时使用的接口 (不完全)   */
+//extern void mr_drawBitmap(uint16* bmp, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcolor);
+//extern void mr_drawRect(int16 x, int16 y, uint16 w, uint16 h, uint32 color);
+//extern int mr_check(uint16*p, int16 x, int16 y, uint16 w, uint16 h, uint16 transcoler, uint16 color_check);
+//extern void mr_effect(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb);
+
 
 #endif

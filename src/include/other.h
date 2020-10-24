@@ -7,6 +7,7 @@
 #include "type.h"
 
 #define atoi2 atol2
+#define mr_wstrlen wstrlen
 
 uint32 mr_updcrc(uint8 *s, unsigned n);
 int wstrlen(char *txt);

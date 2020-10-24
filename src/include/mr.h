@@ -10,7 +10,6 @@
 #define MR_START_FILE "start.mr"
 #define MR_ERROR_WAP "https://github.com/zengming00/vmrp"
 
-#define MR_OFFSET_FORM_FILEHEAD 16
 
 #define COMPATIBILITY01
 

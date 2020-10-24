@@ -582,7 +582,6 @@ typedef struct _mr_c_function_st {
 #define MR_IS_DIR 2      //目录
 #define MR_IS_INVALID 8  //无效(非文件、非目录)
 
-
 #define MR_SPRITE_INDEX_MASK (0x03FF)  // mask of bits used for tile index
 #define MR_SPRITE_TRANSPARENT (0x0400)
 
@@ -704,7 +703,6 @@ enum {
     MRC_EXT_MPS_EVENT
 };
 
-
 typedef struct _mrcMpsFpCallParamsSt {
     mpsFpFuncType func;
     int32 p0;
@@ -723,11 +721,9 @@ typedef struct _mrcMpsFpEventParamsSt {
     int32 p5;
 } mrcMpsFpEventParamsSt;
 
-
 //extern int32 mrc_initNetworkCbState;
 extern MR_INIT_NETWORK_CB mrc_initNetworkCbFunc;
 extern MR_GET_HOST_CB mr_getHostByNameCbFunc;
-
 
 #if 1
 #define MRC_MALLOC(size) mrc_malloc(size)

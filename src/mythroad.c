@@ -5747,51 +5747,6 @@ static int _mr_isMr(char* input) {
     return ret;
 }
 
-int FF_Divide(int dividend, int divisor) {
-    int i;
-    int remainder1, remainder2, div;
-    int temp;
-    int result = 0;
-    int flag;
-
-    if (divisor == 0)
-        return 0x7fFFFFFF;
-
-    remainder2 = dividend;
-    if (remainder2 < 0) remainder2 = -remainder2;
-    div = divisor;
-    if (div < 0) div = -div;
-
-    result = (int)(remainder2 / div);
-    result = (result << 15);  //INT fraction
-
-    //FLOAT fraction
-    remainder1 = (int)(remainder2 % div);
-    remainder1 = (remainder1 << 1);
-    remainder2 = 0;
-
-    for (i = 0; i < 15; i++) {
-        temp = remainder1;
-        remainder1 -= div;
-        flag = 1;
-        if (remainder1 < 0) {
-            remainder1 = temp;
-            flag = 0;
-        }
-        remainder1 = (remainder1 << 1);
-        remainder2 = (remainder2 << 1);
-        if (flag)
-            remainder2 = remainder2 + 1;
-    }
-
-    result += remainder2;
-
-    if (((dividend > 0) && (divisor < 0)) || ((dividend < 0) && (divisor > 0)))
-        result = -result;
-
-    return result;
-}
-
 uint32 mr_ltoh(char* startAddr) {
     return (startAddr[3] << 24) | ((startAddr[2] & 0xff) << 16) | ((startAddr[1] & 0xff) << 8) | (startAddr[0] & 0xff);
 }

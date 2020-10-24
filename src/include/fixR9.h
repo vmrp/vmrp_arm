@@ -7,7 +7,7 @@
 #include "mythroad.h"
 #include "type.h"
 
-#ifdef __GNUC__2
+#ifdef __GNUC__
 #define fixR9_saveMythroad()
 extern void *getR9(void);
 extern void setR9(void *value);

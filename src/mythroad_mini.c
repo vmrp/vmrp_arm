@@ -160,6 +160,16 @@ static const void* _mr_c_internal_table[17];
 static void* _mr_c_port_table[4];
 static void* _mr_c_function_table[150];
 
+
+void writeFile(char* filename, void* p, uint32 l) {
+    int32 f = mr_open(filename, MR_FILE_WRONLY | MR_FILE_CREATE);
+
+    if (mr_write(f, (void*)p, l) != (int32)l) {
+        MRDBGPRINTF("writeFile err");
+    }
+    mr_close(f);
+}
+
 static int32 _mr_div(int32 a, int32 b) {
     return a / b;
 }
@@ -1580,6 +1590,7 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             // clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
             // invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
             mr_printf("[WARN]_mr_TestCom1 mr_cacheSyncRaw 0x%p, %d", input1, len);
+            writeFile("dump.data",input1, len );
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
             break;
         }
@@ -2818,40 +2829,6 @@ err:
 
 //****************************短信
 
-int32 mr_save_mrp(void* p, uint32 l) {
-    char filename[15];
-    int32 f;
-
-    if (p == NULL || l == 0) {
-        return MR_FAILED;
-    }
-
-    if ((*(char*)p == 'M') && (*((char*)p + 1) == 'R') && (*((char*)p + 2) == 'P') && (*((char*)p + 3) == 'G')) {
-        MEMSET(filename, 0, sizeof(filename));
-        MEMCPY(filename, (char*)p + MR_OFFSET_FORM_FILEHEAD, 12);
-
-        /*if the same name file is exist, cover it*/
-        //if(mr_ffsStat(fileName, fsize))
-        {
-            mr_remove(filename);
-        }
-
-        f = mr_open(filename, MR_FILE_WRONLY | MR_FILE_CREATE);
-
-        if (f != 0) {
-            if (mr_write(f, (void*)p, l) != (int32)l) {
-                mr_close(f);
-                return MR_FAILED;
-            }
-        }
-
-        mr_close(f);
-        return MR_SUCCESS;
-    } else {
-        return MR_IGNORE;
-    }
-}
-
 static void encode02(char* value, int len, unsigned char cBgnInit, unsigned char cEndInit)  //简单加密
 {
     int iLeft;
@@ -2908,51 +2885,6 @@ int _mr_isMr(char* input) {
     return ret;
 }
 
-int FF_Divide(int dividend, int divisor) {
-    int i;
-    int remainder1, remainder2, div;
-    int temp;
-    int result = 0;
-    int flag;
-
-    if (divisor == 0)
-        return 0x7fFFFFFF;
-
-    remainder2 = dividend;
-    if (remainder2 < 0) remainder2 = -remainder2;
-    div = divisor;
-    if (div < 0) div = -div;
-
-    result = (int)(remainder2 / div);
-    result = (result << 15);  //INT fraction
-
-    //FLOAT fraction
-    remainder1 = (int)(remainder2 % div);
-    remainder1 = (remainder1 << 1);
-    remainder2 = 0;
-
-    for (i = 0; i < 15; i++) {
-        temp = remainder1;
-        remainder1 -= div;
-        flag = 1;
-        if (remainder1 < 0) {
-            remainder1 = temp;
-            flag = 0;
-        }
-        remainder1 = (remainder1 << 1);
-        remainder2 = (remainder2 << 1);
-        if (flag)
-            remainder2 = remainder2 + 1;
-    }
-
-    result += remainder2;
-
-    if (((dividend > 0) && (divisor < 0)) || ((dividend < 0) && (divisor > 0)))
-        result = -result;
-
-    return result;
-}
-
 uint32 mr_ltoh(char* startAddr) {
     return (startAddr[3] << 24) | ((startAddr[2] & 0xff) << 16) | ((startAddr[1] & 0xff) << 8) | (startAddr[0] & 0xff);
 }
@@ -2967,9 +2899,7 @@ int32 _mr_getMetaMemLimit() {
     int32 nTmp;
     int32 len = 0, file_len = 0;
     // void* workbuffer = NULL;
-
     int32 f;
-
     char TempName[MR_MAX_FILENAME_SIZE];
     // int is_rom_file = FALSE;
     uint32 headbuf[4];
@@ -2979,89 +2909,66 @@ int32 _mr_getMetaMemLimit() {
     int32 memValue;
 
     this_packname = pack_filename;
-
     if ((this_packname[0] == '*') || (this_packname[0] == '$')) {
         /*read file from m0*/
         uint32 pos = 0;
         uint32 m0file_len;
 
         if (this_packname[0] == '*') {                                /*m0 file?*/
-            mr_m0_file = (char*)mr_m0_files[this_packname[1] - 'A'];  //这里定义文件名为*A即是第一个m0文件
-                                                                      //*B是第二个.........
+            mr_m0_file = (char*)mr_m0_files[this_packname[1] - 'A'];  //这里定义文件名为*A即是第一个m0文件,*B是第二个.........
         } else {
             mr_m0_file = mr_ram_file;
         }
-
         if (mr_m0_file == NULL) {
             return 0;
         }
-
         pos = pos + 4;
         MEMCPY(&_v[0], &mr_m0_file[pos], 4);
-
         len = mr_ltoh((char*)_v);
-
         pos = pos + 4;
-
         if ((this_packname[0] == '$')) {
             m0file_len = mr_ram_file_len;
         } else {
             MEMCPY(&_v[0], &mr_m0_file[pos], 4);
-
             m0file_len = mr_ltoh((char*)_v);
         }
-
         pos = pos + len;
-
         if (((pos + 4) >= m0file_len) || (len < 1) || (len >= MR_MAX_FILE_SIZE)) {
             return 0;
         }
         MEMCPY(&_v[0], &mr_m0_file[pos], 4);
-
         len = mr_ltoh((char*)_v);
-
         pos = pos + 4;
         if (((len + pos) >= m0file_len) || (len < 1) || (len >= MR_MAX_FILENAME_SIZE)) {
             return 0;
         }
-
         MEMCPY(TempName, &mr_m0_file[pos], len);
         TempName[len] = 0;
-
         pos = pos + len;
         if (STRCMP(CFG_FILENAME, TempName) == 0) {
             MEMCPY(&_v[0], &mr_m0_file[pos], 4);
-
             len = mr_ltoh((char*)_v);
-
             pos = pos + 4;
-
             if (((len + pos) > m0file_len) || (len < 1) || (len >= MR_MAX_FILE_SIZE)) {
                 return 0;
             }
         } else {
             return 0;
         }
-
         file_len = len;
         if (file_len <= 0) {
             return 0;
         }
-
         pos += 3 * 4;
         MEMCPY(&_v[0], &mr_m0_file[pos], 4);
-    } else /*read file from efs , EFS 中的文件*/
-    {
+    } else { /*read file from efs , EFS 中的文件*/
         f = mr_open(this_packname, MR_FILE_RDONLY);
-
         MEMSET(headbuf, 0, sizeof(headbuf));
         nTmp = mr_read(f, &headbuf, sizeof(headbuf));
-
         headbuf[0] = mr_ltoh((char*)&headbuf[0]);
         headbuf[1] = mr_ltoh((char*)&headbuf[1]);
         headbuf[2] = mr_ltoh((char*)&headbuf[2]);
         headbuf[3] = mr_ltoh((char*)&headbuf[3]);
-
         if ((nTmp != 16) || (headbuf[0] != 1196446285) || (headbuf[1] <= 232)) {
             mr_close(f);
             return 0;
@@ -3076,43 +2983,33 @@ int32 _mr_getMetaMemLimit() {
                 mr_close(f);
                 return 0;
             }
-
             nTmp = mr_read(f, &_v[0], 4);
             if (nTmp != 4) {
                 mr_close(f);
                 return 0;
             }
-
             len = mr_ltoh((char*)_v);
-
             pos = pos + 4;
             if (((len + pos) > indexlen) || (len < 1) || (len >= MR_MAX_FILENAME_SIZE)) {
                 mr_close(f);
-
                 return 0;
             }
-
             nTmp = mr_read(f, &TempName[0], len);
             if (nTmp != len) {
                 mr_close(f);
                 return 0;
             }
-
             TempName[len] = 0;
-
             pos = pos + len;
             if (STRCMP(CFG_FILENAME, TempName) == 0) {
                 nTmp = mr_read(f, &_v[0], 4);
                 pos = pos + 4;
                 file_pos = mr_ltoh((char*)_v);
-
                 nTmp = mr_read(f, &_v[0], 4);
                 pos = pos + 4;
                 file_len = mr_ltoh((char*)_v);
-
                 if ((file_pos + file_len) > headbuf[2]) {
                     mr_close(f);
-
                     return 0;
                 }
             } else {
@@ -3120,7 +3017,6 @@ int32 _mr_getMetaMemLimit() {
                 MRDBGPRINTF("can not found %s", CFG_FILENAME);
                 return 0;
             }
-
             nTmp = mr_seek(f, file_pos + 3 * 4, MR_SEEK_SET); /*精简虚拟器读取第四个int32*/
             if (nTmp < 0) {
                 mr_close(f);
@@ -3133,9 +3029,7 @@ int32 _mr_getMetaMemLimit() {
             }
         }
     }
-
     memValue = mr_ntohl((char*)_v);
-
     return memValue;
 }
 

@@ -1086,6 +1086,37 @@ TO_MR_API int to_mr_mythroad_open (mrp_State* to_mr_S)
  to_mr_module(to_mr_S,NULL,0);
  to_mr_beginmodule(to_mr_S,NULL);
 /*
+#define TIMERMAX  10
+enum {
+   K_0,               //按键 0
+   K_1,               //按键 1
+   K_2,               //按键 2
+   K_3,               //按键 3
+   K_4,               //按键 4
+   K_5,               //按键 5
+   K_6,               //按键 6
+   K_7,               //按键 7
+   K_8,               //按键 8
+   K_9,               //按键 9
+   K_STAR,            //按键 *
+   K_POUND,           //按键 #
+   K_UP,              //按键 上
+   K_DOWN,            //按键 下
+   K_LEFT,            //按键 左
+   K_RIGHT,           //按键 右
+   K_POWER,           //按键 挂机键
+   K_SOFTLEFT,        //按键 左软键
+   K_SOFTRIGHT,       //按键 右软键
+   K_SEND,            //按键 接听键
+   K_SELECT           //按键 确认/选择（若方向键中间有确认键，建议设为该键）
+};
+
+enum {
+   K_PRESS,
+   K_RELEASE,
+   K_CLICK,
+   K_CLICK_UP
+};
  to_mr_constant(to_mr_S,"BM_OR",BM_OR);
  to_mr_constant(to_mr_S,"BM_XOR",BM_XOR);
  to_mr_constant(to_mr_S,"BM_COPY",BM_COPY);

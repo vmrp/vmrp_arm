@@ -74,8 +74,6 @@ extern void *mr_malloc(uint32 len);
 extern void mr_free(void *p, uint32 len);
 extern void *mr_realloc(void *p, uint32 oldlen, uint32 len);
 
-void fixR9_saveMythroad() ;
-
 void *mr_malloc_ext(uint32 len) {
     char *mem;
     fixR9_st *ctx;
@@ -109,7 +107,7 @@ void *fixR9_getLR() {
     return lr;
 }
 
-#ifndef __GNUC__2
+#ifndef __GNUC__
 
 static BOOL isInExt;
 static void *r9Ext;
