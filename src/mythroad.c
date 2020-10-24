@@ -11,7 +11,6 @@
 #include "./include/mr_socket_target.h"
 #include "./include/mr_store.h"
 #include "./include/mr_tcp_target.h"
-#include "./include/mrcomm.h"
 #include "./include/mrporting.h"
 #include "./include/other.h"
 #include "./include/printf.h"
@@ -162,9 +161,6 @@ int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transco
 void* _mr_readFile(const char* filename, int* filelen, int lookfor);
 int32 mr_registerAPP(uint8* p, int32 len, int32 index);
 
-void* mr_malloc(uint32 len);
-void mr_free(void* p, uint32 len);
-void* mr_realloc(void* p, uint32 oldlen, uint32 len);
 int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len);
 static int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb);
 static int _mr_TestCom(mrp_State* L, int input0, int input1);
@@ -288,9 +284,9 @@ static const void* _mr_c_function_table[150];
 #endif
 
 static void _mr_c_function_table_init() {
-    _mr_c_function_table[0] = (void*)mr_malloc;
-    _mr_c_function_table[1] = (void*)mr_free;
-    _mr_c_function_table[2] = (void*)mr_realloc;  // 3
+    _mr_c_function_table[0] = (void*)MR_MALLOC;
+    _mr_c_function_table[1] = (void*)MR_FREE;
+    _mr_c_function_table[2] = (void*)MR_REALLOC;  // 3
 
     _mr_c_function_table[3] = (void*)memcpy2;
     _mr_c_function_table[4] = (void*)memmove2;
@@ -5930,11 +5926,7 @@ int32 _mr_getMetaMemLimit() {
     return memValue;
 }
 
-void mr_getMemoryInfo(uint32* total, uint32* free, uint32* top) {
-    if (total) *total = LG_mem_len;
-    if (free) *free = LG_mem_left;
-    if (top) *top = LG_mem_top;
-}
+
 
 void mythroad_init(void) {
     memset2(_mr_c_port_table, 0, sizeof(_mr_c_port_table));

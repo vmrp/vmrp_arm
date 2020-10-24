@@ -2,7 +2,6 @@
 
 #include "./include/mr.h"
 #include "./include/mr_helper.h"
-#include "./include/mrcomm.h"
 #include "./include/mythroad.h"
 #include "./include/string.h"
 

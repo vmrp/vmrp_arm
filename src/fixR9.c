@@ -66,18 +66,20 @@ typedef struct fixR9_st {
     void *rwMem2;
 } fixR9_st;
 
+static BOOL isInExt;
+static void *r9Ext;
+static void *r10Ext;
 static void *r9Mythroad;
 static void *r10Mythroad;
 static void *lr;
 
-extern void *mr_malloc(uint32 len);
-extern void mr_free(void *p, uint32 len);
-extern void *mr_realloc(void *p, uint32 oldlen, uint32 len);
+#define DATA_LEN (sizeof(fixR9_st) + 16)
 
 void *mr_malloc_ext(uint32 len) {
+    // return  mr_malloc(len);
     char *mem;
     fixR9_st *ctx;
-    len += sizeof(fixR9_st);
+    len += DATA_LEN;
     mem = mr_malloc(len);
     ctx = (fixR9_st *)mem;
     fixR9_saveMythroad();
@@ -85,18 +87,18 @@ void *mr_malloc_ext(uint32 len) {
     ctx->r9Mythroad = r9Mythroad;
     ctx->rwMem1 = mem + CTX_POS;
     ctx->rwMem2 = ctx->rwMem1;
-    return (char *)mem + sizeof(fixR9_st);
+    return (char *)mem + DATA_LEN;
 }
 
 void mr_free_ext(void *p, uint32 len) {
-    len += sizeof(fixR9_st);
-    mr_free((char *)p - sizeof(fixR9_st), len);
+    // return mr_free(p, len);
+    len += DATA_LEN;
+    mr_free((char *)p - DATA_LEN, len);
 }
 
 void *mr_realloc_ext(void *p, uint32 oldlen, uint32 len) {
-    oldlen += sizeof(fixR9_st);
-    len += sizeof(fixR9_st);
-    return mr_realloc((char *)p - sizeof(fixR9_st), oldlen, len);
+    mr_printf("mr_realloc_ext");
+    return mr_realloc((char *)p - DATA_LEN, oldlen + DATA_LEN, len + DATA_LEN);
 }
 
 void fixR9_saveLR(void *v) {
@@ -107,12 +109,6 @@ void *fixR9_getLR() {
     return lr;
 }
 
-#ifndef __GNUC__
-
-static BOOL isInExt;
-static void *r9Ext;
-static void *r10Ext;
-
 void fixR9_saveMythroad() {
     r9Mythroad = getR9();
     r10Mythroad = getR10();
@@ -121,6 +117,8 @@ void fixR9_saveMythroad() {
 void fixR9_begin() {  // 注意，这里可能在ext空间执行，不能直接使用context
     void *r9v = getR9();
     void *r10v = getR10();
+    mr_printf("fixR9_begin");
+    return;
     if ((uint32)r9v > CTX_POS) {
         // todo 注意，因为r9的值不确定，所以ctx有可能会是个无效的内存地址，导致程序崩溃，目前还不知道怎样获得有效地址的范围
         fixR9_st *ctx = (fixR9_st *)((char *)r9v - CTX_POS);
@@ -137,38 +135,11 @@ void fixR9_begin() {  // 注意，这里可能在ext空间执行，不能直接�
 }
 
 void fixR9_end() {
+    mr_printf("fixR9_end");
+    return;
     if (isInExt) {
         isInExt = FALSE;
         mr_printf("fixR9_end() r9:%p, r10:%p, r9:%p, r10:%p", r9Ext, r10Ext, r9Mythroad, r10Mythroad);
         setR9R10(r9Ext, r10Ext);
     }
 }
-
-#else
-
-void *getR9() {
-    register void *ret;
-    asm("MOV %[result], r9"
-        : [ result ] "=r"(ret));
-    return ret;
-}
-
-void setR9(void *value) {
-    asm("MOV r9, %[input_value]"
-        :
-        : [ input_value ] "r"(value));
-}
-
-void *getR10() {
-    register void *ret;
-    asm("MOV %[result], r10"
-        : [ result ] "=r"(ret));
-    return ret;
-}
-
-void setR10(void *value) {
-    asm("MOV r10, %[input_value]"
-        :
-        : [ input_value ] "r"(value));
-}
-#endif

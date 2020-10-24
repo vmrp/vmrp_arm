@@ -118,6 +118,26 @@ typedef struct {
         *(uint8*)p++ = ((v)&0xff000000) >> 24; \
     }
 
+#define MR_SCREEN_W mr_screen_w
+#define MR_SCREEN_MAX_W MR_SCREEN_W
+#define MR_SCREEN_H mr_screen_h
+#define MR_SCREEN_DEEP 2
+
+#define BITMAPMAX 30
+#define SPRITEMAX 10
+#define TILEMAX 3
+
+#define SOUNDMAX 5
+
+#define MR_SPRITE_INDEX_MASK (0x03FF)  // mask of bits used for tile index
+#define MR_SPRITE_TRANSPARENT (0x0400)
+
+#define MR_TILE_SHIFT (11)
+
+#define MR_ROTATE_0 (0)
+#define MR_ROTATE_90 (1)
+#define MR_ROTATE_180 (2)
+#define MR_ROTATE_270 (3)
 /* 54 byte */
 /*
 typedef struct {
@@ -194,7 +214,6 @@ typedef void (*mrc_timerCB)(int32 data);
 extern int32 mr_c_function_load(int32 code);
 #endif
 
-void mr_getMemoryInfo(uint32* total, uint32* free, uint32* top);
 
 /*下面是当不能取得屏幕缓冲指针时使用的接口 (不完全)   */
 //extern void mr_drawBitmap(uint16* bmp, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcolor);

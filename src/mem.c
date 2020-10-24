@@ -1,5 +1,6 @@
 #include "./include/mem.h"
 
+#include "./include/fixR9.h"
 #include "./include/mythroad.h"
 
 uint32 LG_mem_min;

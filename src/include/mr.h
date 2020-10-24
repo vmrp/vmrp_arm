@@ -7,6 +7,7 @@
 #include "string.h"
 #include "type.h"
 #include "mrporting.h"
+#include "mem.h"
 
 #define MR_START_FILE "start.mr"
 #define MR_ERROR_WAP "https://github.com/zengming00/vmrp"
@@ -78,24 +79,24 @@ enum {
 extern int32 mr_state;
 //////////////////////////////////////////////
 
-/*内存申请*/
-extern void *mr_malloc(uint32 len);
-/*内存释放*/
-extern void mr_free(void *p, uint32 len);
-/*内存重新分配*/
-extern void *mr_realloc(void *p, uint32 oldlen, uint32 len);
-
 #define MRDBGPRINTF mr_printf
 
+extern void *mr_malloc_ext(uint32 len) ;
+extern void mr_free_ext(void *p, uint32 len) ;
+extern void *mr_realloc_ext(void *p, uint32 oldlen, uint32 len) ;
+
+// #define MR_MALLOC(a) mr_malloc_ext(a)
+// #define MR_FREE(a, b) mr_free_ext(a, b)
+// #define MR_REALLOC(b, os, s) mr_realloc_ext(b, os, s)
 #define MR_MALLOC(a) mr_malloc(a)
 #define MR_FREE(a, b) mr_free(a, b)
 #define MR_REALLOC(b, os, s) mr_realloc(b, os, s)
+
 
 #define STRCSPN strcspn2
 #define STRNCAT strncat2
 #define STRPBRK strpbrk2
 
-#define ABS(VAL) (((VAL) > 0) ? (VAL) : (-(VAL)))
 
 #define STRCOLL strcmp2
 #define MEMCPY(dest, src, size) memcpy2((dest), (src), (size))
@@ -158,21 +159,8 @@ extern void *mr_realloc(void *p, uint32 oldlen, uint32 len);
 #define WSTRCOMPRESS(ps, ns, pd, nd) wstrcompress((ps), (ns), (pd), (nd))
 #define STREXPAND(ps, ns, pd, nd) strexpand((ps), (ns), (pd), (nd))
 
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define MIN(x, y) (((x) < (y)) ? (x) : (y))
-#ifndef ABS
-#define ABS(VAL) (((VAL) > 0) ? (VAL) : (-(VAL)))
-#endif
-
 #define STRTOL strtol2
 
-#ifdef BREW_MOD
-#define MR_MALLOC(a) MALLOC(a)
-#define MR_FREE(a, b) FREE(a)
-#define MR_REALLOC(b, os, s) REALLOC(b, s)  //ouli TI
-
-#define MRDBGPRINTF DBGPRINTF
-#endif
 
 //#ifdef MR_V2000
 //#define MR_VERSION	2009     //升级版本前进行版本备份

@@ -2,8 +2,7 @@
 #ifndef _MEM_H__
 #define _MEM_H__
 
-#include "fixR9.h"
-#include "mrporting.h"
+#include "type.h"
 
 typedef struct {
     uint32 next;

@@ -10,7 +10,6 @@
 #include "./include/mr_lib.h"
 #include "./include/mr_socket_target.h"
 #include "./include/mr_tcp_target.h"
-#include "./include/mrcomm.h"
 #include "./include/mrporting.h"
 #include "./include/mythroad.h"
 #include "./include/string.h"
@@ -3036,12 +3035,6 @@ void mr_getScrBuf(uint16** buf, int32* width, int32* height) {
     if (buf) *buf = mr_screenBuf;
     if (width) *width = mr_screen_w;
     if (height) *height = mr_screen_h;
-}
-
-void mr_getMemoryInfo(uint32* total, uint32* free, uint32* top) {
-    if (total) *total = LG_mem_len;
-    if (free) *free = LG_mem_left;
-    if (top) *top = LG_mem_top;
 }
 
 void mr_setScrBuf(uint16* buf) {

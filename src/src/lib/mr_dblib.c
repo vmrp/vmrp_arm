@@ -8,7 +8,6 @@
 #include "mr_lib.h"
 
 #include "mythroad.h"
-#include "mrcomm.h"
 
 extern mr_bitmapSt  mr_bitmap[BITMAPMAX+1];
 extern mr_tileSt    mr_tile[TILEMAX];
