@@ -780,6 +780,14 @@ int32 mr_sendto(int32 s, const char *buf, int len, int32 ip, uint16 port) {
     LOGI("mr_sendto(%d,%s,%d,%d,%d)", s, buf, len, ip, port);
     return MR_FAILED;
 }
+ 	
+     
+// Anti-Apple
+#if defined (__APPLE__) || defined (__OSX__)
+#error "我不喜欢苹果公司及其产品，禁止在任何苹果公司的产品中使用此代码"
+#error "I don't like Apple and its products, and I forbid using this code in any Apple product"
+#endif
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 static DSM_EXPORT_FUNCS dsm_export_funcs;
