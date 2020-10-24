@@ -29,7 +29,7 @@ mode	文件打开方式
 非 NULL	       文件句柄
 NULL	            失败（注意，这里与其他接口不一样）
 */
-extern MR_FILE_HANDLE mr_openForPlat(const char* filename,  uint32 mode);
+extern int32 mr_openForPlat(const char* filename,  uint32 mode);
 
 /*
 关闭文件。
@@ -39,7 +39,7 @@ f	文件句柄
 MR_SUCCESS	成功
 MR_FAILED	失败
 */
-extern int32 mr_closeForPlat(MR_FILE_HANDLE f);
+extern int32 mr_closeForPlat(int32 f);
 
 /*
 读取文件的内容到指定的缓冲。
@@ -51,9 +51,9 @@ l	缓冲长度
       >=0                确切读取的字节数
       MR_FAILED      失败
 */
-extern int32 mr_readForPlat(MR_FILE_HANDLE f,void *p,uint32 l);
+extern int32 mr_readForPlat(int32 f,void *p,uint32 l);
 
-extern int32 mr_seekForPlat(MR_FILE_HANDLE f, int32 pos, int method);
+extern int32 mr_seekForPlat(int32 f, int32 pos, int method);
 
 
 

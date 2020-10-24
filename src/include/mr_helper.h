@@ -582,8 +582,6 @@ typedef struct _mr_c_function_st {
 #define MR_IS_DIR 2      //目录
 #define MR_IS_INVALID 8  //无效(非文件、非目录)
 
-#define MR_FILE_HANDLE int32
-#define MR_SEARCH_HANDLE int32
 
 #define MR_SPRITE_INDEX_MASK (0x03FF)  // mask of bits used for tile index
 #define MR_SPRITE_TRANSPARENT (0x0400)

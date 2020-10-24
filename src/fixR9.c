@@ -55,6 +55,8 @@ ext调用mythroad时在mythroad空间通过r9 恢复 r9 r10
 
 #include "./include/fixR9.h"
 
+#include "./include/mr.h"
+
 // 加上4是因为ext的内存申请是通过mrc_malloc()，而mrc_malloc()包装过返回的是实际地址+4的值
 #define CTX_POS (4 + sizeof(fixR9_st))
 typedef struct fixR9_st {
@@ -72,12 +74,15 @@ extern void *mr_malloc(uint32 len);
 extern void mr_free(void *p, uint32 len);
 extern void *mr_realloc(void *p, uint32 oldlen, uint32 len);
 
+void fixR9_saveMythroad() ;
+
 void *mr_malloc_ext(uint32 len) {
     char *mem;
     fixR9_st *ctx;
     len += sizeof(fixR9_st);
     mem = mr_malloc(len);
     ctx = (fixR9_st *)mem;
+    fixR9_saveMythroad();
     ctx->r10Mythroad = r10Mythroad;
     ctx->r9Mythroad = r9Mythroad;
     ctx->rwMem1 = mem + CTX_POS;
@@ -104,7 +109,7 @@ void *fixR9_getLR() {
     return lr;
 }
 
-#ifndef __GNUC__
+#ifndef __GNUC__2
 
 static BOOL isInExt;
 static void *r9Ext;
@@ -119,19 +124,24 @@ void fixR9_begin() {  // 注意，这里可能在ext空间执行，不能直接�
     void *r9v = getR9();
     void *r10v = getR10();
     if ((uint32)r9v > CTX_POS) {
-        // todo 注意，因为r9的值不确实，所以ctx有可能会是个无效的内存地址，导致程序崩溃，目前还不知道怎样获得有效地址的范围
+        // todo 注意，因为r9的值不确定，所以ctx有可能会是个无效的内存地址，导致程序崩溃，目前还不知道怎样获得有效地址的范围
         fixR9_st *ctx = (fixR9_st *)((char *)r9v - CTX_POS);
-        if (ctx && (r9v == ctx->rwMem1) && (r9v == ctx->rwMem2)) {  // 是在ext空间
-            setR9R10(ctx->r9Mythroad, ctx->r10Mythroad);
+        if (ctx && (r9v == ctx->rwMem1) && (r9v == ctx->rwMem2) && (isInExt == FALSE)) {  // 是在ext空间
+            void *tr9 = ctx->r9Mythroad;
+            void *tr10 = ctx->r10Mythroad;
+            setR9R10(tr9, tr10);
             r9Ext = r9v;
             r10Ext = r10v;
             isInExt = TRUE;
+            mr_printf("fixR9_begin() r9:%p, r10:%p, r9:%p, r10:%p", r9Ext, r10Ext, tr9, tr10);
         }
     }
 }
 
 void fixR9_end() {
     if (isInExt) {
+        isInExt = FALSE;
+        mr_printf("fixR9_end() r9:%p, r10:%p, r9:%p, r10:%p", r9Ext, r10Ext, r9Mythroad, r10Mythroad);
         setR9R10(r9Ext, r10Ext);
     }
 }

@@ -73,21 +73,13 @@ enum {
 };
 
 
-#ifdef PC_MOD
-#undef MR_FILE_HANDLE
-#define MR_FILE_HANDLE FILE*
-//#define MR_FILE_HANDLE int32
-#else
-#define MR_FILE_HANDLE int32
-#endif
-
 
 typedef struct SaveF {
-  MR_FILE_HANDLE f;
+  int32 f;
 } SaveF;
 
 typedef struct LoadF {
-  MR_FILE_HANDLE f;
+  int32 f;
   char buff[MRP_L_BUFFERSIZE];
 } LoadF;
 

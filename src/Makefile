@@ -90,6 +90,7 @@ LOCAL_SRC_FILES := mythroad_mini.c \
                     fixR9.c	\
                     md5.c	\
                     mem.c	\
+                    asm/r9r10.s	\
 
 mini:
 	gcc $(LOCAL_CFLAGS) $(LOCAL_SRC_FILES) -I./include -I.

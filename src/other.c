@@ -1,6 +1,5 @@
 #include "other.h"
 
-
 int wstrlen(char* txt) {
     int lenth = 0;
     unsigned char* ss = (unsigned char*)txt;
@@ -12,8 +11,7 @@ int wstrlen(char* txt) {
     return lenth;
 }
 
-
-long atol2(const char *s) {
+long atol2(const char* s) {
     unsigned long ret = 0;
     unsigned long d;
     int neg = 0;
@@ -33,8 +31,6 @@ long atol2(const char *s) {
 }
 
 ///////////////////////////////////////////////////////////////////////////
-
-
 
 /* ========================================================================
  * Table of CRC-32's of all single-byte values (made by makecrc.c)
@@ -100,7 +96,7 @@ static const uint32 crc_32_tab[] = {
     s;                  pointer to bytes to pump through 
      n;              number of bytes in s[] 
  */
-uint32 mr_updcrc(uint8 *s, unsigned n) {
+uint32 mr_updcrc(uint8* s, unsigned n) {
     register uint32 c; /* temporary variable */
 
     static uint32 crc = (uint32)0xffffffffL; /* shift register contents */
@@ -118,4 +114,3 @@ uint32 mr_updcrc(uint8 *s, unsigned n) {
     crc = c;
     return c ^ 0xffffffffL; /* (instead of ~c for 64-bit machines) */
 }
-

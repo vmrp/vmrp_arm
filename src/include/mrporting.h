@@ -250,19 +250,6 @@ typedef struct
     int32 ip;
 } mr_bind_st;
 
-#ifdef MR_FS_ASYN
-
-typedef int32 (*MR_ASYN_FS_CB)(int32 result, uint32 cb_param);
-
-typedef struct
-{
-    void* buf;         //文件缓存地址
-    uint32 buf_len;    //缓冲长度，即要读取/写入的长度
-    uint32 offset;     //文件读取/写入偏移
-    MR_ASYN_FS_CB cb;  //回调函数
-    uint32 cb_param;   //回调参数
-} mr_asyn_fs_param;
-#endif
 
 #define MR_GIF_SUPPORT_NO 3
 
@@ -353,8 +340,6 @@ typedef struct
 #define MR_IS_DIR 2      //目录
 #define MR_IS_INVALID 8  //无效(非文件、非目录)
 
-#define MR_FILE_HANDLE int32
-#define MR_SEARCH_HANDLE int32
 
 #define MR_SUCCESS 0  //成功
 #define MR_FAILED -1  //失败
@@ -415,16 +400,6 @@ extern int32 mr_resumeApp(void);
 
 /*当手机收到短消息时调用该函数*/
 extern int32 mr_smsIndiaction(uint8* pContent, int32 nLen, uint8* pNum, int32 type);
-
-/*对下载内容（保存在内存区中的一个下载的文件）进行判断，
-若下载文件是DSM菜单，由DSM引擎对下载文件进行保存。使用
-本函数时，下载文件应该已经下载完全，并且全部内容保存在
-所给的内存中。*/
-extern int32 mr_save_mrp(void* p, uint32 l);
-
-/*功能同mr_save_mrp，但传入的是一个打开的文件句柄，文件由
-调用者关闭。该函数目前尚未实现，若需要使用，请联系ouli*/
-extern int32 mr_save_mrp_with_handle(MR_FILE_HANDLE f);
 
 /*用户SIM卡变更*/
 extern int32 mr_newSIMInd(int16 type, uint8* old_IMSI);
@@ -494,30 +469,24 @@ extern int32 mr_platEx(int32 code, uint8* input, int32 input_len, uint8** output
 
 /*文件和目录操作*/
 extern int32 mr_ferrno(void);
-extern MR_FILE_HANDLE mr_open(const char* filename, uint32 mode);
-extern int32 mr_close(MR_FILE_HANDLE f);
+extern int32 mr_open(const char* filename, uint32 mode);
+extern int32 mr_close(int32 f);
 extern int32 mr_info(const char* filename);
-extern int32 mr_write(MR_FILE_HANDLE f, void* p, uint32 l);
-extern int32 mr_read(MR_FILE_HANDLE f, void* p, uint32 l);
-extern int32 mr_seek(MR_FILE_HANDLE f, int32 pos, int method);
+extern int32 mr_write(int32 f, void* p, uint32 l);
+extern int32 mr_read(int32 f, void* p, uint32 l);
+extern int32 mr_seek(int32 f, int32 pos, int method);
 extern int32 mr_getLen(const char* filename);
 extern int32 mr_remove(const char* filename);
 extern int32 mr_rename(const char* oldname, const char* newname);
 extern int32 mr_mkDir(const char* name);
 extern int32 mr_rmDir(const char* name);
 
-/*异步文件读写接口*/
-#ifdef MR_FS_ASYN
-extern int32 mr_asyn_read(MR_FILE_HANDLE f, mr_asyn_fs_param* param);
-extern int32 mr_asyn_write(MR_FILE_HANDLE f, mr_asyn_fs_param* param);
-#endif
-
 /*目录搜索开始*/
-extern MR_SEARCH_HANDLE mr_findStart(const char* name, char* buffer, uint32 len);
+extern int32 mr_findStart(const char* name, char* buffer, uint32 len);
 /*取得一个目录搜索结果*/
-extern int32 mr_findGetNext(MR_SEARCH_HANDLE search_handle, char* buffer, uint32 len);
+extern int32 mr_findGetNext(int32 search_handle, char* buffer, uint32 len);
 /*目录搜索结束*/
-extern int32 mr_findStop(MR_SEARCH_HANDLE search_handle);
+extern int32 mr_findStop(int32 search_handle);
 
 /*退出平台*/
 extern int32 mr_exit(void);

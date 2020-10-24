@@ -1579,6 +1579,7 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
 
             // clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
             // invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
+            mr_printf("[WARN]_mr_TestCom1 mr_cacheSyncRaw 0x%p, %d", input1, len);
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
             break;
         }
@@ -1618,6 +1619,7 @@ static int _mr_TestComC(int input0, char* input1, int32 len, int32 code) {
             // extern int32 invalidate_arm9_icache(int32 addr, int32 len);
             // clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
             // invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)), ((len+0x0000001F*3)&(~0x0000001F)));
+            mr_printf("[WARN]_mr_TestComC mr_cacheSyncRaw 0x%p, %d", input1, len);
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
             MRDBGPRINTF("mr_load_c_function: 0x%X", mr_load_c_function);
             fixR9_saveMythroad();

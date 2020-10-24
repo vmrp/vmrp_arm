@@ -448,7 +448,7 @@ int32 mr_findGetNext(int32 search_handle, char *buffer, uint32 len) {
     return MR_FAILED;
 }
 
-int32 mr_findStop(MR_SEARCH_HANDLE search_handle) {
+int32 mr_findStop(int32 search_handle) {
     return dsmInFuncs->closedir(search_handle);
 }
 

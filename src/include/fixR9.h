@@ -7,7 +7,7 @@
 #include "mythroad.h"
 #include "type.h"
 
-#ifdef __GNUC__
+#ifdef __GNUC__2
 #define fixR9_saveMythroad()
 extern void *getR9(void);
 extern void setR9(void *value);
@@ -133,7 +133,7 @@ extern int32 asm_mr_rename(const char *oldname, const char *newname);
 extern int32 asm_mr_mkDir(const char *name);
 extern int32 asm_mr_rmDir(const char *name);
 extern int32 asm_mr_findGetNext(int32 search_handle, char *buffer, uint32 len);
-extern int32 asm_mr_findStop(MR_SEARCH_HANDLE search_handle);
+extern int32 asm_mr_findStop(int32 search_handle);
 extern int32 asm_mr_findStart(const char *name, char *buffer, uint32 len);
 extern int32 asm_mr_getLen(const char *filename);
 extern int32 asm_mr_exit(void);

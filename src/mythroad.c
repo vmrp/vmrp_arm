@@ -3586,67 +3586,11 @@ int _mr_pcall(int nargs, int nresults) {
     return 0;
 }
 
-#ifdef MR_FS_ASYN
-static int32 mr_read_asyn_cb(int32 result, uint32 cb_param) {
-    //#if 0
-    int status;
-    //   if (mr_state == MR_STATE_RUN){
-    //   if (MR_SUCCESS == result){
-    //MRDBGPRINTF("mr_read_asyn_cb before close!");
-    mr_close(cb_param);
-    if (!((mr_state == MR_STATE_RUN) || ((mr_timer_run_without_pause) && (mr_state == MR_STATE_PAUSE)))) {
-        MRDBGPRINTF("VM is IDLE!");
-        return MR_FAILED;
-    }
-    //MRDBGPRINTF("mr_read_asyn_cb enter!");
-    mrp_getglobal(vm_state, "_fs_cb");
-    //MRDBGPRINTF("mr_read_asyn_cb 1");
-    if (mrp_isfunction(vm_state, -1)) {
-        //MRDBGPRINTF("mr_read_asyn_cb 2");
-        mrp_pushnumber(vm_state, result);
-        //mrp_pushnumber(L, param1);
-        //mrp_pushnumber(L, param2);
-        //MRDBGPRINTF("mr_read_asyn_cb 3");
-#if 0
-      status = mrp_pcall(vm_state, 1, 0, 0);  /* call main */
-      //MRDBGPRINTF("mr_read_asyn_cb 4");
-      if (status != 0) {
-#ifndef MR_APP_IGNORE_EXCEPTION
-         mr_state = MR_STATE_ERROR;
-         _mr_showErrorInfo(mrp_tostring(vm_state, -1));
-         mrp_pop(vm_state, 1);  /* remove error message*/
-#else
-         //MRDBGPRINTF(mrp_tostring(vm_state, -1));
-         mrp_pop(vm_state, 1);  /* remove error message*/
-#endif
-      }
-#else
-        _mr_pcall(1, 0);
-#endif
-        //MRDBGPRINTF("mr_read_asyn_cb err!");
-        //MRDBGPRINTF(mrp_tostring(vm_state, -1));
-        //mrp_pop(vm_state, 1);  /* remove error message*/
-    } else { /* no dealevent function */
-        //MRDBGPRINTF("_fs_cb is nil!");
-        mrp_pop(vm_state, 1); /* remove dealevent */
-    }
-    //   }
-
-    //#endif
-    return MR_SUCCESS;
-}
-
-#endif
-
 static int LoadFile2Ram(char* filename) {
-    //int filelen;
-    //asynchronism file system
-#ifdef MR_FS_ASYN
-    mr_asyn_fs_param param;
+#if 0
     int32 ret;
     int32 nTmp;
     int32 f;
-    MRDBGPRINTF("LoadFile2Ram enter!");
     if (filename[0] == '*') {
         if (mr_ram_file) {
             MR_FREE(mr_ram_file, mr_ram_file_len);
@@ -3656,7 +3600,6 @@ static int LoadFile2Ram(char* filename) {
     }
     ret = mr_info(filename);
     if ((ret != MR_IS_FILE)) {
-        MRDBGPRINTF("LoadFile2Ram file \"%s\" not found!", filename);
         return MR_FAILED;
     }
 
@@ -3667,13 +3610,11 @@ static int LoadFile2Ram(char* filename) {
 
     mr_ram_file_len = mr_getLen(filename);
     if (mr_ram_file_len <= 0) {
-        MRDBGPRINTF("LoadFile2Ram:file  \"%s\" mr_getLen failed!", filename);
         return MR_FAILED;
     }
 
     f = mr_open(filename, MR_FILE_RDONLY);
     if (f == 0) {
-        MRDBGPRINTF("LoadFile2Ram:file  \"%s\" can not open!", filename);
         return MR_FAILED;
     }
 
@@ -3683,21 +3624,11 @@ static int LoadFile2Ram(char* filename) {
         return MR_FAILED;
     }
 
-    param.buf = mr_ram_file;
-    param.buf_len = mr_ram_file_len;
-    param.cb = mr_read_asyn_cb;
-    param.cb_param = f;
-    param.offset = 0;
-
-    nTmp = mr_asyn_read(f, &param);
-    MRDBGPRINTF("LoadFile2Ram after mr_asyn_read!");
-    if (nTmp != MR_SUCCESS) {
+    nTmp = mr_read(f, mr_ram_file,mr_ram_file_len);
+    if (nTmp != mr_ram_file_len) {
         mr_close(f);
-        MRDBGPRINTF("_mr_readFile:read file  \"%s\" err 1!", filename);
         return MR_FAILED;
     }
-
-    MRDBGPRINTF("LoadFile2Ram leave!");
     return MR_SUCCESS;
 #else
     return MR_SUCCESS;
@@ -5757,74 +5688,6 @@ int32 mr_newSIMInd(int16 type, uint8* old_IMSI) {
 }
 
 //****************************短信
-
-#ifdef MR_FS_ASYN
-static int32 mr_write_asyn_cb_save_mrp(int32 result, uint32 cb_param) {
-    mr_close(cb_param);
-    MRDBGPRINTF("mr_save_mrp cb ret=%d", result);
-    return MR_SUCCESS;
-}
-
-#endif
-
-int32 mr_save_mrp(void* p, uint32 l) {
-    char filename[15];
-    int32 f;
-
-    if (p == NULL || l == 0) {
-        return MR_FAILED;
-    }
-
-    if ((*(char*)p == 'M') && (*((char*)p + 1) == 'R') && (*((char*)p + 2) == 'P') && (*((char*)p + 3) == 'G')) {
-        MEMSET(filename, 0, sizeof(filename));
-        MEMCPY(filename, (char*)p + MR_OFFSET_FORM_FILEHEAD, 12);
-
-        /*if the same name file is exist, cover it*/
-        //if(mr_ffsStat(fileName, fsize))
-        {
-            mr_remove(filename);
-        }
-
-        f = mr_open(filename, MR_FILE_WRONLY | MR_FILE_CREATE);
-
-#ifdef MR_FS_ASYN
-        {
-            mr_asyn_fs_param param;
-            int32 nTmp;
-            if (f == 0) {
-                MRDBGPRINTF("mr_save_mrp:file  \"%s\" can not open!", filename);
-                return MR_FAILED;
-            }
-            param.buf = p;
-            param.buf_len = l;
-            param.cb = mr_write_asyn_cb_save_mrp;
-            param.cb_param = f;
-            param.offset = 0;
-
-            nTmp = mr_asyn_write(f, &param);
-            if (nTmp != MR_SUCCESS) {
-                mr_close(f);
-                MRDBGPRINTF("mr_save_mrp:mr_asyn_write  \"%s\" err!", filename);
-                return MR_FAILED;
-            }
-
-            return MR_SUCCESS;
-        }
-#else
-        if (f != 0) {
-            if (mr_write(f, (void*)p, l) != (int32)l) {
-                mr_close(f);
-                return MR_FAILED;
-            }
-        }
-
-        mr_close(f);
-        return MR_SUCCESS;
-#endif
-    } else {
-        return MR_IGNORE;
-    }
-}
 
 static void encode02(char* value, int len, unsigned char cBgnInit, unsigned char cEndInit)  //简单加密
 {

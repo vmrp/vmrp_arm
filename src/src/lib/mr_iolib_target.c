@@ -23,7 +23,7 @@
 #include "mr_mem.h"
 
 
-#define FILE MR_FILE_HANDLE
+#define FILE int32
 
 
 /*
@@ -194,21 +194,18 @@ static int io_readAll (mrp_State *L) {
    ret = mr_info(filename);
    if((ret != MR_IS_FILE))
    {
-     //MRDBGPRINTF("LoadFile2Ram file \"%s\" not found!", filename);
      return 0;
    }
 
    filelen = mr_getLen(filename);
    if (filelen <= 0)
    {
-     //MRDBGPRINTF( "LoadFile2Ram:file  \"%s\" mr_getLen failed!", filename);
      return 0;
    }
 
    f = mr_open(filename, MR_FILE_RDONLY );
    if (f == 0)
    {
-     //MRDBGPRINTF( "LoadFile2Ram:file  \"%s\" can not open!", filename);
      return 0;
    }
   
@@ -293,168 +290,6 @@ static int g_write (mrp_State *L, FILE f, int arg) {
   }
   return pushresult(L, status, NULL);
 }
-
-#ifdef MR_FS_ASYN
-static int32 mr_write_asyn_cb_store(int32 result, uint32  cb_param)
-{
-   //mr_asyn_fs_param_store *param_store= (mr_asyn_fs_param_store *)cb_param;
-
-
-   int status;
-
-   if (!((mr_state == MR_STATE_RUN) || ((mr_timer_run_without_pause) && (mr_state == MR_STATE_PAUSE))))
-   {
-      MRDBGPRINTF("VM is IDLE!");
-      return MR_FAILED;
-   }
-   mrp_getglobal(vm_state, "_fs_cb");
-   if (mrp_isfunction(vm_state, -1)) {
-      //mrp_pushlstring(vm_state, param_store->buf, param_store->buf_len);
-      mrp_pushnil(vm_state);
-      mrp_pushnumber(vm_state, result);
-      mrp_pushnumber(vm_state, cb_param);
-#if 0
-      status = mrp_pcall(vm_state, 3, 0, 0);  /* call main */
-      if (status != 0) {
-#ifndef MR_APP_IGNORE_EXCEPTION
-         mr_state = MR_STATE_ERROR;
-         _mr_showErrorInfo(mrp_tostring(vm_state, -1));
-         mrp_pop(vm_state, 1);  /* remove error message*/
-#else
-         MRDBGPRINTF(mrp_tostring(vm_state, -1));
-         mrp_pop(vm_state, 1);  /* remove error message*/
-#endif
-      }
-#else
-          _mr_pcall(3,0);
-#endif
-         //MRDBGPRINTF(mrp_tostring(vm_state, -1));
-         //mrp_pop(vm_state, 1);  /* remove error message*/
-   } else {  /* no dealevent function */
-      MRDBGPRINTF("_fs_cb is nil!");  
-      mrp_pop(vm_state, 1);  /* remove dealevent */
-   }
-
-   //mrp_pushnumber(vm_state, param_store->file);
-   //aux_close(vm_state);
-   //mrp_settop(vm_state, 0);
-//   MR_FREE(param_store, (sizeof(mr_asyn_fs_param_store)+param_store->buf_len));
-   return MR_SUCCESS;
-
-
-   //mrp_pushnumber(vm_state, cb_param);
-   //aux_close(vm_state);
-   //mrp_settop(vm_state, 0);
-   //return MR_SUCCESS;
-}
-
-static int g_asyn_write (mrp_State *L, FILE f, int arg) {
-  mr_asyn_fs_param param;
-//  mr_asyn_fs_param_store *param_store;
-  size_t l;
-  int status = 1;
-
-//  param_store = MR_MALLOC(sizeof(mr_asyn_fs_param_store));
-  
-//  param_store->file = f;
-  
-  param.buf = (void*)mr_L_checklstring(L, 2, (size_t *)&l);
-  param.buf_len = l;
-  param.cb = mr_write_asyn_cb_store;
-  param.cb_param = f;
-  param.offset = (uint32)to_mr_tonumber(L, 3, 0);
-
-  status = mr_asyn_write (f, &param);
-  mrp_pushnumber(L, status);
-  return 1;
-}
-
-static int f_asyn_write (mrp_State *L) {
-  return g_asyn_write(L, tofile(L, 1), 2);
-}
-
-typedef struct
-{
-   void* buf;                 //文件缓存地址
-   uint32  buf_len;                //缓冲长度，即要读取的长度
-   MR_FILE_HANDLE  file;               //文件
-}mr_asyn_fs_param_store;
-
-
-static int32 mr_read_asyn_cb_store(int32 result, uint32  cb_param)
-{
-   mr_asyn_fs_param_store *param_store= (mr_asyn_fs_param_store *)cb_param;
-
-
-   int status;
-
-   if (!((mr_state == MR_STATE_RUN) || ((mr_timer_run_without_pause) && (mr_state == MR_STATE_PAUSE))))
-   {
-      MRDBGPRINTF("VM is IDLE!");
-      return MR_FAILED;
-   }
-   mrp_getglobal(vm_state, "_fs_cb");
-   if (mrp_isfunction(vm_state, -1)) {
-      mrp_pushlstring(vm_state, param_store->buf, param_store->buf_len);
-      mrp_pushnumber(vm_state, result);
-      mrp_pushnumber(vm_state, param_store->file);
-#if 0
-      status = mrp_pcall(vm_state, 3, 0, 0);  /* call main */
-      if (status != 0) {
-#ifndef MR_APP_IGNORE_EXCEPTION
-         mr_state = MR_STATE_ERROR;
-         _mr_showErrorInfo(mrp_tostring(vm_state, -1));
-         mrp_pop(vm_state, 1);  /* remove error message*/
-#else
-         MRDBGPRINTF(mrp_tostring(vm_state, -1));
-         mrp_pop(vm_state, 1);  /* remove error message*/
-#endif
-      }
-#else
-          _mr_pcall(3,0);
-#endif
-         //MRDBGPRINTF(mrp_tostring(vm_state, -1));
-         //mrp_pop(vm_state, 1);  /* remove error message*/
-   } else {  /* no dealevent function */
-      MRDBGPRINTF("_fs_cb is nil!");  
-      mrp_pop(vm_state, 1);  /* remove dealevent */
-   }
-
-   //mrp_pushnumber(vm_state, param_store->file);
-   //aux_close(vm_state);
-   //mrp_settop(vm_state, 0);
-   MR_FREE(param_store, (sizeof(mr_asyn_fs_param_store)+param_store->buf_len));
-   return MR_SUCCESS;
-}
-
-static int g_asyn_read (mrp_State *L, FILE f, int first) {
-   mr_asyn_fs_param param;
-   mr_asyn_fs_param_store *param_store;
-   int status;
-   size_t l = (size_t)mrp_tonumber(L, 2);
-
-   param_store = MR_MALLOC(sizeof(mr_asyn_fs_param_store)+l);
-
-   param_store->file = f;
-   param.buf = param_store->buf = ((char*)param_store + sizeof(mr_asyn_fs_param_store));
-   param.buf_len = param_store->buf_len = l;
-   param.cb = mr_read_asyn_cb_store;
-   param.cb_param = (uint32)param_store;
-   param.offset = to_mr_tonumber(L, 3, 0);
-  
-  
-   status = mr_asyn_read(f, &param);
-   mrp_pushnumber(L, status);
-   return 1;
-}
-
-
-
-static int f_asyn_read (mrp_State *L) {
-  return g_asyn_read(L, tofile(L, 1), 2);
-}
-
-#endif
 
 /*
 static int io_write (mrp_State *L) {
@@ -946,10 +781,6 @@ void mr_iolib_target_init(void) {
     flib[1].name = "seek", flib[1].func = f_seek;
     flib[2].name = "write", flib[2].func = f_write;
     flib[3].name = "close", flib[3].func = io_close;
-#ifdef MR_FS_ASYN
-    flib[].name = "asyn_read", flib[].func = f_asyn_read;
-    flib[].name = "asyn_write", flib[].func = f_asyn_write;
-#endif
     flib[4].name = "__gc", flib[4].func = io_gc;
     flib[5].name = "__str", flib[5].func = io_tostring;
     flib[6].name = NULL, flib[6].func = NULL;

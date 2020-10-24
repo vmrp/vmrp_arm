@@ -39,18 +39,6 @@
 // #define MR_DEFAULT_PACK_NAME "*A"
 #define MR_DEFAULT_PACK_NAME "dsm_gm.mrp"
 
-#if 0
-   #ifdef MR_FS_ASYN
-      #define MR_DEFAULT_PACK_NAME "*A"
-   #else
-      #ifdef DSM_MENU_IN_ROM
-         #define MR_DEFAULT_PACK_NAME "*A"
-      #else
-         #define MR_DEFAULT_PACK_NAME "dsm_m0.mrp"   //"*A"
-      #endif
-   #endif
-#endif
-
 /*支持短信*/
 #define MR_SM_SURPORT
 
