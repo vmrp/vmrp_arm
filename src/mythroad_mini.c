@@ -2131,18 +2131,20 @@ int32 mr_event(int16 type, int32 param1, int32 param2) {
 }
 
 int32 mr_timer(void) {
-    //MRDBGPRINTF("timer %d,%d",mr_state, mr_timer_state);
     if (mr_timer_state != MR_TIMER_STATE_RUNNING) {
         MRDBGPRINTF("warning:mr_timer event unexpected!");
         return MR_IGNORE;
     }
     mr_timer_state = MR_TIMER_STATE_IDLE;
-
     if ((mr_state == MR_STATE_RUN) || ((mr_timer_run_without_pause) && (mr_state == MR_STATE_PAUSE))) {
+        if (mr_timer_function) {
+            int status = mr_timer_function();
+            if (status != MR_IGNORE)
+                return status;
+        }
+        _mr_TestComC(801, NULL, 1, 2);
+        return MR_SUCCESS;
     } else if (mr_state == MR_STATE_RESTART) {
-        //MRDBGPRINTF("restart timer1");
-        //mr_sleep(50);
-
         mr_stop();  //1943 修改为mr_stop
         //mr_stop_ex(TRUE);      //1943
         /* 不重新初始化内存
@@ -2153,32 +2155,10 @@ int32 mr_timer(void) {
 		mr_screenBuf = (uint16*)mr_getScreenBuf();
 		#endif
 		*/
-        //MRDBGPRINTF("restart timer11");
-        //mr_sleep(50);
-
         _mr_intra_start(start_filename, NULL);
-
-        //MRDBGPRINTF("restart timer2");
-        //mr_sleep(50);
-
         return MR_SUCCESS;
-    } else {
-        return MR_IGNORE;
-    };
-
-    //MRDBGPRINTF("before timer");
-
-    if (mr_timer_function) {
-        int status = mr_timer_function();
-        if (status != MR_IGNORE)
-            return status;
     }
-
-    _mr_TestComC(801, NULL, 1, 2);
-
-    //MRDBGPRINTF("after timer");
-    //mrp_setgcthreshold(vm_state, 0);
-    return MR_SUCCESS;
+    return MR_IGNORE;
 }
 
 int32 mr_registerAPP(uint8* p, int32 len, int32 index) {

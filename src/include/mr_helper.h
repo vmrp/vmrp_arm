@@ -1,8 +1,8 @@
 #ifndef HELPER_H_INCLUDED
 #define HELPER_H_INCLUDED
 
-#include "mrporting.h"
 #include "md5.h"
+#include "mrporting.h"
 
 typedef void (*mrc_timerCB)(int32 data);
 
@@ -534,17 +534,6 @@ typedef struct _mr_c_call_st {
 
 } mr_c_call_st;
 
-typedef struct _mrc_extChunk_st mrc_extChunk_st;
-
-typedef struct _mr_c_function_st {
-    uint8* start_of_ER_RW;          // RW段指针
-    uint32 ER_RW_Length;            // RW长度
-    int32 ext_type;                 // ext启动类型，为1时表示ext启动
-    mrc_extChunk_st* mrc_extChunk;  // ext模块描述段，下面的结构体。
-    int32 stack;                    //stack shell 2008-2-28
-} mr_c_function_st;
-
-
 #define MR_MINIMUM_TIMER 10
 #define MR_MINIMUM_TIMER_OUT 50
 
@@ -553,7 +542,6 @@ typedef struct _mr_c_function_st {
 #define MR_SCREEN_H mr_screen_h
 
 #define MR_SCREEN_DEEP 2
-
 
 /*
  *  zefang_wang 2010.12.21 :
@@ -619,59 +607,9 @@ typedef int32 (*MR_LOAD_C_FUNCTION)(int32 code);
 #ifndef MRC_PLUGIN
 typedef int32 (*mrc_extMainSendAppMsg_t)(int32 extCode, int32 app, int32 code, int32 param0, int32 param1);
 #else
-typedef int32 (*mrc_extMainSendAppMsg_t)(int32 app, int32 code, int32 param0,
-                                         int32 param1, int32 param2, int32 param3, int32 param4, int32 extCode);
-#endif
-
-#ifdef SDK_MOD
-extern void* sdk_mr_c_function_table;
-typedef int32 (*mrc_init_t)(void);
-typedef int32 (*mrc_event_t)(int32 code, int32 param0, int32 param1);
-typedef int32 (*mrc_pause_t)(void);
-typedef int32 (*mrc_resume_t)(void);
-typedef int32 (*mrc_exitApp_t)(void);
-
-#endif
-
+typedef int32 (*mrc_extMainSendAppMsg_t)(int32 app, int32 code, int32 param0, int32 param1, int32 param2, int32 param3, int32 param4, int32 extCode);
 typedef int32 (*mpsFpFuncType)(int32 p0, int32 p1, int32 p2, int32 p3, int32 p4, int32 p5);
-
-#ifdef MRC_PLUGIN
-typedef int32 (*MR_C_FUNCTION_EX)(int32 p0, int32 p1, int32 p2, int32 p3,
-                                  int32 p4, int32 p5, void* P, mpsFpFuncType func);
-#endif
-
-typedef struct _mrc_extChunk_st {
-    int32 check;  //0x7FD854EB 标志
-
-    MR_LOAD_C_FUNCTION init_func;  //mr_c_function_load 函数指针
-
-    MR_C_FUNCTION event;  //mr_helper 函数指针
-
-    uint8* code_buf;                 //ext内存地址
-    int32 code_len;                  //ext长度
-    uint8* var_buf;                  //RW段地址
-    int32 var_len;                   //RW段长度
-    mr_c_function_st* global_p_buf;  //mr_c_function_st 表地址
-    int32 global_p_len;              //mr_c_function_st 表长度
-    int32 timer;
-
-    mrc_extMainSendAppMsg_t sendAppEvent;
-    mr_table* extMrTable;  // mr_table函数表。
-
-    // 后面的几乎没有使用，因为分配的0x30大小到这为止。
-#ifdef MRC_PLUGIN
-    MR_C_FUNCTION_EX eventEx;
-#endif
-
-    int32 isPause; /*1: pause 状态0:正常状态*/
-} mrc_extChunk_st;
-
-enum {
-    MRC_EXT_INTERNAL_EVENT,
-    MRC_EXT_APP_EVENT,
-    MRC_EXT_MPS_EVENT
-};
-
+typedef int32 (*MR_C_FUNCTION_EX)(int32 p0, int32 p1, int32 p2, int32 p3, int32 p4, int32 p5, void* P, mpsFpFuncType func);
 typedef struct _mrcMpsFpCallParamsSt {
     mpsFpFuncType func;
     int32 p0;
@@ -683,12 +621,66 @@ typedef struct _mrcMpsFpCallParamsSt {
 } mrcMpsFpCallParamsSt;
 
 typedef struct _mrcMpsFpEventParamsSt {
-    //int32 p1;
+    int32 p1;
     int32 p2;
     int32 p3;
     int32 p4;
     int32 p5;
 } mrcMpsFpEventParamsSt;
+#endif
+
+#ifdef SDK_MOD
+extern void* sdk_mr_c_function_table;
+typedef int32 (*mrc_init_t)(void);
+typedef int32 (*mrc_event_t)(int32 code, int32 param0, int32 param1);
+typedef int32 (*mrc_pause_t)(void);
+typedef int32 (*mrc_resume_t)(void);
+typedef int32 (*mrc_exitApp_t)(void);
+#endif
+
+typedef struct _mrc_extChunk_st mrc_extChunk_st;
+
+typedef struct _mr_c_function_st {
+    uint8* start_of_ER_RW;          // RW段指针
+    uint32 ER_RW_Length;            // RW长度
+    int32 ext_type;                 // ext启动类型，为1时表示ext启动
+    mrc_extChunk_st* mrc_extChunk;  // ext模块描述段，下面的结构体。
+    int32 stack;                    //stack shell 2008-2-28
+} mr_c_function_st;
+
+typedef struct _mrc_extChunk_st {
+    int32 check;  //0x7FD854EB 标志
+    MR_LOAD_C_FUNCTION init_func;  //mr_c_function_load 函数指针
+    MR_C_FUNCTION event;  //mr_helper 函数指针
+    uint8* code_buf;                 //ext内存地址
+    int32 code_len;                  //ext长度
+    uint8* var_buf;                  //RW段地址
+    int32 var_len;                   //RW段长度
+    mr_c_function_st* global_p_buf;  //mr_c_function_st 表地址
+    int32 global_p_len;              //mr_c_function_st 表长度
+    int32 timer;
+    mrc_extMainSendAppMsg_t sendAppEvent;
+    mr_table* extMrTable;  // mr_table函数表。
+
+#ifdef MRC_PLUGIN
+    MR_C_FUNCTION_EX eventEx;
+#endif
+
+    int32 isPause; /*1: pause 状态0:正常状态*/
+#ifdef SDK_MOD
+   mrc_init_t init_f;
+   mrc_event_t event_f;
+   mrc_pause_t pause_f;
+   mrc_resume_t resume_f;
+   mrc_exitApp_t exitApp_f;
+#endif
+} mrc_extChunk_st;
+
+enum {
+    MRC_EXT_INTERNAL_EVENT,
+    MRC_EXT_APP_EVENT,
+    MRC_EXT_MPS_EVENT
+};
 
 //extern int32 mrc_initNetworkCbState;
 extern MR_INIT_NETWORK_CB mrc_initNetworkCbFunc;
