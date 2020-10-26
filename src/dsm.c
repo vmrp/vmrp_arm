@@ -55,14 +55,15 @@ void mr_panic(char *msg) {
 
 void mr_printf(const char *format, ...) {
     char printfBuf[512] = {0};
-    char utf8Buf[1024] = {0};
+    // char utf8Buf[1024] = {0};
     va_list params;
 
     va_start(params, format);
     vsnprintf_(printfBuf, sizeof(printfBuf), format, params);
     va_end(params);
-    GBToUTF8String((uint8 *)printfBuf, (uint8 *)utf8Buf, sizeof(utf8Buf));
-    dsmInFuncs->log(utf8Buf);
+    // GBToUTF8String((uint8 *)printfBuf, (uint8 *)utf8Buf, sizeof(utf8Buf));
+    // dsmInFuncs->log(utf8Buf);
+    dsmInFuncs->log(printfBuf);
 }
 
 #define LOGI(fmt, ...) mr_printf("[INFO]" fmt, ##__VA_ARGS__)
@@ -360,11 +361,17 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
     return MR_SUCCESS;
 }
 
+// char *get_filename(char *outputbuf, const char *filename) {
+//     char dsmFullPath[DSM_MAX_FILE_LEN + 10];
+//     snprintf_(dsmFullPath, sizeof(dsmFullPath), "%s%s", dsmWorkPath, filename);
+//     formatPathString(dsmFullPath, '/');
+//     GBToUTF8String((uint8 *)dsmFullPath, (uint8 *)outputbuf, DSM_MAX_FILE_LEN);
+//     return outputbuf;
+// }
+
 char *get_filename(char *outputbuf, const char *filename) {
-    char dsmFullPath[DSM_MAX_FILE_LEN + 10];
-    snprintf_(dsmFullPath, sizeof(dsmFullPath), "%s%s", dsmWorkPath, filename);
-    formatPathString(dsmFullPath, '/');
-    GBToUTF8String((uint8 *)dsmFullPath, (uint8 *)outputbuf, DSM_MAX_FILE_LEN);
+    sprintf_(outputbuf, "%s%s", dsmWorkPath, filename);
+    formatPathString(outputbuf, '/');
     return outputbuf;
 }
 
@@ -436,11 +443,11 @@ int32 mr_rmDir(const char *name) {
 }
 
 int32 mr_findGetNext(int32 search_handle, char *buffer, uint32 len) {
-    char *d_name;
-    d_name = dsmInFuncs->readdir(search_handle);
+    char *d_name = dsmInFuncs->readdir(search_handle);
     if (d_name != NULL) {
-        memset2(buffer, 0, len);
-        UTF8ToGBString((uint8 *)d_name, (uint8 *)buffer, (int)len);
+        // memset2(buffer, 0, len);
+        // UTF8ToGBString((uint8 *)d_name, (uint8 *)buffer, (int)len);
+        strncpy2(buffer, d_name, len);
         LOGI("mr_findGetNext %d %s", search_handle, buffer);
         return MR_SUCCESS;
     }
@@ -780,14 +787,12 @@ int32 mr_sendto(int32 s, const char *buf, int len, int32 ip, uint16 port) {
     LOGI("mr_sendto(%d,%s,%d,%d,%d)", s, buf, len, ip, port);
     return MR_FAILED;
 }
- 	
-     
+
 // Anti-Apple
-#if defined (__APPLE__) || defined (__OSX__)
+#if defined(__APPLE__) || defined(__OSX__)
 #error "我不喜欢苹果公司及其产品，禁止在任何苹果公司的产品中使用此代码"
 #error "I don't like Apple and its products, and I forbid using this code in any Apple product"
 #endif
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 static DSM_EXPORT_FUNCS dsm_export_funcs;
