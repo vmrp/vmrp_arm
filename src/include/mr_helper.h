@@ -649,18 +649,18 @@ typedef struct _mr_c_function_st {
 } mr_c_function_st;
 
 typedef struct _mrc_extChunk_st {
-    int32 check;  //0x7FD854EB 标志
-    MR_LOAD_C_FUNCTION init_func;  //mr_c_function_load 函数指针
-    MR_C_FUNCTION event;  //mr_helper 函数指针
-    uint8* code_buf;                 //ext内存地址
-    int32 code_len;                  //ext长度
-    uint8* var_buf;                  //RW段地址
-    int32 var_len;                   //RW段长度
-    mr_c_function_st* global_p_buf;  //mr_c_function_st 表地址
-    int32 global_p_len;              //mr_c_function_st 表长度
-    int32 timer;
-    mrc_extMainSendAppMsg_t sendAppEvent;
-    mr_table* extMrTable;  // mr_table函数表。
+    /* 0x00 */ int32 check;                     //0x7FD854EB 标志
+    /* 0x04 */ MR_LOAD_C_FUNCTION init_func;    //mr_c_function_load 函数指针
+    /* 0x08 */ MR_C_FUNCTION event;             //mr_helper 函数指针
+    /* 0x0c */ uint8* code_buf;                 //ext内存地址
+    /* 0x10 */ int32 code_len;                  //ext长度
+    /* 0x14 */ uint8* var_buf;                  //RW段地址
+    /* 0x18 */ int32 var_len;                   //RW段长度
+    /* 0x1c */ mr_c_function_st* global_p_buf;  //mr_c_function_st 表地址
+    /* 0x20 */ int32 global_p_len;              //mr_c_function_st 表长度
+    /* 0x24 */ int32 timer;
+    /* 0x28 */ mrc_extMainSendAppMsg_t sendAppEvent;
+    /* 0x2c */ mr_table* extMrTable;  // mr_table函数表。
 
 #ifdef MRC_PLUGIN
     MR_C_FUNCTION_EX eventEx;
@@ -668,11 +668,11 @@ typedef struct _mrc_extChunk_st {
 
     int32 isPause; /*1: pause 状态0:正常状态*/
 #ifdef SDK_MOD
-   mrc_init_t init_f;
-   mrc_event_t event_f;
-   mrc_pause_t pause_f;
-   mrc_resume_t resume_f;
-   mrc_exitApp_t exitApp_f;
+    mrc_init_t init_f;
+    mrc_event_t event_f;
+    mrc_pause_t pause_f;
+    mrc_resume_t resume_f;
+    mrc_exitApp_t exitApp_f;
 #endif
 } mrc_extChunk_st;
 

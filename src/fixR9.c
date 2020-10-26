@@ -34,7 +34,7 @@ void *mrc_malloc(uint32 len) {
 
 void mrc_free(void *p) {
     uint32 *t = (uint32 *)p - 1;
-    _mr_c_function_table.mr_free(t, *t);
+    _mr_c_function_table.mr_free(t, *t + sizeof(uint32));
 }
 
 解决办法：
@@ -57,48 +57,13 @@ ext调用mythroad时在mythroad空间通过r9 恢复 r9 r10
 
 #include "./include/mr.h"
 
-// 加上4是因为ext的内存申请是通过mrc_malloc()，而mrc_malloc()包装过返回的是实际地址+4的值
-#define CTX_POS (4 + sizeof(fixR9_st))
-typedef struct fixR9_st {
-    void *r9Mythroad;
-    void *r10Mythroad;
-    void *rwMem1;
-    void *rwMem2;
-} fixR9_st;
-
-static BOOL isInExt;
 static void *r9Ext;
 static void *r10Ext;
-static void *r9Mythroad;
 static void *r10Mythroad;
 static void *lr;
 
-// #define DATA_LEN (sizeof(fixR9_st) + 16)
-#define DATA_LEN 0
-
-void *mr_malloc_ext(uint32 len) {
-    return  mr_malloc(len);
-    // fixR9_st *ctx;
-    char *mem = mr_malloc(len + DATA_LEN);
-    // ctx = (fixR9_st *)mem;
-    // fixR9_saveMythroad();
-    // ctx->r10Mythroad = r10Mythroad;
-    // ctx->r9Mythroad = r9Mythroad;
-    // ctx->rwMem1 = mem + CTX_POS;
-    // ctx->rwMem2 = ctx->rwMem1;
-    return (char *)mem + DATA_LEN;
-}
-
-void mr_free_ext(void *p, uint32 len) {
-    return mr_free(p, len);
-    mr_free((char *)p - DATA_LEN, len + DATA_LEN);
-}
-
-void *mr_realloc_ext(void *p, uint32 oldlen, uint32 len) {
-    mr_printf("mr_realloc_ext");
-    // return mr_realloc((char *)p - DATA_LEN, oldlen + DATA_LEN, len + DATA_LEN);
-    return NULL;
-}
+extern int32 mr_c_function_load(int32 code);
+#define C_FUNCTION_P() (*(((void **)mr_c_function_load) - 1))
 
 void fixR9_saveLR(void *v) {
     lr = v;
@@ -109,36 +74,20 @@ void *fixR9_getLR() {
 }
 
 void fixR9_saveMythroad() {
-    r9Mythroad = getR9();
     r10Mythroad = getR10();
 }
 
-void fixR9_begin() {  // 注意，这里可能在ext空间执行，不能直接使用context
-    void *r9v = getR9();
-    void *r10v = getR10();
-    mr_printf("fixR9_begin");
-    return;
-    if ((uint32)r9v > CTX_POS) {
-        // todo 注意，因为r9的值不确定，所以ctx有可能会是个无效的内存地址，导致程序崩溃，目前还不知道怎样获得有效地址的范围
-        fixR9_st *ctx = (fixR9_st *)((char *)r9v - CTX_POS);
-        if (ctx && (r9v == ctx->rwMem1) && (r9v == ctx->rwMem2) && (isInExt == FALSE)) {  // 是在ext空间
-            void *tr9 = ctx->r9Mythroad;
-            void *tr10 = ctx->r10Mythroad;
-            setR9R10(tr9, tr10);
-            r9Ext = r9v;
-            r10Ext = r10v;
-            isInExt = TRUE;
-            mr_printf("fixR9_begin() r9:%p, r10:%p, r9:%p, r10:%p", r9Ext, r10Ext, tr9, tr10);
-        }
-    }
+void fixR9_begin() {
+    void *oldR9v = getR9();
+    void *oldR10v = getR10();
+    mr_c_function_st *p = C_FUNCTION_P();
+    setR9(p->start_of_ER_RW);
+    // 设置r9后回到mythroad，此时才可以访问全局变量
+    setR10(r10Mythroad);
+    r9Ext = oldR9v;
+    r10Ext = oldR10v;
 }
 
 void fixR9_end() {
-    mr_printf("fixR9_end");
-    return;
-    if (isInExt) {
-        isInExt = FALSE;
-        mr_printf("fixR9_end() r9:%p, r10:%p, r9:%p, r10:%p", r9Ext, r10Ext, r9Mythroad, r10Mythroad);
-        setR9R10(r9Ext, r10Ext);
-    }
+    setR9R10(r9Ext, r10Ext);
 }
