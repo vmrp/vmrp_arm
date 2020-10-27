@@ -13,6 +13,7 @@
 */
 
 #include "tomr.h"
+#include "mr_helper.h"
 
 
 TO_MR_API int to_mr_tonumber (mrp_State* L, int narg, int def)

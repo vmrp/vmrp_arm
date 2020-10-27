@@ -6,7 +6,7 @@
 
 
 #include "mr.h"
-
+#include "mem.h"
 #include "mr_auxlib.h"
 #include "mr_lib.h"
 #include "mythroad.h"

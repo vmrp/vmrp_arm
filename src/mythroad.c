@@ -7,6 +7,7 @@
 #include "./include/mr_encode.h"
 #include "./include/mr_graphics.h"
 #include "./include/mr_gzip.h"
+#include "./include/mr_helper.h"
 #include "./include/mr_lib.h"
 #include "./include/mr_socket_target.h"
 #include "./include/mr_store.h"
@@ -18,7 +19,6 @@
 #include "./tomr/tomr.h"
 
 const unsigned char* mr_m0_files[50];
-//#endif
 
 #ifdef COMPATIBILITY01
 //#define MR_DRAW_TXT_AUTO_UNICODE   //向下兼容，过渡期后取消
@@ -56,9 +56,7 @@ static char old_start_filename[MR_MAX_FILENAME_SIZE];
 
 static char mr_entry[MR_MAX_FILENAME_SIZE];
 
-//static int32        mr_screen_w;
 int32 mr_screen_w;
-//static int32        mr_screen_h;
 int32 mr_screen_h;
 
 static int32 mr_screen_bit;
@@ -142,38 +140,28 @@ int32 mr_check_code_len;
 int32 mr_checkCode(void);
 #endif
 
-static int32 _mr_smsSetBytes(int32 pos, char* p, int32 len);
-static int32 _mr_smsAddNum(int32 index, char* pNum);
-static int32 _mr_load_sms_cfg(void);
-static int32 _mr_save_sms_cfg(int32 f);
-static int32 _mr_newSIMInd(int16 type, uint8* old_IMSI);
-
-static int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h);
-static int _mr_isMr(char* input);
-
+int32 _mr_smsSetBytes(int32 pos, char* p, int32 len);
+int32 _mr_smsAddNum(int32 index, char* pNum);
+int32 _mr_load_sms_cfg(void);
+int32 _mr_save_sms_cfg(int32 f);
+int32 _mr_newSIMInd(int16 type, uint8* old_IMSI);
+int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h);
+int _mr_isMr(char* input);
 void _DrawPoint(int16 x, int16 y, uint16 nativecolor);
 void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw);
-static void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler);
 void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b);
-static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font);
+int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font);
 int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transcoler, uint16 color_check);
-
 void* _mr_readFile(const char* filename, int* filelen, int lookfor);
 int32 mr_registerAPP(uint8* p, int32 len, int32 index);
-
 int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len);
-static int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb);
-static int _mr_TestCom(mrp_State* L, int input0, int input1);
-static int32 _DrawTextEx(char* pcText, int16 x, int16 y,
-                         mr_screenRectSt rect, mr_colourSt colorst, int flag, uint16 font);
-
-static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len);
-
+int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb);
+int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, mr_colourSt colorst, int flag, uint16 font);
+int _mr_TestCom(mrp_State* L, int input0, int input1);
+int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len);
 int32 mr_stop_ex(int16 freemem);
-
 static int32 _mr_div(int32 a, int32 b);
 static int32 _mr_mod(int32 a, int32 b);
-
 static int32 _mr_getMetaMemLimit(void);
 
 static const void* _mr_c_internal_table[78];
@@ -661,7 +649,6 @@ void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, ui
     }
 }
 
-
 //static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b)
 void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b) {
     //   mr_drawRect(x,y,w,h,MAKERGB(r, g, b));
@@ -770,7 +757,7 @@ void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b) {
     return;
 }
 
-static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font) {
+int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font) {
     int TextSize;
     //#endif
     uint16* tempBuf;
@@ -920,7 +907,7 @@ static int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b
     return 0;
 }
 
-static int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, mr_colourSt colorst, int flag, uint16 font) {
+int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, mr_colourSt colorst, int flag, uint16 font) {
     int TextSize, endchar_index;
     uint16* tempBuf;
     // int tempret=0;
@@ -1202,7 +1189,7 @@ static int MRF_BmGetScr(mrp_State* L) {
 }
 
 //effect
-static int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb) {
+int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb) {
     uint16* dstp;
     uint32 color_old, coloer_new;
     int MaxY = MIN(MR_SCREEN_H, y + h);
@@ -1789,7 +1776,7 @@ int32 mr_checkMrp(char* mrp_name) {
 }
 
 //display
-static int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h) {
+int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h) {
     if (!(mr_state == MR_STATE_RUN)) {
         return 0;
     }
@@ -3290,7 +3277,7 @@ static int MRF_closeNet(mrp_State* L) {
     return 1;
 }
 
-static int _mr_TestCom(mrp_State* L, int input0, int input1) {
+int _mr_TestCom(mrp_State* L, int input0, int input1) {
     int ret = 0;
 
     switch (input0) {
@@ -3683,11 +3670,8 @@ int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len) {
     return MR_SUCCESS;
 }
 
-static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
+int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
     int ret = 0;
-    //mr_printf("strCom:%d", input0);
-    //mr_printf("strCom:%s", input1);
-    //mr_printf("strCom:%d", len);
 
     switch (input0) {
         case 1:
@@ -3986,14 +3970,14 @@ static int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             //           sys_Invalidate_data_cache();
             // mr_cacheSync((void*)input1, len);
 
-                //extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
-                //extern int32 invalidate_arm9_icache(int32 addr, int32 len);
+            //extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
+            //extern int32 invalidate_arm9_icache(int32 addr, int32 len);
 
-                //clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)),
-                //                                          ((len+0x0000001F*3)&(~0x0000001F)));
-                //invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)),
-                //                                          ((len+0x0000001F*3)&(~0x0000001F)));
-                mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
+            //clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)),
+            //                                          ((len+0x0000001F*3)&(~0x0000001F)));
+            //invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)),
+            //                                          ((len+0x0000001F*3)&(~0x0000001F)));
+            mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
 
 #ifdef MR_VIA_MOD
             //mr_sleep(1000);
@@ -4835,7 +4819,6 @@ int32 mr_registerAPP(uint8* p, int32 len, int32 index) {
     return MR_SUCCESS;
 }
 
-
 //****************************短信
 
 /*
@@ -4913,7 +4896,7 @@ static int32 _mr_change_to_current(void) {
     return MR_SUCCESS;
 }
 #endif
-static int32 _mr_save_sms_cfg(int32 f) {
+int32 _mr_save_sms_cfg(int32 f) {
     int32 ret;
 
     //MRDBGPRINTF("mr_save_sms_cfg begin!");
@@ -4958,7 +4941,7 @@ static int32 _mr_save_sms_cfg(int32 f) {
 //#endif
 
 //查看DSM配置文件是否存在，不存在则创建之
-static int32 _mr_load_sms_cfg(void) {
+int32 _mr_load_sms_cfg(void) {
     int32 f;
     int32 ret;
 
@@ -5020,8 +5003,7 @@ int32 _mr_smsGetBytes(int32 pos, char* p, int32 len) {
     return MR_SUCCESS;
 }
 
-static int32 _mr_smsSetBytes(int32 pos, char* p, int32 len) {
-    //MRDBGPRINTF("_mr_smsGetBytes");
+int32 _mr_smsSetBytes(int32 pos, char* p, int32 len) {
 
     //memset(p, 0, len);
 
@@ -5172,7 +5154,7 @@ int32 _mr_smsCheckNum(uint8* pNum) {
 *                  MR_IGNORE--already exist
 *Note: 
 ***********************************************/
-static int32 _mr_smsAddNum(int32 index, char* pNum) {
+int32 _mr_smsAddNum(int32 index, char* pNum) {
     //int nTmp;
     //const char mrDYpath[] = "num_sms";      //current dir is "downdata/mr", just add file name to the discreption is ok
     int32 len = STRLEN(pNum);
@@ -5638,7 +5620,7 @@ int32 mr_smsIndiaction(uint8* pContent, int32 nLen, uint8* pNum, int32 type)  //
     return ret;
 }
 
-static int32 _mr_newSIMInd(int16 type, uint8* old_IMSI) {
+int32 _mr_newSIMInd(int16 type, uint8* old_IMSI) {
     int32 id = mr_getNetworkID();
     uint8 flag;
     char num[MR_MAX_NUM_LEN];
@@ -5707,7 +5689,7 @@ static void encode02(char* value, int len, unsigned char cBgnInit, unsigned char
     }
 }
 
-static int _mr_isMr(char* input) {
+int _mr_isMr(char* input) {
     mr_userinfo info;
     char enc[16];
     int appid, appver;
@@ -5925,8 +5907,6 @@ int32 _mr_getMetaMemLimit() {
 
     return memValue;
 }
-
-
 
 void mythroad_init(void) {
     memset2(_mr_c_port_table, 0, sizeof(_mr_c_port_table));

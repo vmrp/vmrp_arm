@@ -133,7 +133,6 @@ mrc_appInfoSt_st mrc_appInfo_st;
 int32 _mr_smsSetBytes(int32 pos, char* p, int32 len);
 int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h);
 void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw);
-void _DrawBitmapEx(mr_bitmapDrawSt* srcbmp, mr_bitmapDrawSt* dstbmp, uint16 w, uint16 h, mr_transMatrixSt* pTrans, uint16 transcoler);
 int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb);
 int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, mr_colourSt colorst, int flag, uint16 font);
 int _mr_TestCom(mrp_State* L, int input0, int input1);

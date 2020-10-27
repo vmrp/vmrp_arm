@@ -1,5 +1,6 @@
 
 
+#include "mem.h"
 #include "mr_gzip.h"
 #define slide mr_gzOutBuf
 

@@ -57,13 +57,8 @@ ext调用mythroad时在mythroad空间通过r9 恢复 r9 r10
 
 #include "./include/mr.h"
 
-static void *r9Ext;
-static void *r10Ext;
 static void *r10Mythroad;
 static void *lr;
-
-extern int32 mr_c_function_load(int32 code);
-#define C_FUNCTION_P() (*(((void **)mr_c_function_load) - 1))
 
 void fixR9_saveLR(void *v) {
     lr = v;
@@ -76,6 +71,21 @@ void *fixR9_getLR() {
 void fixR9_saveMythroad() {
     r10Mythroad = getR10();
 }
+
+#ifdef __GNUC__
+
+void fixR9_begin() {
+}
+void fixR9_end() {
+}
+
+#else
+
+static void *r9Ext;
+static void *r10Ext;
+
+extern int32 mr_c_function_load(int32 code);
+#define C_FUNCTION_P() (*(((void **)mr_c_function_load) - 1))
 
 void fixR9_begin() {
     void *oldR9v = getR9();
@@ -91,3 +101,5 @@ void fixR9_begin() {
 void fixR9_end() {
     setR9R10(r9Ext, r10Ext);
 }
+
+#endif

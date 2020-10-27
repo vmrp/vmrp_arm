@@ -55,6 +55,7 @@ LOCAL_SRC_FILES_FULL += mythroad.c \
                     fixR9.c	\
                     md5.c	\
                     mem.c	\
+                    asm/r9r10.s	\
 #                    src/mr_maketo.c	
 #                    src/MySprite.c   \
 #                    src/pluto.c	\
@@ -68,6 +69,7 @@ LOCAL_SRC_FILES_FULL += tomr/tomr_event.c \
 
 full:
 	gcc $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL) -I./src -I./tomr -I./include
+	rm ../libmr_vm.a
 	ar crv ../libmr_vm.a *.o
 	rm *.o
 
@@ -94,6 +96,7 @@ LOCAL_SRC_FILES := mythroad_mini.c \
 
 mini:
 	gcc $(LOCAL_CFLAGS) $(LOCAL_SRC_FILES) -I./include -I.
+	rm ../libmr_vm.a
 	ar crv ../libmr_vm.a *.o
 	rm *.o
 

@@ -12,6 +12,7 @@
 ** enhancements, or modifications. 
 */
 
+#include "mem.h"
 #include "tomr.h"
 #include "tomr_event.h"
 #include "mr_auxlib.h"

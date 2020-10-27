@@ -7,7 +7,6 @@
 #include "string.h"
 #include "type.h"
 #include "mrporting.h"
-#include "mem.h"
 
 #define MR_START_FILE "start.mr"
 #define MR_ERROR_WAP "https://github.com/zengming00/vmrp"
@@ -81,9 +80,6 @@ extern int32 mr_state;
 
 #define MRDBGPRINTF mr_printf
 
-#define MR_MALLOC(a) mr_malloc(a)
-#define MR_FREE(a, b) mr_free(a, b)
-#define MR_REALLOC(b, os, s) mr_realloc(b, os, s)
 
 
 #define STRCSPN strcspn2

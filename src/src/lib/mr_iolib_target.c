@@ -9,6 +9,7 @@
 //#define liolib_c
 
 #include "mr.h"
+#include "mr_helper.h"
 #include "tomr.h"
 
 #include "mr_auxlib.h"

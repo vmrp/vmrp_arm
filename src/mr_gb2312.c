@@ -1,4 +1,5 @@
 
+#include "mem.h"
 #include "encode.h"
 
 #include "mr.h"

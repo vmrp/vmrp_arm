@@ -1,9 +1,8 @@
 
 
-//#define lmem_c
 
 #include "mr.h"
-
+#include "mem.h"
 #include "mr_debug.h"
 #include "mr_do.h"
 #include "mr_mem.h"

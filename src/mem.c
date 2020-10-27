@@ -98,14 +98,16 @@ void* mr_malloc(uint32 len) {
 err:
     return 0;
 end:
-    MRDBGPRINTF("R9:%X malloc(0x%X[%d]): 0x%X", getR9(), len, len, ret);
+    // MRDBGPRINTF("R9:%X malloc(0x%X[%d]): 0x%X", getR9(), len, len, ret);
+    MRDBGPRINTF("malloc(0x%X[%d]): 0x%X", len, len, ret);
     return ret;
 }
 
 void mr_free(void* p, uint32 len) {
     LG_mem_free_t *free, *n;
     len = (uint32)realLGmemSize(len);
-    MRDBGPRINTF("R9:%X free(0x%X, %u)", getR9(), p, len);
+    // MRDBGPRINTF("R9:%X free(0x%X, %u)", getR9(), p, len);
+    MRDBGPRINTF("free(0x%X, %u)", p, len);
 #ifdef MYTHROAD_DEBUG
     if (!len || !p || (char*)p < LG_mem_base || (char*)p >= LG_mem_end || (char*)p + len > LG_mem_end || (char*)p + len <= LG_mem_base) {
         MRDBGPRINTF("mr_free invalid");
