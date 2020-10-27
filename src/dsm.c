@@ -72,12 +72,11 @@ void mr_printf(const char *format, ...) {
 #define LOGD(fmt, ...) mr_printf("[DEBUG]" fmt, ##__VA_ARGS__)
 
 ///////////////////////////////////////////////////////////////////
-#define EN_CHAR_H 16
+#define CHAR_H 16
 #define EN_CHAR_W 8
-#define CN_CHAR_H 16
 #define CN_CHAR_W 16
 
-// todo "上有名不"这四个字必定显示为错别字
+// todo "上有名不"这四个字必定显示为错别字(是编码转换的问题，不是字体的问题)
 static char font_sky16_bitbuf[32];
 static int font_sky16_f;
 
@@ -95,50 +94,58 @@ static int xl_font_sky16_close() {  //关闭字体
     return mr_close(font_sky16_f);
 }
 
-//获取字体第n个点信息
-static int getfontpix(char *buf, int n) {
-    buf += n / 8;  //计算在第几个字节，从0开始
-    //计算在第几位n%8
-    return (128 >> (n % 8)) & *buf;
-}
-
 //获得字符的位图
 static char *xl_font_sky16_getChar(uint16 id) {
     mr_seek(font_sky16_f, id * 32, 0);
     mr_read(font_sky16_f, font_sky16_bitbuf, 32);
     return font_sky16_bitbuf;
 }
+// function drawChar(img: BMP24, char: number | string, x: number, y: number, color: number) {
+//     if (typeof char === 'string') {
+//         char = char.charCodeAt(0);
+//     }
+//     const offset = char * 32;
+//     const charData = fontBuffer.slice(offset, offset + 32);
+//     for (let iy = 0; iy < CHAR_H; iy++) {
+//         let data = charData.readUInt16BE(iy * 2);
+//         for (let ix = 0; data > 0; ix++) {
+//             if (data & (1 << 16)) {
+//                 img.drawPoint(ix + x, iy + y, color);
+//             }
+//             data <<= 1;
+//         }
+//     }
+// }
 
-//画一个字
-static char *xl_font_sky16_drawChar(uint16 id, int x, int y, uint16 color) {
-    int y2 = y + 16;
-    int n = 0, count;
-    int ix = x;
-    int iy;
+static void xl_font_sky16_drawChar(uint16 ch, int x, int y, uint16 color) {
     extern void _DrawPoint(int16 x, int16 y, uint16 nativecolor);
+    int ix, iy;
+    uint16 data;
 
-    mr_seek(font_sky16_f, id * 32, 0);
+    mr_seek(font_sky16_f, ch * 32, 0);  // 一行两字节，高度16，所以2*16=32字节
     mr_read(font_sky16_f, font_sky16_bitbuf, 32);
-    for (iy = y; iy < y2; iy++) {
-        ix = x;
-        for (count = 0; count < 16; count++) {
-            if (getfontpix(font_sky16_bitbuf, n))
-                _DrawPoint(ix, iy, color);
-            n++, ix++;
+    for (iy = 0; iy < CHAR_H; iy++) {
+        // 字节序的问题
+        data = font_sky16_bitbuf[iy * 2 + 1];
+        data |= font_sky16_bitbuf[iy * 2] << 8;
+        for (ix = 0; data > 0; ix++) {
+            if (data & (1 << 15)) {
+                _DrawPoint(ix + x, iy + y, color);
+            }
+            data = data << 1;
         }
     }
-    return font_sky16_bitbuf;
 }
 
 //获取一个文字的宽高
 static void xl_font_sky16_charWidthHeight(uint16 id, int32 *width, int32 *height) {
     if (id < 128) {
         if (width) *width = EN_CHAR_W;
-        if (height) *height = EN_CHAR_H;
+        if (height) *height = CHAR_H;
         return;
     }
     if (width) *width = CN_CHAR_W;
-    if (height) *height = CN_CHAR_H;
+    if (height) *height = CHAR_H;
 }
 
 /*
@@ -675,7 +682,7 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
             // case MR_GET_FREE_SPACE:
 
         case MR_CHARACTER_HEIGHT: {  // 1201
-            static int32 wordInfo = (EN_CHAR_H << 24) | (EN_CHAR_W << 16) | (CN_CHAR_H << 8) | (CN_CHAR_W);
+            static int32 wordInfo = (CHAR_H << 24) | (EN_CHAR_W << 16) | (CHAR_H << 8) | (CN_CHAR_W);
             *output = (unsigned char *)&wordInfo;
             *output_len = 4;
             ret = MR_SUCCESS;
