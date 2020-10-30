@@ -1319,10 +1319,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
         goto end;
     }
 
-    // reallen = (uint32)(((uch*)filebuf)[*filelen - 4]);
-    // reallen |= (uint32)(((uch*)filebuf)[*filelen - 3]) << 8;
-    // reallen |= (uint32)(((uch*)filebuf)[*filelen - 2]) << 16;
-    // reallen |= (uint32)(((uch*)filebuf)[*filelen - 1]) << 24;
     reallen = *(uint32*)((uint8*)filebuf + *filelen - sizeof(uint32));
 
     oldlen = *filelen;
@@ -1376,6 +1372,7 @@ end:
 
 int _mr_TestCom(mrp_State* L, int input0, int input1) {
     int ret = 0;
+    MRDBGPRINTF("_mr_TestCom(0x%p, 0x%X, 0x%X", L, input0, input1);
     switch (input0) {
         case 1:
             ret = mr_getTime();
@@ -1547,6 +1544,7 @@ int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len) {
 int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
     int ret = 0;
 
+    MRDBGPRINTF("_mr_TestCom1(0x%p, 0x%X, 0x%p, 0x%d)", L, input0, input1, len);
     switch (input0) {
         case 2:
             if (mr_ram_file) {
@@ -2136,6 +2134,7 @@ int32 mr_timer(void) {
     }
     mr_timer_state = MR_TIMER_STATE_IDLE;
     if ((mr_state == MR_STATE_RUN) || ((mr_timer_run_without_pause) && (mr_state == MR_STATE_PAUSE))) {
+        MRDBGPRINTF("mr_timer 1, %p", mr_timer_function);
         if (mr_timer_function) {
             int status = mr_timer_function();
             if (status != MR_IGNORE)
@@ -2144,6 +2143,7 @@ int32 mr_timer(void) {
         _mr_TestComC(801, NULL, 1, 2);
         return MR_SUCCESS;
     } else if (mr_state == MR_STATE_RESTART) {
+        MRDBGPRINTF("mr_timer 2");
         mr_stop();  //1943 修改为mr_stop
         //mr_stop_ex(TRUE);      //1943
         /* 不重新初始化内存
