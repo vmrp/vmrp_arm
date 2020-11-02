@@ -208,16 +208,81 @@ const tpl = `
         EXPORT {{asmFuncName}}
 `;
 
+const asm_gnu = `
+	.arch armv5te
+
+	.global	getR9
+getR9:
+        MOV      r0,r9
+        BX       lr
+
+	.global	setR9
+setR9:
+        MOV      r9,r0
+        BX       lr
+
+	.global	getR10
+getR10:
+        MOV      r0,r10
+        BX       lr
+
+	.global	setR10
+setR10:
+        MOV      r10,r0
+        BX       lr
+
+	.global	setR9R10
+setR9R10:
+        MOV      r9,r0
+        MOV      r10,r1
+        BX       lr
+    
+{{replace}}
+
+`;
+
+const tpl_gnu = `
+        .global {{asmFuncName}}
+{{asmFuncName}}:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 因为不确定fixR9_xxx的c函数编译后会使用哪些寄存器，所以干脆全部保存
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 一共13个寄存器 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr }
+        sub      sp,sp,#52      @ 此时已经回到mythroad空间，需要在全局变量保存lr的值，因为栈内容没变，所以不用重复保存，直接修改sp
+        mov      r0,lr
+        bl       fixR9_saveLR
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 现在完全恢复调用参数
+        bl       {{targetFuncName}}(PLT)      @ 调用目标函数
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 注意这里没有保存lr，因为lr的值已经在调用目标函数后破坏
+        sub      sp,sp,#48      @ 12个寄存器
+        bl       fixR9_getLR
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 因为不确定fixR9_xxx的c函数编译后会使用哪些寄存器，所以干脆全部保存
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 一共13个寄存器 13*4=52
+        bl       fixR9_end
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr }
+        bx       lr
+`;
+
 const fs = require('fs');
 
-function getAsmStr() {
+
+function getAsmStr(str) {
         const arr = [];
         Object.keys(obj).forEach(function (key) {
-                arr.push(tpl.replace(/\{\{asmFuncName\}\}/g, key).replace(/\{\{targetFuncName\}\}/g, obj[key]));
+                arr.push(str.replace(/\{\{asmFuncName\}\}/g, key).replace(/\{\{targetFuncName\}\}/g, obj[key]));
         });
         return arr.join('');
 }
 
-fs.writeFileSync('./r9r10.s', asm.replace('{{replace}}', getAsmStr()));
+function doit(asm, tpl) {
+        fs.writeFileSync('./r9r10.s', asm.replace('{{replace}}', getAsmStr(tpl)));
+}
+
+doit(asm, tpl);
+// doit(asm_gnu, tpl_gnu);
 console.log('done.');
 

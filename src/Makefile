@@ -69,7 +69,7 @@ LOCAL_SRC_FILES_FULL += tomr/tomr_event.c \
 
 full:
 	gcc $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL) -I./src -I./tomr -I./include
-	rm ../libmr_vm.a
+	# rm ../libmr_vm.a
 	ar crv ../libmr_vm.a *.o
 	rm *.o
 
