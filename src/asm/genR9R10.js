@@ -143,8 +143,6 @@ const asm = `
         AREA ||.text||, CODE, READONLY
         IMPORT       fixR9_begin
         IMPORT       fixR9_end
-        IMPORT       fixR9_saveLR
-        IMPORT       fixR9_getLR
 
 getR9 PROC
         MOV      r0,r9
@@ -189,22 +187,15 @@ const tpl = `
         sub      sp,sp,#52      ; r0-r8, r11, r12, sp, lr 一共13个寄存器 13*4=52
         mov      r0,r9
         mov      r1,r10
+        mov      r2,lr
         bl       fixR9_begin
-        ldmfd    sp,{ r0-r8, r11, r12, sp, lr }
-        sub      sp,sp,#52      ; 此时已经回到mythroad空间，需要在全局变量保存lr的值，因为栈内容没变，所以不用重复保存，直接修改sp
-        mov      r0,lr
-        bl       fixR9_saveLR
         ldmfd    sp,{ r0-r8, r11, r12, sp, lr } ; 现在完全恢复调用参数
         bl       {{targetFuncName}}      ; 调用目标函数
         stmfd    sp,{ r0-r8, r11, r12, sp } ; 注意这里没有保存lr，因为lr的值已经在调用目标函数后破坏
         sub      sp,sp,#48      ; 12个寄存器
-        bl       fixR9_getLR
+        bl       fixR9_end
         mov      lr,r0
         ldmfd    sp,{ r0-r8, r11, r12, sp }
-        stmfd    sp,{ r0-r8, r11, r12, sp, lr } ; 因为不确定fixR9_xxx的c函数编译后会使用哪些寄存器，所以干脆全部保存
-        sub      sp,sp,#52      ; r0-r8, r11, r12, sp, lr 一共13个寄存器 13*4=52
-        bl       fixR9_end
-        ldmfd    sp,{ r0-r8, r11, r12, sp, lr }
         bx       lr
         ENDP
         EXPORT {{asmFuncName}}
@@ -250,22 +241,15 @@ const tpl_gnu = `
         sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 一共13个寄存器 13*4=52
         mov      r0,r9
         mov      r1,r10
+        mov      r2,lr
         bl       fixR9_begin
-        ldmfd    sp,{ r0-r8, r11, r12, sp, lr }
-        sub      sp,sp,#52      @ 此时已经回到mythroad空间，需要在全局变量保存lr的值，因为栈内容没变，所以不用重复保存，直接修改sp
-        mov      r0,lr
-        bl       fixR9_saveLR
         ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 现在完全恢复调用参数
         bl       {{targetFuncName}}(PLT)      @ 调用目标函数
         stmfd    sp,{ r0-r8, r11, r12, sp } @ 注意这里没有保存lr，因为lr的值已经在调用目标函数后破坏
         sub      sp,sp,#48      @ 12个寄存器
-        bl       fixR9_getLR
+        bl       fixR9_end
         mov      lr,r0
         ldmfd    sp,{ r0-r8, r11, r12, sp }
-        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 因为不确定fixR9_xxx的c函数编译后会使用哪些寄存器，所以干脆全部保存
-        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 一共13个寄存器 13*4=52
-        bl       fixR9_end
-        ldmfd    sp,{ r0-r8, r11, r12, sp, lr }
         bx       lr
 `;
 
