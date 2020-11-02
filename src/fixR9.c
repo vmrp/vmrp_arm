@@ -87,9 +87,7 @@ static void *r10Ext;
 extern int32 mr_c_function_load(int32 code);
 #define C_FUNCTION_P() (*(((void **)mr_c_function_load) - 1))
 
-void fixR9_begin() {
-    void *oldR9v = getR9();
-    void *oldR10v = getR10();
+void fixR9_begin(void *oldR9v, void *oldR10v) {
     mr_c_function_st *p = C_FUNCTION_P();
     setR9(p->start_of_ER_RW);
     // 设置r9后回到mythroad，此时才可以访问全局变量

@@ -62,6 +62,10 @@ file36=..\encode.c
 file37=..\strtol.c
 file38=..\strtoul.c
 file39=..\dsm.c
+file40=..\fixR9.c
+file41=..\asm\r9r10.s
+file42=..\md5.c
+file43=..\mem.c
 
 file306=..\tomr\tomr_event.c 
 file307=..\tomr\tomr_is.c   
