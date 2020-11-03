@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <malloc.h>
+#include <pthread.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -16,6 +17,8 @@
 #include <unistd.h>
 
 #include "./src/include/dsm.h"
+
+static pthread_mutex_t mutex;
 
 static DSM_EXPORT_FUNCS *mythroad;
 
@@ -316,6 +319,11 @@ int64 get_time_ms(void) {
 }
 
 void j2n_startMrp(char *path) {
+    if (pthread_mutex_lock(&mutex) != 0) {
+        perror("mutex lock fail");
+        exit(EXIT_FAILURE);
+    }
+
     printf("vm_loadMrp entry:%s\n", path);
     // mr_registerAPP((uint8 *)buf, (int32)len, (int32)index);
 #ifdef DSM_FULL
@@ -323,16 +331,36 @@ void j2n_startMrp(char *path) {
 #else
     mythroad->mr_start_dsm(path, "cfunction.ext", NULL);
 #endif
+    if (pthread_mutex_unlock(&mutex) != 0) {
+        perror("mutex unlock fail");
+        exit(EXIT_FAILURE);
+    }
 }
 
 void j2n_pause() {
+    if (pthread_mutex_lock(&mutex) != 0) {
+        perror("mutex lock fail");
+        exit(EXIT_FAILURE);
+    }
     printf("mr_pauseApp\n");
     mythroad->mr_pauseApp();
+    if (pthread_mutex_unlock(&mutex) != 0) {
+        perror("mutex unlock fail");
+        exit(EXIT_FAILURE);
+    }
 }
 
 void j2n_resume() {
+    if (pthread_mutex_lock(&mutex) != 0) {
+        perror("mutex lock fail");
+        exit(EXIT_FAILURE);
+    }
     printf("mr_resumeApp\n");
     mythroad->mr_resumeApp();
+    if (pthread_mutex_unlock(&mutex) != 0) {
+        perror("mutex unlock fail");
+        exit(EXIT_FAILURE);
+    }
 }
 
 // void j2n_stop() {
@@ -352,12 +380,19 @@ void j2n_resume() {
 // }
 
 static SDL_TimerID timeId = 0;
-static int timeLock = 0;
 
 Uint32 th2(Uint32 interval, void *param) {
-    timeLock = 1;
+    SDL_RemoveTimer(timeId);
+    timeId = 0;
+    if (pthread_mutex_lock(&mutex) != 0) {
+        perror("mutex lock fail");
+        exit(EXIT_FAILURE);
+    }
     mythroad->mr_timer();
-    timeLock = 0;
+    if (pthread_mutex_unlock(&mutex) != 0) {
+        perror("mutex unlock fail");
+        exit(EXIT_FAILURE);
+    }
     return 0;
 }
 
@@ -366,7 +401,6 @@ int32 br_timerStart(uint16 t) {
     if (!timeId) {
         timeId = SDL_AddTimer(t, th2, NULL);
     } else {
-        printf("br_timerStart ignore %d======================================\n", t);
         SDL_RemoveTimer(timeId);
         timeId = SDL_AddTimer(t, th2, NULL);
     }
@@ -378,8 +412,6 @@ int32 br_timerStop() {
     if (timeId) {
         SDL_RemoveTimer(timeId);
         timeId = 0;
-    } else {
-        printf("br_timerStop ignore----------------------------------------------\n");
     }
     return MR_SUCCESS;
 }
@@ -421,34 +453,48 @@ void br_drawBitmap(uint16 *data, int16 x, int16 y, uint16 w, uint16 h) {
     SDL_RenderPresent(renderer);
 }
 
+static int32 mythroad_event(int16 type, int32 param1, int32 param2) {
+    int32 ret;
+    if (pthread_mutex_lock(&mutex) != 0) {
+        perror("mutex lock fail");
+        exit(EXIT_FAILURE);
+    }
+    ret = mythroad->mr_event(type, param1, param2);
+    if (pthread_mutex_unlock(&mutex) != 0) {
+        perror("mutex unlock fail");
+        exit(EXIT_FAILURE);
+    }
+    return ret;
+}
+
 static void keyEvent(int16 type, SDL_Keycode code) {
     switch (code) {
         case SDLK_RETURN:
-            mythroad->mr_event(type, MR_KEY_SELECT, 0);
+            mythroad_event(type, MR_KEY_SELECT, 0);
             break;
         case SDLK_w:
         case SDLK_UP:
-            mythroad->mr_event(type, MR_KEY_UP, 0);
+            mythroad_event(type, MR_KEY_UP, 0);
             break;
         case SDLK_s:
         case SDLK_DOWN:
-            mythroad->mr_event(type, MR_KEY_DOWN, 0);
+            mythroad_event(type, MR_KEY_DOWN, 0);
             break;
         case SDLK_a:
         case SDLK_LEFT:
-            mythroad->mr_event(type, MR_KEY_LEFT, 0);
+            mythroad_event(type, MR_KEY_LEFT, 0);
             break;
         case SDLK_d:
         case SDLK_RIGHT:
-            mythroad->mr_event(type, MR_KEY_RIGHT, 0);
+            mythroad_event(type, MR_KEY_RIGHT, 0);
             break;
         case SDLK_q:
         case SDLK_LEFTBRACKET:
-            mythroad->mr_event(type, MR_KEY_SOFTLEFT, 0);
+            mythroad_event(type, MR_KEY_SOFTLEFT, 0);
             break;
         case SDLK_e:
         case SDLK_RIGHTBRACKET:
-            mythroad->mr_event(type, MR_KEY_SOFTRIGHT, 0);
+            mythroad_event(type, MR_KEY_SOFTRIGHT, 0);
             break;
         default:
             printf("key:%d\n", code);
@@ -497,6 +543,10 @@ int main(int argc, char *args[]) {
 
     mythroad = dsm_init(funcs);
 
+    if (pthread_mutex_init(&mutex, NULL) != 0) {
+        perror("mutex init fail");
+        exit(EXIT_FAILURE);
+    }
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
         printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return -1;
@@ -537,7 +587,6 @@ int main(int argc, char *args[]) {
                 isLoop = false;
                 break;
             }
-            if (timeLock) continue;
             switch (event.type) {
                 case SDL_KEYDOWN:
                     keyEvent(MR_KEY_PRESS, event.key.keysym.sym);
@@ -547,16 +596,16 @@ int main(int argc, char *args[]) {
                     break;
                 case SDL_MOUSEMOTION:
                     if (isDown) {
-                        mythroad->mr_event(MR_MOUSE_MOVE, event.motion.x, event.motion.y);
+                        mythroad_event(MR_MOUSE_MOVE, event.motion.x, event.motion.y);
                     }
                     break;
                 case SDL_MOUSEBUTTONDOWN:
                     isDown = true;
-                    mythroad->mr_event(MR_MOUSE_DOWN, event.motion.x, event.motion.y);
+                    mythroad_event(MR_MOUSE_DOWN, event.motion.x, event.motion.y);
                     break;
                 case SDL_MOUSEBUTTONUP:
                     isDown = false;
-                    mythroad->mr_event(MR_MOUSE_UP, event.motion.x, event.motion.y);
+                    mythroad_event(MR_MOUSE_UP, event.motion.x, event.motion.y);
                     break;
             }
         }
