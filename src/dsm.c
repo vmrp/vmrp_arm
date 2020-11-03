@@ -1,6 +1,5 @@
 #include "./include/dsm.h"
 
-#include "./include/encode.h"
 #include "./include/fixR9.h"
 #include "./include/printf.h"
 #include "./include/string.h"
@@ -55,14 +54,11 @@ void mr_panic(char *msg) {
 
 void mr_printf(const char *format, ...) {
     char printfBuf[512] = {0};
-    // char utf8Buf[1024] = {0};
     va_list params;
 
     va_start(params, format);
     vsnprintf_(printfBuf, sizeof(printfBuf), format, params);
     va_end(params);
-    // GBToUTF8String((uint8 *)printfBuf, (uint8 *)utf8Buf, sizeof(utf8Buf));
-    // dsmInFuncs->log(utf8Buf);
     dsmInFuncs->log(printfBuf);
 }
 
@@ -148,22 +144,6 @@ static void xl_font_sky16_charWidthHeight(uint16 id, int32 *width, int32 *height
     if (height) *height = CHAR_H;
 }
 
-/*
-//获取单行文字的宽高
-void xl_font_sky16_textWidthHeight(char *text, int32 *width, int32 *height) {
-    int textIdx = 0;
-    int id;
-    int fontw = 0, fonth = 0;
-    while (text[textIdx] != 0) {
-        id = (text[textIdx] << 8) + (text[textIdx + 1]);
-        xl_font_sky16_charWidthHeight(id, &fontw, &fonth);
-        (*width) += fontw;
-        (*height) += fonth;
-        textIdx += 2;
-    }
-}
-*/
-
 int32 mr_exit(void) {
     LOGD("%s", "mr_exit() called by mythroad!");
     xl_font_sky16_close();
@@ -230,8 +210,7 @@ int32 mr_timerStop(void) {
 }
 
 uint32 mr_getTime(void) {
-    uint32 s;
-    s = dsmInFuncs->get_uptime_ms() - dsmStartTime;
+    uint32 s = dsmInFuncs->get_uptime_ms() - dsmStartTime;
     LOGI("mr_getTime():%d", s);
     return s;
 }
@@ -368,14 +347,6 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
     return MR_SUCCESS;
 }
 
-// char *get_filename(char *outputbuf, const char *filename) {
-//     char dsmFullPath[DSM_MAX_FILE_LEN + 10];
-//     snprintf_(dsmFullPath, sizeof(dsmFullPath), "%s%s", dsmWorkPath, filename);
-//     formatPathString(dsmFullPath, '/');
-//     GBToUTF8String((uint8 *)dsmFullPath, (uint8 *)outputbuf, DSM_MAX_FILE_LEN);
-//     return outputbuf;
-// }
-
 char *get_filename(char *outputbuf, const char *filename) {
     sprintf_(outputbuf, "%s%s", dsmWorkPath, filename);
     formatPathString(outputbuf, '/');
@@ -452,8 +423,6 @@ int32 mr_rmDir(const char *name) {
 int32 mr_findGetNext(int32 search_handle, char *buffer, uint32 len) {
     char *d_name = dsmInFuncs->readdir(search_handle);
     if (d_name != NULL) {
-        // memset2(buffer, 0, len);
-        // UTF8ToGBString((uint8 *)d_name, (uint8 *)buffer, (int)len);
         strncpy2(buffer, d_name, len);
         LOGI("mr_findGetNext %d %s", search_handle, buffer);
         return MR_SUCCESS;

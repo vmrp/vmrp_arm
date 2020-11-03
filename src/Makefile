@@ -48,7 +48,6 @@ LOCAL_SRC_FILES_FULL += mythroad.c \
                     string.c	\
                     printf.c	\
                     other.c	\
-                    encode.c	\
                     strtol.c	\
                     strtoul.c	\
                     dsm.c	\
@@ -85,7 +84,6 @@ LOCAL_SRC_FILES := mythroad_mini.c \
                     string.c \
                     printf.c	\
                     other.c	\
-                    encode.c	\
                     strtol.c	\
                     strtoul.c	\
                     dsm.c	\
@@ -96,7 +94,7 @@ LOCAL_SRC_FILES := mythroad_mini.c \
 
 mini:
 	gcc $(LOCAL_CFLAGS) $(LOCAL_SRC_FILES) -I./include -I.
-	rm ../libmr_vm.a
+	# rm ../libmr_vm.a
 	ar crv ../libmr_vm.a *.o
 	rm *.o
 

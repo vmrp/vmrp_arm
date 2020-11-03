@@ -58,7 +58,6 @@ file32=..\mr_inflate.c
 file33=..\string.c	
 file34=..\printf.c	
 file35=..\other.c	
-file36=..\encode.c
 file37=..\strtol.c
 file38=..\strtoul.c
 file39=..\dsm.c

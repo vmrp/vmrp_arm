@@ -2,6 +2,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <iconv.h>
 #include <malloc.h>
 #include <pthread.h>
 #include <stdarg.h>
@@ -22,6 +23,34 @@ static pthread_mutex_t mutex;
 
 static DSM_EXPORT_FUNCS *mythroad;
 
+/////////////////////////////////////////////////////////////////
+#define GBK2UTF8(v) strConv(v, "UTF-8", "GBK")
+#define UTF82GBK(v) strConv(v, "GBK", "UTF-8")
+
+char *strConv(const char *str, const char *toCode, const char *fromCode) {
+    iconv_t cd = iconv_open(toCode, fromCode);
+    if (cd == (iconv_t)(-1)) {
+        return NULL;
+    }
+
+    size_t inbytesleft = strlen(str);
+    char *inbuf = (char *)str;
+    size_t outbytesleft = inbytesleft * 2 + 2;
+    char *ustr = malloc(outbytesleft);
+    char *outbuf = ustr;
+
+    // iconv(cd, NULL, NULL, NULL, NULL);
+    if (iconv(cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft) != -1) {
+        if (outbytesleft >= 2) {
+            outbuf[0] = '\0';
+            outbuf[1] = '\0';
+            iconv_close(cd);
+            return ustr;
+        }
+    }
+    iconv_close(cd);
+    return NULL;
+}
 /////////////////////////////////////////////////////////////////
 #define HANDLE_NUM 64
 
@@ -60,8 +89,10 @@ static void handleDel(int32 v) {
 }
 /////////////////////////////////////////////////////////////////
 void panic(char *msg) {
+    char *str = GBK2UTF8(msg);
+    if (str == NULL) str = msg;
     do {
-        printf("%s\n", msg);
+        printf("%s\n", str);
         while (1) {
         }
     } while (0);
@@ -70,6 +101,8 @@ void panic(char *msg) {
 int32 br_open(const char *filename, uint32 mode) {
     int f;
     int new_mode = 0;
+    char *str = GBK2UTF8(filename);
+    if (str == NULL) return MR_FAILED;
 
     if (mode & MR_FILE_RDONLY)
         new_mode = O_RDONLY;
@@ -79,15 +112,17 @@ int32 br_open(const char *filename, uint32 mode) {
         new_mode = O_RDWR;
 
     //如果文件存在 带此标志会导致错误
-    if ((mode & MR_FILE_CREATE) && (0 != access(filename, F_OK)))
+    if ((mode & MR_FILE_CREATE) && (0 != access(str, F_OK)))
         new_mode |= O_CREAT;
 
-    f = open(filename, new_mode, 0777);
+    f = open(str, new_mode, 0777);
     if (f == -1) {
+        free(str);
         return (int32)NULL;
     }
     int32 ret = handle2int32(f);
-    printf("br_open(%s,%d) fd is: %d\n", filename, new_mode, ret);
+    printf("br_open(%s,%d) fd is: %d\n", str, new_mode, ret);
+    free(str);
     return ret;
 }
 
@@ -139,9 +174,13 @@ int32 br_seek(int32 f, int32 pos, int method) {
 
 int32 br_info(const char *filename) {
     struct stat s1;
-    int ret = stat(filename, &s1);
+    int ret;
+    char *str = GBK2UTF8(filename);
+    if (str == NULL) return MR_IS_INVALID;
 
-    printf("br_info(%s)\n", filename);
+    ret = stat(str, &s1);
+    printf("br_info(%s)\n", str);
+    free(str);
     if (ret != 0) {
         return MR_IS_INVALID;
     }
@@ -154,60 +193,102 @@ int32 br_info(const char *filename) {
 }
 
 int32 br_remove(const char *filename) {
-    int ret = remove(filename);
+    int ret;
+    char *str = GBK2UTF8(filename);
+    if (str == NULL) return MR_FAILED;
+
+    ret = remove(str);
     if (ret != 0) {
-        printf("br_remove(%s) err, ret=%d\n", filename, ret);
+        printf("br_remove(%s) err, ret=%d\n", str, ret);
+        free(str);
         return MR_FAILED;
     }
-    printf("br_remove(%s) suc\n", filename);
+    printf("br_remove(%s) suc\n", str);
+    free(str);
     return MR_SUCCESS;
 }
 
 int32 br_rename(const char *oldname, const char *newname) {
-    return rename(oldname, newname);
+    char *oldnameStr, *newnameStr;
+
+    oldnameStr = GBK2UTF8(oldname);
+    if (oldnameStr == NULL) return MR_FAILED;
+
+    newnameStr = GBK2UTF8(newname);
+    if (newnameStr == NULL) {
+        free(oldnameStr);
+        return MR_FAILED;
+    }
+
+    int ret = rename(oldnameStr, newnameStr);
+    free(oldnameStr);
+    free(newnameStr);
+    if (ret != 0) {
+        return MR_FAILED;
+    }
+    return MR_SUCCESS;
 }
 
 int32 br_mkDir(const char *name) {
     int ret;
-    if (access(name, F_OK) == 0) {  //检测是否已存在
+    char *str = GBK2UTF8(name);
+    if (str == NULL) return MR_FAILED;
+
+    if (access(str, F_OK) == 0) {  //检测是否已存在
         goto ok;
     }
-    ret = mkdir(name, S_IRWXU | S_IRWXG | S_IRWXO);
+    ret = mkdir(str, S_IRWXU | S_IRWXG | S_IRWXO);
     if (ret != 0) {
-        printf("br_mkDir(%s) err!\n", name);
+        printf("br_mkDir(%s) err!\n", str);
+        free(str);
         return MR_FAILED;
     }
 ok:
-    printf("br_mkDir(%s) suc!\n", name);
+    printf("br_mkDir(%s) suc!\n", str);
+    free(str);
     return MR_SUCCESS;
 }
 
 int32 br_rmDir(const char *name) {
-    int ret = rmdir(name);
+    char *str = GBK2UTF8(name);
+    if (str == NULL) return MR_FAILED;
+
+    int ret = rmdir(str);
     if (ret != 0) {
-        printf("br_rmDir(%s) err!\n", name);
+        printf("br_rmDir(%s) err!\n", str);
+        free(str);
         return MR_FAILED;
     }
-    printf("br_rmDir(%s) suc!\n", name);
+    printf("br_rmDir(%s) suc!\n", str);
+    free(str);
     return MR_SUCCESS;
 }
 
 int32 br_opendir(const char *name) {
-    printf("br_opendir %s\n", name);
+    char *str = GBK2UTF8(name);
+    if (str == NULL) return MR_FAILED;
 
-    DIR *pDir = opendir(name);
+    printf("br_opendir %s\n", str);
+    DIR *pDir = opendir(str);
+    free(str);
     if (pDir != NULL) {
         return handle2int32((uint32)pDir);
     }
     return MR_FAILED;
 }
 
+static char *d_name = NULL;
+
 char *br_readdir(int32 search_handle) {
     printf("br_readdir %d\n", search_handle);
     DIR *pDir = (DIR *)int32ToHandle(search_handle);
     struct dirent *pDt = readdir(pDir);
     if (pDt != NULL) {
-        return pDt->d_name;
+        if (d_name) {
+            free(d_name);
+        }
+        d_name = UTF82GBK(pDt->d_name);
+        return d_name;
     }
     return NULL;
 }
@@ -227,9 +308,13 @@ int32 br_sleep(uint32 ms) {
 
 int32 br_getLen(const char *filename) {
     struct stat s1;
-    int ret = stat(filename, &s1);
+    char *str = GBK2UTF8(filename);
+    if (str == NULL) return MR_FAILED;
+
+    int ret = stat(str, &s1);
+    free(str);
     if (ret != 0)
-        return -1;
+        return MR_FAILED;
     return s1.st_size;
 }
 
@@ -417,8 +502,13 @@ int32 br_timerStop() {
 }
 
 void br_log(char *msg) {
-    puts(msg);
-    // printf(msg);
+    char *str = GBK2UTF8(msg);
+    if (str == NULL) {
+        puts(msg);
+    } else {
+        puts(str);
+        free(str);
+    }
 }
 
 void br_exit(void) {

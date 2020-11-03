@@ -1,16 +1,9 @@
 
 #include "mem.h"
-#include "encode.h"
-
 #include "mr.h"
 
-#define MR_PLAT_U2C
-
-// typedef  unsigned short unicode_char;
 #define unicode_char uint16
 
-//#if !(defined(MTK_MOD) && defined(MR_V2000))
-#ifndef MR_PLAT_U2C
 static const unicode_char gb2312_a1[94] = {12288, 12289, 12290, 12539, 713, 711, 168, 12291, 12293, 8213, 65374, 8214, 8230, 8216, 8217,
                                            8220, 8221, 12308, 12309, 12296, 12297, 12298, 12299, 12300, 12301, 12302, 12303, 12310, 12311, 12304, 12305,
                                            177, 215, 247, 8758, 8743, 8744, 8721, 8719, 8746, 8745, 8712, 8759, 8730, 8869, 8741, 8736,
@@ -508,6 +501,7 @@ const unicode_char *const mr_gb2312[] = {
     gb2312_f0, gb2312_f1, gb2312_f2, gb2312_f3, gb2312_f4, gb2312_f5, gb2312_f6, gb2312_f7,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
+// 实际转换出来是utf-16be
 unicode_char *c2u(const char *cp, int *err, int *size) {
     size_t i, cnt;
     unicode_char *uc;
@@ -531,130 +525,42 @@ unicode_char *c2u(const char *cp, int *err, int *size) {
 
     i = cnt = 0;
     while (cp[i]) {
-        int a = (int)(unsigned char)cp[i], b;
+        int a = (int)(unsigned char)cp[i];
+        int b = (int)(unsigned char)cp[i + 1];
 
-        if (a >= 0xA1 && a <= 0xFE && cp[i + 1]) {
+        if (a >= 0xA1 && a <= 0xFE && b) {
             unicode_char ucv;
-            b = (int)(unsigned char)cp[i + 1];
 
             if (0xA1 <= b && b <= 0xFE && mr_gb2312[a - 0xA1] && (ucv = mr_gb2312[a - 0xA1][b - 0xA1])) {
-#ifdef MR_BIG_ENDIAN
-                uc[cnt++] = ucv;  //MR_BIG_ENDIAN
-#else
                 uc[cnt++] = (ucv << 8) + (ucv >> 8);  //TI
-#endif  //#ifdef MR_BIG_ENDIAN
             } else if (err) {
                 LUADBGPRINTF("c2u:err   1");
                 *err = i;
-                MR_FREE(uc, (cnt + 1) * sizeof(unicode_char));
+                MR_FREE(uc, *size);
                 return NULL;
             } else {
                 //uc[cnt++] = (unicode_char)0xFFFD;
-#ifdef MR_BIG_ENDIAN
-                uc[cnt++] = 0xFFFD;
-#else
-                uc[cnt++] = 0xFDFF;                   //TI
-#endif  //#ifdef MR_BIG_ENDIAN
+                uc[cnt++] = 0xFDFF;  //TI
             }
             i += 2;
         } else if (a < (unsigned)0x80) {
-#ifdef MR_BIG_ENDIAN
-            uc[cnt++] = a;
-#else
-            uc[cnt++] = a << 8;                       //TI
-#endif  //#ifdef MR_BIG_ENDIAN
-
+            uc[cnt++] = a << 8;  //TI
             i += 1;
         } else if (err) {
             /*
-#ifdef MR_BIG_ENDIAN
-                     uc[cnt++]= 0x25a0;//ucv;
-#else
                      uc[cnt++]= 0xa025;//(ucv << 8) +  (ucv >> 8);
-#endif
                      i += 2;
-                */
+            */
             LUADBGPRINTF("c2u:err   2");
             *err = i;
-            MR_FREE(uc, (cnt + 1) * sizeof(unicode_char));
+            MR_FREE(uc, *size);
             return (NULL);
         } else {
             //uc[cnt++] = (unicode_char)0xFFFD;
-#ifdef MR_BIG_ENDIAN
-            uc[cnt++] = 0xFFFD;
-#else
-            uc[cnt++] = 0xFDFF;                       //TI
-#endif  //#ifdef MR_BIG_ENDIAN
-            i += 2;
-        }
-    }
-    uc[cnt] = 0;
-
-    return (uc);
-}
-
-#else  //#if !(defined(MTK_MOD) && defined(MR_V2000))
-
-unicode_char *c2u(const char *cp, int *err, int *size) {
-    size_t i, cnt;
-    unicode_char *uc;
-    char a_ch[4] = {0, 0, 0, 0};
-
-    if (err) *err = -1;
-
-    // Count the number of potential unicode characters first.
-    for (i = cnt = 0; cp[i]; i++) {
-        if ((int)(unsigned char)cp[i] < 0xA1 ||
-            (int)(unsigned char)cp[i] > 0xFE ||
-            cp[i + 1] == 0) {
-            ++cnt;
-            continue;
-        }
-        ++i, ++cnt;
-    }
-
-    *size = (cnt + 1) * sizeof(unicode_char);
-    uc = (unicode_char *)MR_MALLOC(*size);
-    if (!uc) return (NULL);
-
-    i = cnt = 0;
-    while (cp[i]) {
-        a_ch[0] = cp[i];
-
-        if (cp[i] >= 0xA1 && cp[i] <= 0xFE && cp[i + 1]) {
-            a_ch[1] = cp[i + 1];
-
-            if (0xA1 <= cp[i + 1] && cp[i + 1] <= 0xFE) {
-                int dest[2];
-
-                dest[1] = 0;
-
-                gbToUCS2((uint8 *)&a_ch[0], (uint8 *)&dest[1]);
-                uc[cnt++] = ((dest[1] & 0xff) << 8) + (dest[1] >> 8);
-            } else if (err) {
-                LUADBGPRINTF("c2u:err   1");
-                *err = i;
-                MR_FREE(uc, (cnt + 1) * sizeof(unicode_char));
-                return NULL;
-            } else {
-                uc[cnt++] = 0xFDFF;
-            }
-            i += 2;
-        } else if (cp[i] < (unsigned)0x80) {
-            uc[cnt++] = ((unicode_char)cp[i]) << 8;
-            i += 1;
-        } else if (err) {
-            LUADBGPRINTF("c2u:err   2");
-            *err = i;
-            MR_FREE(uc, (cnt + 1) * sizeof(unicode_char));
-            return (NULL);
-        } else {
-            uc[cnt++] = 0xFDFF;
+            uc[cnt++] = 0xFDFF;  //TI
             i += 2;
         }
     }
     uc[cnt] = 0;
     return (uc);
 }
-
-#endif

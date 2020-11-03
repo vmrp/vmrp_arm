@@ -1,4 +1,4 @@
 *
-!*.mrp
+*.mrp
 !system
 !.gitignore
