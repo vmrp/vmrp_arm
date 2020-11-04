@@ -50,10 +50,6 @@ static uint32 dsmStartTime;  //虚拟机初始化时间，用来计算系统运�
 
 //////////////////////////////////////////////////////////////////
 
-void mr_panic(char *msg) {
-    dsmInFuncs->panic(msg);
-}
-
 void mr_printf(const char *format, ...) {
     char printfBuf[512] = {0};
     va_list params;
@@ -68,6 +64,12 @@ void mr_printf(const char *format, ...) {
 #define LOGW(fmt, ...) mr_printf("[WARN]" fmt, ##__VA_ARGS__)
 #define LOGE(fmt, ...) mr_printf("[ERROR]" fmt, ##__VA_ARGS__)
 #define LOGD(fmt, ...) mr_printf("[DEBUG]" fmt, ##__VA_ARGS__)
+
+static void panic(char *msg) {
+    LOGE("panic: %s", msg);
+    while (1) {
+    }
+}
 
 ///////////////////////////////////////////////////////////////////
 #define CHAR_H 16
@@ -296,7 +298,7 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
                     else
                         snprintf_(dsmSwitchPathBuf, sizeof(dsmSwitchPathBuf), "%c:/", *p);
                 } else {
-                    dsmInFuncs->panic("dsmWorkPath y ERROR!");
+                    panic("dsmWorkPath y ERROR!");
                 }
             } else {
                 snprintf_(dsmSwitchPathBuf, sizeof(dsmSwitchPathBuf), "c:/%s", dsmWorkPath);
@@ -337,7 +339,7 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
             if (input_len > 3) {
                 SetDsmWorkPath((char *)(input + 3));
             } else {
-                dsmInFuncs->panic("dsmWorkPath c ERROR!");
+                panic("dsmWorkPath c ERROR!");
             }
             break;
 

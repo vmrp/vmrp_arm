@@ -90,7 +90,7 @@ uint16 GBCharToUCS2BEChar(uint8 *gbCode) {
 }
 
 // 如果传了outMemLen参数，则必需用带len参数的free释放内存
-uint16 *GBToUCS2BEStr(uint8 *gbCode, uint32 *outMemLen) {
+uint16 *GBStrToUCS2BEStr(uint8 *gbCode, uint32 *outMemLen) {
     uint32 i = 0, j = 0, len;
     uint16 *unicode;
 
@@ -129,7 +129,7 @@ uint16 *GBToUCS2BEStr(uint8 *gbCode, uint32 *outMemLen) {
 
 uint16 *c2u(const char *cp, int *err, int *size) {
     if (err) *err = -1;
-    return GBToUCS2BEStr((uint8 *)cp, (uint32 *)size);
+    return GBStrToUCS2BEStr((uint8 *)cp, (uint32 *)size);
 }
 
 #endif
@@ -198,7 +198,7 @@ char *UCS2BEStrToGBStr(uint16 *uniStr, uint32 *outMemLen) {
     return (char *)gb;
 }
 
-char *UTF8ToGBString(uint8 *str, uint32 *outMemLen) {
+char *UTF8StrToGBStr(uint8 *str, uint32 *outMemLen) {
     uint32 len = 1;
     uint16 c;
     uint8 *utf8Str, *gb, *mem;
@@ -248,7 +248,7 @@ char *UTF8ToGBString(uint8 *str, uint32 *outMemLen) {
 }
 
 // 如果传了outMemLen参数，则必需用带len参数的free释放内存
-char *UCS2BEToUTF8(const uint8 *unicode, uint32 *outMemLen) {
+char *UCS2BEStrToUTF8Str(const uint8 *unicode, uint32 *outMemLen) {
     int u = 0, i = 0, len = 1;
     char *utf8;
     while ((unicode[u] || unicode[u + 1])) {

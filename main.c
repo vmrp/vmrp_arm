@@ -88,7 +88,7 @@ static void handleDel(int32 v) {
     handles[v] = -1;
 }
 /////////////////////////////////////////////////////////////////
-void panic(char *msg) {
+static void panic(char *msg) {
     char *str = GBK2UTF8(msg);
     if (str == NULL) str = msg;
     do {
@@ -603,7 +603,6 @@ int main(int argc, char *args[]) {
     uptime_ms = get_uptime_ms();
 
     DSM_REQUIRE_FUNCS *funcs = malloc(sizeof(DSM_REQUIRE_FUNCS));
-    funcs->panic = panic;
     funcs->log = br_log;
     funcs->exit = br_exit;
     funcs->srand = br_srand;

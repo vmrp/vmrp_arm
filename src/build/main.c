@@ -18,13 +18,6 @@ extern void *mrc_malloc(int size);
 static DSM_EXPORT_FUNCS *mythroad;
 static DSM_REQUIRE_FUNCS *funcs;
 
-void panic(char *msg) {
-    mrc_clearScreen(0, 0, 0);
-    mrc_drawText(msg, 0, 40, 255, 255, 255, 0, 1);
-    mrc_refreshScreen(0, 0, 240, 320);
-    while (1) {
-    }
-}
 
 void br_log(char *msg) {
     // mrc_clearScreen(0, 0, 0);
@@ -145,7 +138,6 @@ int32 mrc_init(void) {
 
 #ifdef VMRP
     funcs = mrc_malloc(sizeof(DSM_REQUIRE_FUNCS));
-    funcs->panic = panic;
     funcs->log = br_log;
     funcs->exit = br_exit;
     funcs->srand = br_srand;
