@@ -664,8 +664,8 @@ static void codebinop (FuncState *fs, expdesc *res, BinOpr op,
     //static const OpCode ops[] = {OP_EQ, OP_EQ, OP_LT, OP_LE, OP_LT, OP_LE};
 
 
-    //LUADBGPRINTF1("addr of ops is 0x%x", ops);
-    //LUADBGPRINTF1("addr of &ops is 0x%x", &ops);
+    //LUADBGPRINTF("addr of ops is 0x%x", ops);
+    //LUADBGPRINTF("addr of &ops is 0x%x", &ops);
 
 
     int cond = 1;

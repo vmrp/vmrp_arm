@@ -2,15 +2,14 @@
 #ifndef mr_h
 #define mr_h
 
+#include "mrporting.h"
 #include "other.h"
 #include "printf.h"
 #include "string.h"
 #include "type.h"
-#include "mrporting.h"
 
 #define MR_START_FILE "start.mr"
 #define MR_ERROR_WAP "https://github.com/zengming00/vmrp"
-
 
 #define COMPATIBILITY01
 
@@ -53,17 +52,6 @@ int mr_islower(int ch);
 
 #define mr_htonl(i) (((uint32)i >> 24) | (((uint32)i & 0xff0000) >> 8) | (((uint32)i & 0xff00) << 8) | ((uint32)i << 24))
 
-#ifdef MR_DEBUG
-#define LUADBGPRINTF(a) MRDBGPRINTF(a)
-#define LUADBGPRINTF1(a, b) MRDBGPRINTF(a, b)
-#define LUADBGPRINTF2(a, b, c) MRDBGPRINTF(a, b, c)
-#else
-#define LUADBGPRINTF(a)
-#define LUADBGPRINTF1(a, b)
-#define LUADBGPRINTF2(a, b, c)
-#endif
-
-
 //////////////////////////////////////////////
 enum {
     MR_STATE_IDLE,
@@ -74,18 +62,15 @@ enum {
     MR_STATE_ERROR
 };
 
-
 extern int32 mr_state;
 //////////////////////////////////////////////
 
 #define MRDBGPRINTF mr_printf
-
-
+#define LUADBGPRINTF mr_printf
 
 #define STRCSPN strcspn2
 #define STRNCAT strncat2
 #define STRPBRK strpbrk2
-
 
 #define STRCOLL strcmp2
 #define MEMCPY(dest, src, size) memcpy2((dest), (src), (size))
@@ -149,7 +134,6 @@ extern int32 mr_state;
 #define STREXPAND(ps, ns, pd, nd) strexpand((ps), (ns), (pd), (nd))
 
 #define STRTOL strtol2
-
 
 //#ifdef MR_V2000
 //#define MR_VERSION	2009     //升级版本前进行版本备份
@@ -488,6 +472,5 @@ struct mrp_Debug {
 };
 
 /* }====================================================================== */
-
 
 #endif

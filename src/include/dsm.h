@@ -10,6 +10,7 @@
 
 // 需要平台实现的函数
 typedef struct {
+    void (*test)(void);
     void (*log)(char *msg);  // msg末尾不带\n
     void (*exit)(void);
     void (*srand)(uint32 seed);
