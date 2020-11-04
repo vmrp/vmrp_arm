@@ -160,3 +160,17 @@ void* mr_realloc(void* p, uint32 oldlen, uint32 len) {
     mr_free(p, oldlen);
     return newblock;
 }
+
+void *mr_mallocExt(uint32 len) {
+    uint32 *p = mr_malloc(len + sizeof(uint32));
+    if (p) {
+        *p = len;
+        return (void *)(p + 1);
+    }
+    return p;
+}
+
+void mr_freeExt(void *p) {
+    uint32 *t = (uint32 *)p - 1;
+    mr_free(t, *t + sizeof(uint32));
+}

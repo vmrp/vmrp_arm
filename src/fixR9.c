@@ -57,42 +57,37 @@ ext调用mythroad时在mythroad空间通过r9 恢复 r9 r10
 
 #include "./include/mr.h"
 
-static void *r10Mythroad;
+#ifndef __GNUC__
+extern int32 mr_c_function_load(int32 code);
+#define C_FUNCTION_P() (*(((void **)mr_c_function_load) - 1))
+
+static void *r9Ext;
+static void *r10Ext;
+#endif
+
 static void *lr;
+static void *r10Mythroad;
 
 void fixR9_saveMythroad() {
     r10Mythroad = getR10();
 }
 
-#ifdef __GNUC__
-
-void fixR9_begin() {
-}
-void fixR9_end() {
-}
-
-#else
-
-static void *r9Ext;
-static void *r10Ext;
-
-extern int32 mr_c_function_load(int32 code);
-#define C_FUNCTION_P() (*(((void **)mr_c_function_load) - 1))
-
 void fixR9_begin(void *oldR9v, void *oldR10v, void *oldLR) {
+#ifndef __GNUC__
     mr_c_function_st *p = C_FUNCTION_P();
     setR9(p->start_of_ER_RW);
     // 设置r9后回到mythroad，此时才可以访问全局变量
     setR10(r10Mythroad);
     r9Ext = oldR9v;
     r10Ext = oldR10v;
+#endif
     lr = oldLR;
 }
 
 void *fixR9_end() {
     register void *ret = lr;  // 必需用寄存器先存起来
+#ifndef __GNUC__
     setR9R10(r9Ext, r10Ext);
+#endif
     return ret;
 }
-
-#endif

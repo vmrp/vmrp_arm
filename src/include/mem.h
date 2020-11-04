@@ -24,6 +24,9 @@ void* mr_malloc(uint32 len);
 void mr_free(void* p, uint32 len);
 void* mr_realloc(void* p, uint32 oldlen, uint32 len);
 
+void* mr_mallocExt(uint32 len);
+void mr_freeExt(void* p);
+
 #define MR_MALLOC mr_malloc
 #define MR_FREE mr_free
 #define MR_REALLOC mr_realloc

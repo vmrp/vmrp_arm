@@ -1,14 +1,9 @@
 #include "other.h"
 
 int wstrlen(char* txt) {
-    int lenth = 0;
-    unsigned char* ss = (unsigned char*)txt;
-
-    while ((*ss << 8) + *(ss + 1) != 0) {
-        lenth += 2;
-        ss += 2;
-    }
-    return lenth;
+    int i = 0;
+    while (txt[i] || txt[i + 1]) i += 2;
+    return i;
 }
 
 long atol2(const char* s) {

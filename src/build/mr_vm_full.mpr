@@ -51,10 +51,10 @@ file23=..\src\lib\mr_tcp_target.c
 file24=..\src\lib\mr_iolib_target.c    
 
 file25=..\mythroad.c 
-file26=..\mr_gb2312.c     
+file26=..\encode.c     
 file27=..\mr_pluto.c	
 file28=..\mr_unzip.c	
-file30=..\mr_encode.c	
+file30=..\mr_base64.c	
 file31=..\mr_graphics.c 
 file32=..\mr_inflate.c 
 file33=..\string.c	

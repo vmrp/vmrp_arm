@@ -1,11 +1,12 @@
 #include "./include/mythroad.h"
 
+#include "./include/encode.h"
 #include "./include/fixR9.h"
 #include "./include/md5.h"
 #include "./include/mem.h"
 #include "./include/mr.h"
 #include "./include/mr_auxlib.h"
-#include "./include/mr_encode.h"
+#include "./include/mr_base64.h"
 #include "./include/mr_graphics.h"
 #include "./include/mr_gzip.h"
 #include "./include/mr_helper.h"
@@ -451,7 +452,6 @@ static int32 _mr_div(int32 a, int32 b) {
 static int32 _mr_mod(int32 a, int32 b) {
     return a % b;
 }
-
 
 void _DrawPoint(int16 x, int16 y, uint16 nativecolor) {
     if (x < 0 || y < 0 || x >= MR_SCREEN_W || y >= MR_SCREEN_H)

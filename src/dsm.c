@@ -1,6 +1,8 @@
 #include "./include/dsm.h"
 
+#include "./include/encode.h"
 #include "./include/fixR9.h"
+#include "./include/mem.h"
 #include "./include/printf.h"
 #include "./include/string.h"
 
@@ -678,6 +680,12 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
             *output_len = sizeof(T_RX);
             ret = MR_SUCCESS;
             break;
+        }
+        case MR_UCS2GB: {  // 1207
+            char *gbstr = UCS2BEStrToGBStr((uint16 *)input, NULL);
+            strncpy2((char *)*output, gbstr, *output_len);
+            mr_freeExt(gbstr);
+            return MR_SUCCESS;
         }
 
         default: {

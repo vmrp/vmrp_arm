@@ -188,8 +188,6 @@ extern int _mr_pcall(int nargs, int nresults);
 extern const char* _mr_memfind(const char* s1, size_t l1, const char* s2, size_t l2);
 extern int32 _mr_u2c(char* input, int32 inlen, char* output, int32 outlen);
 
-extern uint16* c2u(const char* cp, int* err, int* size);
-
 //extern int32 mr_read_asyn_cb(int32 result, uint32  cb_param);
 extern mrp_State* vm_state;
 

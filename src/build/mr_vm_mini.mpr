@@ -24,9 +24,9 @@ plat=mtk
 [files]
 file1000 = main.c
 file06 = ..\mythroad_mini.c
-file07 = ..\mr_gb2312.c
+file07 = ..\encode.c
 file08 = ..\mr_unzip.c
-file10 = ..\mr_encode.c
+file10 = ..\mr_base64.c
 file11 = ..\mr_inflate.c
 file12 = ..\mr_graphics.c
 file13 = ..\string.c

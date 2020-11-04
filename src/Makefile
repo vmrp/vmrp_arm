@@ -39,10 +39,10 @@ LOCAL_SRC_FILES_FULL += src/lib/mr_auxlib.c \
 #                  src/ldblib.c        \
 
 LOCAL_SRC_FILES_FULL += mythroad.c \
-                    mr_gb2312.c     \
+                    encode.c     \
                     mr_pluto.c	\
                     mr_unzip.c	\
-                    mr_encode.c	\
+                    mr_base64.c	\
 		    		mr_graphics.c \
                     mr_inflate.c \
                     string.c	\
@@ -76,9 +76,9 @@ full:
 
 LOCAL_CFLAGS :=  -fPIC -march=armv5te -marm -g -Wall -c -littleend  -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(MINI_VM_VERSION) -DMR_PLAT_DRAWTEXT
 LOCAL_SRC_FILES := mythroad_mini.c \
-                    mr_gb2312.c     \
+                    encode.c     \
                     mr_unzip.c	\
-                    mr_encode.c	\
+                    mr_base64.c	\
                     mr_inflate.c \
                     mr_graphics.c \
                     string.c \
