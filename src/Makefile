@@ -21,22 +21,15 @@ LOCAL_SRC_FILES_FULL := src/mr_api.c \
                   src/mr_undump.c   \
                   src/mr_vm.c       \
                   src/mr_zio.c      \
-                  src/mr_noparser.c  
-#                 src/lparser.c   \
-#                 src/mr_cect.c   \
-#                 src/llex.c      \
-#                 src/lcode.c   \
-
-LOCAL_SRC_FILES_FULL += src/lib/mr_auxlib.c \
+                  src/mr_noparser.c  \
                   src/lib/mr_auxiliar.c\
+                  src/lib/mr_auxlib.c \
                   src/lib/mr_baselib.c\
-                  src/lib/mr_tablib.c   \
-                  src/lib/mr_strlib.c     \
+                  src/lib/mr_iolib_target.c     \
                   src/lib/mr_socket_target.c     \
-                  src/lib/mr_tcp_target.c     \
-                  src/lib/mr_iolib_target.c    
-#                  src/loadlib.c     \
-#                  src/ldblib.c        \
+                  src/lib/mr_strlib.c     \
+                  src/lib/mr_tablib.c   \
+                  src/lib/mr_tcp_target.c
 
 LOCAL_SRC_FILES_FULL += mythroad.c \
                     encode.c     \
@@ -55,10 +48,6 @@ LOCAL_SRC_FILES_FULL += mythroad.c \
                     md5.c	\
                     mem.c	\
                     asm/r9r10.s	\
-#                    src/mr_maketo.c	
-#                    src/MySprite.c   \
-#                    src/pluto.c	\
-#                    src/Mylib.c
 
 LOCAL_SRC_FILES_FULL += tomr/tomr_event.c \
                 tomr/tomr_is.c   \
@@ -67,7 +56,7 @@ LOCAL_SRC_FILES_FULL += tomr/tomr_event.c \
                 tomr/tomr_to.c
 
 full:
-	gcc $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL) -I./src -I./tomr -I./include
+	gcc $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL) -I./src -I./tomr -I./include -I./src/h
 	# rm ../libmr_vm.a
 	ar crv ../libmr_vm.a *.o
 	rm *.o

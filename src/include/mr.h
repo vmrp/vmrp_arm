@@ -194,14 +194,10 @@ typedef int (*mrp_Chunkwriter)(mrp_State *L, const void *p,
 /*
 ** generic extra include file
 */
-#define USE_INT
 
 #ifndef MR_V2000
-#define MRP_USER_H "../src/mr_user_number.h"
-#ifdef MRP_USER_H
-#include MRP_USER_H
+#include "../src/h/mr_user_number.h"
 #endif
-#endif  //#ifndef MR_V2000
 
 /* type of numbers in Lua */
 #ifndef MRP_NUMBER

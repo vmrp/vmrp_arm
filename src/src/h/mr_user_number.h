@@ -1,7 +1,5 @@
-/* luser_number.h -- number type configuration for Lua core
-*
-* #define MRP_USER_H to this file and #define one of USE_* below
-*/
+//  luser_number.h -- number type configuration for Lua core
+#define USE_INT
 
 #ifdef USE_DOUBLE
 #define MRP_NUMBER		double
