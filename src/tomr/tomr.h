@@ -13,8 +13,10 @@
 extern "C" {
 #endif
 
-#include "mr.h"
-#include "mr_auxlib.h"
+#include "../include/mem.h"
+#include "../include/mr.h"
+#include "../include/mr_auxlib.h"
+#include "../include/mr_helper.h"
 
 struct to_mr_Error
 {

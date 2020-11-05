@@ -1,7 +1,7 @@
 
 
-#include "mem.h"
-#include "mr_gzip.h"
+#include "./include/mem.h"
+#include "./include/mr_gzip.h"
 #define slide mr_gzOutBuf
 
 /* Huffman code lookup table entry--this entry is four bytes for machines

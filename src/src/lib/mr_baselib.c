@@ -7,10 +7,9 @@
 
 #define lbaselib_c
 
-#include "mr.h"
 
-#include "mr_auxlib.h"
-#include "mr_lib.h"
+#include "../../include/mr_auxlib.h"
+#include "../../include/mr_lib.h"
 
 
 static mr_L_reg base_funcs[29];

@@ -3,13 +3,12 @@
 
 //#define lfunc_c
 
-#include "mr.h"
 
-#include "mr_func.h"
-#include "mr_gc.h"
-#include "mr_mem.h"
-#include "mr_object.h"
-#include "mr_state.h"
+#include "./h/mr_func.h"
+#include "./h/mr_gc.h"
+#include "./h/mr_mem.h"
+#include "./h/mr_object.h"
+#include "./h/mr_state.h"
 
 
 #define sizeCclosure(n)	(cast(int, sizeof(CClosure)) + \

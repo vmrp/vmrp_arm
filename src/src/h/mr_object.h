@@ -9,7 +9,6 @@
 
 
 #include "mr_limits.h"
-#include "mr.h"
 
 
 /* tags for values visible from Lua */

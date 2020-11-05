@@ -8,19 +8,16 @@
 
 //#define liolib_c
 
-#include "mr.h"
-#include "mr_helper.h"
-#include "tomr.h"
+#include "../../tomr/tomr.h"
+#include "../../include/mr_helper.h"
+#include "../../include/mr_auxlib.h"
+#include "../../include/mr_lib.h"
+#include "../../include/mrporting.h"
+#include "../../include/mythroad.h"
 
-#include "mr_auxlib.h"
-#include "mr_lib.h"
-#include "mrporting.h"
-
-#include "mythroad.h"
-
-#include "mr_gc.h"
-#include "mr_string.h"
-#include "mr_mem.h"
+#include "../h/mr_gc.h"
+#include "../h/mr_string.h"
+#include "../h/mr_mem.h"
 
 
 #define FILE int32

@@ -3,8 +3,8 @@
 
 
 
-#include "mem.h"
-#include "mythroad.h"
+#include "../../include/mem.h"
+#include "../../include/mythroad.h"
 
 
 
@@ -13,10 +13,7 @@
 */
 
 //#define lauxlib_c
-
-#include "mr.h"
-
-#include "mr_auxlib.h"
+#include "../../include/mr_auxlib.h"
 
 /* number of prereserved references (for internal use) */
 #define RESERVED_REFS	2

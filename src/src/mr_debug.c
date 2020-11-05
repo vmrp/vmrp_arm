@@ -2,20 +2,20 @@
 
 //#define ldebug_c
 
-#include "mr.h"
+#include "../include/mr.h"
 
-#include "mr_api.h"
-#include "mr_code.h"
-#include "mr_debug.h"
-#include "mr_do.h"
-#include "mr_func.h"
-#include "mr_object.h"
-#include "mr_opcodes.h"
-#include "mr_state.h"
-#include "mr_string.h"
-#include "mr_table.h"
-#include "mr_tm.h"
-#include "mr_vm.h"
+#include "./h/mr_api.h"
+#include "./h/mr_code.h"
+#include "./h/mr_debug.h"
+#include "./h/mr_do.h"
+#include "./h/mr_func.h"
+#include "./h/mr_object.h"
+#include "./h/mr_opcodes.h"
+#include "./h/mr_state.h"
+#include "./h/mr_string.h"
+#include "./h/mr_table.h"
+#include "./h/mr_tm.h"
+#include "./h/mr_vm.h"
 
 
 

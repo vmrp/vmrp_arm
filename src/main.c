@@ -17,7 +17,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "./src/include/dsm.h"
+#include "./include/dsm.h"
 
 static pthread_mutex_t mutex;
 

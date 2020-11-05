@@ -1,9 +1,6 @@
 
-MINI_VM_VERSION := 2011
-VM_VERSION := 1968
-MINI_TARGETDIR :=
 
-LOCAL_CFLAGS_FULL := -g -Wall -c -littleend -DDSM_FULL -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(VM_VERSION) -DMR_PLAT_DRAWTEXT
+LOCAL_CFLAGS_FULL := -g -Wall -DDSM_FULL -DTARGET_MOD -DMTK_MOD -DMR_VERSION=1968 -DMR_PLAT_DRAWTEXT
 
 LOCAL_SRC_FILES_FULL := src/mr_api.c \
                   src/mr_debug.c  \
@@ -47,23 +44,16 @@ LOCAL_SRC_FILES_FULL += mythroad.c \
                     fixR9.c	\
                     md5.c	\
                     mem.c	\
-                    asm/r9r10.s	\
+                    asm/r9r10.s
 
-LOCAL_SRC_FILES_FULL += tomr/tomr_event.c \
-                tomr/tomr_is.c   \
-                tomr/tomr_map.c        \
-                tomr/tomr_push.c     \
-                tomr/tomr_to.c
+LOCAL_SRC_FILES_FULL += tomr/tomr_event.c tomr/tomr_is.c tomr/tomr_map.c tomr/tomr_push.c tomr/tomr_to.c
 
 full:
-	gcc $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL) -I./src -I./tomr -I./include -I./src/h
-	# rm ../libmr_vm.a
-	ar crv ../libmr_vm.a *.o
-	rm *.o
+	gcc -o ../vmrp $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL) main.c -lSDL2 -lm -lz
 
 #####################################################################
 
-LOCAL_CFLAGS :=  -fPIC -march=armv5te -marm -g -Wall -c -littleend  -DTARGET_MOD -DMTK_MOD -DMR_VERSION=$(MINI_VM_VERSION) -DMR_PLAT_DRAWTEXT
+LOCAL_CFLAGS := -g -Wall -DTARGET_MOD -DMTK_MOD -DMR_VERSION=2011 -DMR_PLAT_DRAWTEXT
 LOCAL_SRC_FILES := mythroad_mini.c \
                     encode.c     \
                     mr_unzip.c	\
@@ -82,12 +72,4 @@ LOCAL_SRC_FILES := mythroad_mini.c \
                     asm/r9r10.s	\
 
 mini:
-	gcc $(LOCAL_CFLAGS) $(LOCAL_SRC_FILES) -I./include -I.
-	# rm ../libmr_vm.a
-	ar crv ../libmr_vm.a *.o
-	rm *.o
-
-
-.PHONY: clean
-clean:
-	rm *.a *.o
+	gcc -o ../vmrp $(LOCAL_CFLAGS) $(LOCAL_SRC_FILES) main.c -lSDL2 -lm -lz

@@ -17,19 +17,18 @@
 /*=========================================================================*\
 * Standard include files
 \*=========================================================================*/
-#include "mr.h"
-#include "mr_auxlib.h"
+#include "../../include/mr_auxlib.h"
 //#include "AEEStdLib.h"//ouli brew
 //#include "compat-5.1.h"
-#include "mr_socket_target.h"
-#include "mythroad.h"
+#include "../../include/mr_socket_target.h"
+#include "../../include/mythroad.h"
 
 /*=========================================================================*\
 * LuaSocket includes
 \*=========================================================================*/
 
-#include "mr_auxiliar.h"
-#include "mr_tcp_target.h"
+#include "../../include/mr_auxiliar.h"
+#include "../../include/mr_tcp_target.h"
 //#include "mythroad_brew.h"
 //#include "except.h"
 //#include "timeout.h"

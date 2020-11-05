@@ -6,14 +6,13 @@
 
 //#define lobject_c
 
-#include "mr.h"
 
-#include "mr_do.h"
-#include "mr_mem.h"
-#include "mr_object.h"
-#include "mr_state.h"
-#include "mr_string.h"
-#include "mr_vm.h"
+#include "./h/mr_do.h"
+#include "./h/mr_mem.h"
+#include "./h/mr_object.h"
+#include "./h/mr_state.h"
+#include "./h/mr_string.h"
+#include "./h/mr_vm.h"
 
 
 

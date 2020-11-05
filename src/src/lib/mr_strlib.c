@@ -5,15 +5,14 @@
 */
 
 
-#include "mr.h"
-#include "mem.h"
-#include "mr_auxlib.h"
-#include "mr_lib.h"
-#include "mythroad.h"
-#include "mr_string.h"
-#include "mr_gc.h"
+#include "../../include/mem.h"
+#include "../../include/mr_auxlib.h"
+#include "../../include/mr_lib.h"
+#include "../../include/mythroad.h"
 
-#include "mr_mem.h"
+#include "../h/mr_string.h"
+#include "../h/mr_gc.h"
+#include "../h/mr_mem.h"
 
 
 /* macro to `unsign' a character */

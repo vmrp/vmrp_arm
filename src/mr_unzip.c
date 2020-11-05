@@ -1,8 +1,8 @@
 
 
-#include "mr.h"
-#include "mr_gzip.h"
-#include "mythroad.h"
+#include "./include/mr.h"
+#include "./include/mr_gzip.h"
+#include "./include/mythroad.h"
 
 
 /* Globals */

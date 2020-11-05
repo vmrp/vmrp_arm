@@ -10,7 +10,6 @@
 
 
 #include "mr_limits.h"
-#include "mr.h"
 
 #define MEMERRMSG	"not enough memory"
 

@@ -1,12 +1,12 @@
 
 
-#include "mr.h"
-#include "mr_auxlib.h"
+#include "../../include/mr.h"
+#include "../../include/mr_auxlib.h"
 
-#include "mr_auxiliar.h"
-#include "mr_tcp_target.h"
-#include "mr_socket_target.h"
-#include "mrporting.h"
+#include "../../include/mr_auxiliar.h"
+#include "../../include/mr_tcp_target.h"
+#include "../../include/mr_socket_target.h"
+#include "../../include/mrporting.h"
 
 
 #define TCPHANDLE		"tcp"

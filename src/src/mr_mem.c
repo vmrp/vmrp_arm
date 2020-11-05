@@ -1,13 +1,12 @@
 
 
 
-#include "mr.h"
-#include "mem.h"
-#include "mr_debug.h"
-#include "mr_do.h"
-#include "mr_mem.h"
-#include "mr_object.h"
-#include "mr_state.h"
+#include "../include/mem.h"
+#include "./h/mr_debug.h"
+#include "./h/mr_do.h"
+#include "./h/mr_mem.h"
+#include "./h/mr_object.h"
+#include "./h/mr_state.h"
 
 
 

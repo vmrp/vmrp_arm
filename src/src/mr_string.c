@@ -2,12 +2,11 @@
 
 //#define lstring_c
 
-#include "mr.h"
 
-#include "mr_mem.h"
-#include "mr_object.h"
-#include "mr_state.h"
-#include "mr_string.h"
+#include "./h/mr_mem.h"
+#include "./h/mr_object.h"
+#include "./h/mr_state.h"
+#include "./h/mr_string.h"
 
 
 

@@ -2,10 +2,9 @@
 
 //#define lopcodes_c
 
-#include "mr.h"
 
-#include "mr_object.h"
-#include "mr_opcodes.h"
+#include "./h/mr_object.h"
+#include "./h/mr_opcodes.h"
 
 //#define MRP_OPNAMES //ouli
 #ifdef MRP_OPNAMES

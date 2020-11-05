@@ -2,7 +2,6 @@
 #ifndef mr_state_h
 #define mr_state_h
 
-#include "mr.h"
 
 #include "mr_object.h"
 #include "mr_tm.h"

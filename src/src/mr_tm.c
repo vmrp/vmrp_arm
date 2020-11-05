@@ -2,13 +2,12 @@
 
 //#define ltm_c
 
-#include "mr_tm.h"
 
-#include "mr.h"
-#include "mr_object.h"
-#include "mr_state.h"
-#include "mr_string.h"
-#include "mr_table.h"
+#include "./h/mr_tm.h"
+#include "./h/mr_object.h"
+#include "./h/mr_state.h"
+#include "./h/mr_string.h"
+#include "./h/mr_table.h"
 
 const char *mr_T_typenames[9];
 

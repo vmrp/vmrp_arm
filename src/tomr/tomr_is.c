@@ -13,8 +13,6 @@
 */
 
 #include "tomr.h"
-#include "mr_auxlib.h"
-#include "mr_helper.h"
 
 
 /* Push and returns the corresponding object typename */

@@ -1,13 +1,12 @@
 
 //#define ltablib_c
 
-#include "mr.h"
 
-#include "mr_auxlib.h"
-#include "mr_lib.h"
-#include "mr_store.h"
+#include "../../include/mr_auxlib.h"
+#include "../../include/mr_lib.h"
+#include "../../include/mr_store.h"
 
-#include "mr_mem.h"
+#include "../h/mr_mem.h"
 
 
 

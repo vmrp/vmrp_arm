@@ -1,18 +1,18 @@
 
-#include "mr.h"
-#include "mr_store.h"
+#include "./include/mr.h"
+#include "./include/mr_store.h"
+#include "./include/mr_auxlib.h"
 
-#include "mr_api.h"
-#include "mr_do.h"
-#include "mr_func.h"
-#include "mr_gc.h"
-#include "mr_limits.h"
-#include "mr_mem.h"
-#include "mr_object.h"
-#include "mr_opcodes.h"
-#include "mr_state.h"
-#include "mr_string.h"
-#include "mr_auxlib.h"
+#include "./src/h/mr_api.h"
+#include "./src/h/mr_do.h"
+#include "./src/h/mr_func.h"
+#include "./src/h/mr_gc.h"
+#include "./src/h/mr_limits.h"
+#include "./src/h/mr_mem.h"
+#include "./src/h/mr_object.h"
+#include "./src/h/mr_opcodes.h"
+#include "./src/h/mr_state.h"
+#include "./src/h/mr_string.h"
 
 
 

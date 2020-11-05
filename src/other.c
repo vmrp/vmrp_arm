@@ -1,4 +1,4 @@
-#include "other.h"
+#include "./include/other.h"
 
 int wstrlen(char* txt) {
     int i = 0;

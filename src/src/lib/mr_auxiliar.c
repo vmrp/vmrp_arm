@@ -1,7 +1,7 @@
 
 
 
-#include "mr_auxiliar.h"
+#include "../../include/mr_auxiliar.h"
 
 /*=========================================================================*\
 * Exported functions

@@ -2,7 +2,7 @@
 #ifndef mr_zio_h
 #define mr_zio_h
 
-#include "mr.h"
+#include "../../include/mr.h"
 
 
 #define EOZ	(-1)			/* end of stream */

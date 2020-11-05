@@ -8,11 +8,10 @@
 
 //#define lzio_c
 
-#include "mr.h"
 
-#include "mr_limits.h"
-#include "mr_mem.h"
-#include "mr_zio.h"
+#include "./h/mr_limits.h"
+#include "./h/mr_mem.h"
+#include "./h/mr_zio.h"
 
 
 int mr_Z_fill (ZIO *z) {
