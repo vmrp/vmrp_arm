@@ -203,6 +203,7 @@ const tpl = `
 
 const asm_gnu = `
 	.arch armv5te
+	.arm
 
 	.global	getR9
 getR9:
@@ -214,10 +215,12 @@ setR9:
         MOV      r9,r0
         BX       lr
 
-	.global	getR10
+        .global	getR10
+        .thumb
 getR10:
         MOV      r0,r10
         BX       lr
+        .arm
 
 	.global	setR10
 setR10:

@@ -13,6 +13,7 @@
 #include "./include/mrporting.h"
 #include "./include/mythroad.h"
 #include "./include/string.h"
+#include "./include/encode.h"
 
 typedef struct _mini_mr_c_event_st {
     int32 code;
