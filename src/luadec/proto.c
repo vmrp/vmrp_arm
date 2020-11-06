@@ -1,14 +1,6 @@
 
 #include "proto.h"
 
-#undef getline
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#ifndef LUA_OPNAMES
-#define LUA_OPNAMES
-#endif
 
 
 // PrintString from luac is not 8-bit clean
@@ -17,7 +9,7 @@ char *DecompileString(const Proto * f, int n)
     int i;
     const unsigned char *s = (void*)svalue(&f->k[n]);
     int len = tsvalue(&f->k[n])->tsv.len;
-    char *ret = malloc(strlen((void*)s) * 4 + 3);
+    char *ret = mr_mallocExt(strlen2((void*)s) * 4 + 3);
     int p = 0;
     ret[p++] = '"';
     for (i = 0; i < len; i++, s++) {
@@ -61,8 +53,8 @@ char *DecompileString(const Proto * f, int n)
         default:
             if (*s < 32 || *s > 127) {
                char* pos = &(ret[p]);
-               sprintf(pos, "\\%d", *s);
-               p += strlen(pos);
+               sprintf_(pos, "\\%d", *s);
+               p += strlen2(pos);
             } else {
                ret[p++] = *s;
             }
@@ -80,22 +72,22 @@ char *DecompileConstant(const Proto * f, int i)
     switch (ttype(o)) {
     case MRP_TNUMBER:
         {
-            char *ret = malloc(100);
-            sprintf(ret, MRP_NUMBER_FMT, nvalue(o));
+            char *ret = mr_mallocExt(100);
+            sprintf_(ret, MRP_NUMBER_FMT, nvalue(o));
             return ret;
         }
     case MRP_TSTRING:
         return DecompileString(f, i);
     case MRP_TNIL:
         {
-            char *ret = malloc(4);
-            strcpy(ret, "nil");
+            char *ret = mr_mallocExt(4);
+            strcpy2(ret, "nil");
             return ret;
         }
     default:                   /* cannot happen */
         {
-            char *ret = malloc(4);
-            strcpy(ret, "nil");
+            char *ret = mr_mallocExt(4);
+            strcpy2(ret, "nil");
             return ret;
         }
     }

@@ -170,6 +170,18 @@ void *mr_mallocExt(uint32 len) {
     return p;
 }
 
+void *mr_mallocExt0(uint32 len) {
+    uint32 newLen = len + sizeof(uint32);
+    uint32 *p = mr_malloc(newLen);
+    if (p) {
+        memset2(p, 0, newLen);
+        *p = len;
+        return (void *)(p + 1);
+    }
+    return p;
+}
+
+
 void mr_freeExt(void *p) {
     uint32 *t = (uint32 *)p - 1;
     mr_free(t, *t + sizeof(uint32));

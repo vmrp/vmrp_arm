@@ -28,25 +28,15 @@ LOCAL_SRC_FILES_FULL := src/mr_api.c \
                   src/lib/mr_tablib.c   \
                   src/lib/mr_tcp_target.c
 
-LOCAL_SRC_FILES_FULL += mythroad.c \
-                    encode.c     \
-                    mr_pluto.c	\
-                    mr_unzip.c	\
-                    mr_base64.c	\
-		    		mr_graphics.c \
-                    mr_inflate.c \
-                    string.c	\
-                    printf.c	\
-                    other.c	\
-                    strtol.c	\
-                    strtoul.c	\
-                    dsm.c	\
-                    fixR9.c	\
-                    md5.c	\
-                    mem.c	\
-                    asm/r9r10.s
+LOCAL_SRC_FILES_FULL += mythroad.c encode.c     mr_pluto.c	mr_unzip.c	mr_base64.c mr_graphics.c mr_inflate.c \
+                    string.c	printf.c	other.c	strtol.c	strtoul.c	dsm.c	fixR9.c	md5.c	mem.c	asm/r9r10.s
 
 LOCAL_SRC_FILES_FULL += tomr/tomr_event.c tomr/tomr_is.c tomr/tomr_map.c tomr/tomr_push.c tomr/tomr_to.c
+
+ifeq ($(LUADEC),1)
+LOCAL_SRC_FILES_FULL += luadec/luadec.c luadec/print.c luadec/StringBuffer.c luadec/structs.c luadec/proto.c 
+LOCAL_CFLAGS_FULL += -DMRP_OPNAMES -DLUADEC
+endif
 
 full:
 	gcc -o ../vmrp $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL) main.c -lSDL2 -lm -lz

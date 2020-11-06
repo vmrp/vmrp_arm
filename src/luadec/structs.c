@@ -1,8 +1,8 @@
 /* luadec, based on luac */
 
 #include "structs.h"
+#include "proto.h"
 
-#include <assert.h>
 
 void InitList(List * list) {
    list->head = NULL;
@@ -42,7 +42,8 @@ ListItem *PopFromList(List * list) {
       prev = walk;
       walk = walk->next;
    }
-   assert(0);
+   mr_printf("PopFromList err");
+   while(1);
    return NULL;
 }
 
@@ -75,7 +76,10 @@ int AddToSet(IntSet * set, int a) {
    }
    set->values[set->ctr] = a;
    set->ctr++;
-   assert(set->ctr <= MAXARG_A);
+   if(set->ctr > MAXARG_A){
+      mr_printf("AddToSet err");
+      while(1);
+   }
    return 1;
 }
 
