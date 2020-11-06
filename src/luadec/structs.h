@@ -2,7 +2,7 @@
 #define STRUCTS_H
 
 #include <stdlib.h>
-#include "lopcodes.h"
+#include "../src/h/mr_opcodes.h"
 
 typedef struct ListItem_ ListItem;
 

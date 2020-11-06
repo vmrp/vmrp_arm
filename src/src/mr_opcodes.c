@@ -6,7 +6,6 @@
 #include "./h/mr_object.h"
 #include "./h/mr_opcodes.h"
 
-//#define MRP_OPNAMES //ouli
 #ifdef MRP_OPNAMES
 
 const char *const mr_P_opnames[] = {

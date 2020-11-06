@@ -12,11 +12,6 @@
 #define LUA_OPNAMES
 #endif
 
-#include "ldebug.h"
-#include "lobject.h"
-#include "lopcodes.h"
-#include "lundump.h"
-
 #include "StringBuffer.h"
 #include "proto.h"
 
@@ -1261,7 +1256,7 @@ char* ProcessCode(const Proto * f, int indent)
       if (debug) {
          fprintf(stddebug, "----------------------------------------------\n");
          fprintf(stddebug, "\t%d\t", pc + 1);
-         fprintf(stddebug, "%-9s\t", luaP_opnames[o]);
+         fprintf(stddebug, "%-9s\t", mr_P_opnames[o]);
          switch (getOpMode(o)) {
          case iABC:
             fprintf(stddebug, "%d %d %d", a, b, c);
@@ -1917,7 +1912,7 @@ char* ProcessCode(const Proto * f, int indent)
             break;
          }
       default:
-         StringBuffer_printf(str, "-- unhandled opcode? : %-9s\t\n", luaP_opnames[o]);
+         StringBuffer_printf(str, "-- unhandled opcode? : %-9s\t\n", mr_P_opnames[o]);
          TRY(AddStatement(F, str));
          break;
       }

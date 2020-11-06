@@ -3,15 +3,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lua.h"
-#include "lauxlib.h"
+#include "../include/mr.h"
+#include "../include/mr_auxlib.h"
 
-#include "lfunc.h"
-#include "lmem.h"
-#include "lobject.h"
-#include "lopcodes.h"
-#include "lstring.h"
-#include "lundump.h"
+#include "../src/h/mr_func.h"
+#include "../src/h/mr_mem.h"
+#include "../src/h/mr_object.h"
+#include "../src/h/mr_opcodes.h"
+#include "../src/h/mr_string.h"
+#include "../src/h/mr_undump.h"
 
 #ifndef LUA_DEBUG
 #define luaB_opentests(L)
@@ -101,26 +101,26 @@ static int doargs(int argc, char* argv[])
  return i;
 }
 
-static Proto* toproto(lua_State* L, int i)
+static Proto* toproto(mrp_State* L, int i)
 {
- const Closure* c=(const Closure*)lua_topointer(L,i);
+ const Closure* c=(const Closure*)mrp_topointer(L,i);
  return c->l.p;
 }
 
-static Proto* combine(lua_State* L, int n)
+static Proto* combine(mrp_State* L, int n)
 {
  if (n==1)
   return toproto(L,-1);
  else
  {
   int i,pc=0;
-  Proto* f=luaF_newproto(L);
-  f->source=luaS_newliteral(L,"=(" PROGNAME ")");
+  Proto* f=mr_F_newproto(L);
+  f->source=mr_S_newliteral(L,"=(" PROGNAME ")");
   f->maxstacksize=1;
-  f->p=luaM_newvector(L,n,Proto*);
+  f->p=mr_M_newvector(L,n,Proto*);
   f->sizep=n;
   f->sizecode=2*n+1;
-  f->code=luaM_newvector(L,f->sizecode,Instruction);
+  f->code=mr_M_newvector(L,f->sizecode,Instruction);
   for (i=0; i<n; i++)
   {
    f->p[i]=toproto(L,i-n);
@@ -132,32 +132,32 @@ static Proto* combine(lua_State* L, int n)
  }
 }
 
-/*static*/ void strip(lua_State* L, Proto* f)
+/*static*/ void strip(mrp_State* L, Proto* f)
 {
  int i,n=f->sizep;
- luaM_freearray(L, f->lineinfo, f->sizelineinfo, int);
- luaM_freearray(L, f->locvars, f->sizelocvars, struct LocVar);
- luaM_freearray(L, f->upvalues, f->sizeupvalues, TString *);
+ mr_M_freearray(L, f->lineinfo, f->sizelineinfo, int);
+ mr_M_freearray(L, f->locvars, f->sizelocvars, struct LocVar);
+ mr_M_freearray(L, f->upvalues, f->sizeupvalues, TString *);
  f->lineinfo=NULL; f->sizelineinfo=0;
  f->locvars=NULL;  f->sizelocvars=0;
  f->upvalues=NULL; f->sizeupvalues=0;
- f->source=luaS_newliteral(L,"=(none)");
+ f->source=mr_S_newliteral(L,"=(none)");
  for (i=0; i<n; i++) strip(L,f->p[i]);
 }
 
 int main(int argc, char* argv[])
 {
- lua_State* L;
+ mrp_State* L;
  Proto* f;
  int i=doargs(argc,argv);
  argc-=i; argv+=i;
  if (argc<=0) usage("no input files given",NULL);
- L=lua_open();
+ L=mrp_open();
  luaB_opentests(L);
  for (i=0; i<argc; i++)
  {
   const char* filename=IS("-") ? NULL : argv[i];
-  if (luaL_loadfile(L,filename)!=0) fatal(lua_tostring(L,-1));
+  if (mr_L_loadfile(L,filename)!=0) fatal(mrp_tostring(L,-1));
  }
  f=combine(L,argc);
  if (functions)

@@ -5,10 +5,10 @@
 #define LUA_OPNAMES
 #endif
 
-#include "ldebug.h"
-#include "lobject.h"
-#include "lopcodes.h"
-#include "lundump.h"
+#include "../src/h/mr_debug.h"
+#include "../src/h/mr_object.h"
+#include "../src/h/mr_opcodes.h"
+#include "../src/h/mr_undump.h"
 
 char *DecompileString(const Proto * f, int n);
 

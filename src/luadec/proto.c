@@ -1,6 +1,7 @@
 
 #include "proto.h"
 
+#undef getline
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,10 +10,6 @@
 #define LUA_OPNAMES
 #endif
 
-#include "ldebug.h"
-#include "lobject.h"
-#include "lopcodes.h"
-#include "lundump.h"
 
 // PrintString from luac is not 8-bit clean
 char *DecompileString(const Proto * f, int n)
@@ -81,15 +78,15 @@ char *DecompileConstant(const Proto * f, int i)
 {
     const TObject *o = &f->k[i];
     switch (ttype(o)) {
-    case LUA_TNUMBER:
+    case MRP_TNUMBER:
         {
             char *ret = malloc(100);
-            sprintf(ret, LUA_NUMBER_FMT, nvalue(o));
+            sprintf(ret, MRP_NUMBER_FMT, nvalue(o));
             return ret;
         }
-    case LUA_TSTRING:
+    case MRP_TSTRING:
         return DecompileString(f, i);
-    case LUA_TNIL:
+    case MRP_TNIL:
         {
             char *ret = malloc(4);
             strcpy(ret, "nil");

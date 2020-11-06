@@ -6,6 +6,7 @@
                 "${workspaceFolder}/**"
             ],
             "defines": [
+                "MRP_OPNAMES",
                 "DSM_FULL",
                 "TARGET_MOD",
                 "MTK_MOD",
