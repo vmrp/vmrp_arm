@@ -159,14 +159,6 @@ static const void* _mr_c_internal_table[17];
 static void* _mr_c_port_table[4];
 static void* _mr_c_function_table[150];
 
-void writeFile(char* filename, void* p, uint32 l) {
-    int32 f = mr_open(filename, MR_FILE_WRONLY | MR_FILE_CREATE);
-
-    if (mr_write(f, (void*)p, l) != (int32)l) {
-        MRDBGPRINTF("writeFile err");
-    }
-    mr_close(f);
-}
 
 static int32 _mr_div(int32 a, int32 b) {
     return a / b;

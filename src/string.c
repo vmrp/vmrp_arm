@@ -1,6 +1,7 @@
 #include "./include/string.h"
-// copy from https://github.com/torvalds/linux/blob/master/lib/string.c
 
+#include "./include/mem.h"
+// copy from https://github.com/torvalds/linux/blob/master/lib/string.c
 
 /**
  * memcpy - Copy one area of memory to another
@@ -97,6 +98,19 @@ char *strcat2(char *dest, const char *src) {
     return tmp;
 }
 
+/**
+ * strrchr - Find the last occurrence of a character in a string
+ * @s: The string to be searched
+ * @c: The character to search for
+ */
+char *strrchr2(const char *s, int c) {
+    const char *last = NULL;
+    do {
+        if (*s == (char)c)
+            last = s;
+    } while (*s++);
+    return (char *)last;
+}
 
 /**
  * memcmp - Compare two areas of memory
@@ -228,12 +242,11 @@ char *strstr2(const char *s1, const char *s2) {
  * Note that the %NUL-terminator is considered part of the string, and can
  * be searched for.
  */
-char *strchr2(const char *s, int c)
-{
-	for (; *s != (char)c; ++s)
-		if (*s == '\0')
-			return NULL;
-	return (char *)s;
+char *strchr2(const char *s, int c) {
+    for (; *s != (char)c; ++s)
+        if (*s == '\0')
+            return NULL;
+    return (char *)s;
 }
 
 /**
@@ -241,20 +254,19 @@ char *strchr2(const char *s, int c)
  * @s: The string to be searched
  * @reject: The string to avoid
  */
-size_t strcspn2(const char *s, const char *reject)
-{
-	const char *p;
-	const char *r;
-	size_t count = 0;
+size_t strcspn2(const char *s, const char *reject) {
+    const char *p;
+    const char *r;
+    size_t count = 0;
 
-	for (p = s; *p != '\0'; ++p) {
-		for (r = reject; *r != '\0'; ++r) {
-			if (*p == *r)
-				return count;
-		}
-		++count;
-	}
-	return count;
+    for (p = s; *p != '\0'; ++p) {
+        for (r = reject; *r != '\0'; ++r) {
+            if (*p == *r)
+                return count;
+        }
+        ++count;
+    }
+    return count;
 }
 
 /**
@@ -266,21 +278,20 @@ size_t strcspn2(const char *s, const char *reject)
  * Note that in contrast to strncpy(), strncat() ensures the result is
  * terminated.
  */
-char *strncat2(char *dest, const char *src, size_t count)
-{
-	char *tmp = dest;
+char *strncat2(char *dest, const char *src, size_t count) {
+    char *tmp = dest;
 
-	if (count) {
-		while (*dest)
-			dest++;
-		while ((*dest++ = *src++) != 0) {
-			if (--count == 0) {
-				*dest = '\0';
-				break;
-			}
-		}
-	}
-	return tmp;
+    if (count) {
+        while (*dest)
+            dest++;
+        while ((*dest++ = *src++) != 0) {
+            if (--count == 0) {
+                *dest = '\0';
+                break;
+            }
+        }
+    }
+    return tmp;
 }
 
 /**
@@ -288,15 +299,23 @@ char *strncat2(char *dest, const char *src, size_t count)
  * @cs: The string to be searched
  * @ct: The characters to search for
  */
-char *strpbrk2(const char *cs, const char *ct)
-{
-	const char *sc1, *sc2;
+char *strpbrk2(const char *cs, const char *ct) {
+    const char *sc1, *sc2;
 
-	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
-		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
-			if (*sc1 == *sc2)
-				return (char *)sc1;
-		}
-	}
-	return NULL;
+    for (sc1 = cs; *sc1 != '\0'; ++sc1) {
+        for (sc2 = ct; *sc2 != '\0'; ++sc2) {
+            if (*sc1 == *sc2)
+                return (char *)sc1;
+        }
+    }
+    return NULL;
+}
+
+/* Duplicate S, returning an identical malloc'd string.  */
+char *strdup2(const char *s) {
+    size_t len = strlen2(s) + 1;
+    void *new = mr_mallocExt(len);
+    if (new == NULL)
+        return NULL;
+    return (char *)memcpy2(new, s, len);
 }

@@ -19,6 +19,7 @@
 #include "./include/printf.h"
 #include "./include/string.h"
 #include "./tomr/tomr.h"
+#include "./luadec/luadec.h"
 
 const unsigned char* mr_m0_files[50];
 
@@ -4397,6 +4398,11 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
 
     mr_state = MR_STATE_RUN;
 
+#ifdef LUADEC
+    if (luadec(vm_state, appExName, appExName)) {
+        return MR_FAILED;
+    }
+#endif
     ret = mrp_dofile(vm_state, appExName);
 
     //这里需要完善

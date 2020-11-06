@@ -7,6 +7,7 @@
 #include "../src/h/mr_opcodes.h"
 #include "../src/h/mr_string.h"
 #include "../src/h/mr_undump.h"
+#include "print.h"
 
 #ifndef MRP_DEBUG
 #define mr_B_opentests(L)
@@ -17,8 +18,6 @@ static int functions = 0; /* dump functions separately? */
 // static int dumping = 1;   /* dump bytecodes? */
 // static int stripping = 0; /* strip debug information? */
 
-void luaU_decompile(const Proto* f, int lflag);
-void luaU_decompileFunctions(const Proto* f, int lflag);
 
 static Proto* toproto(mrp_State* L, int i) {
     const Closure* c = (const Closure*)mrp_topointer(L, i);
@@ -62,9 +61,9 @@ static Proto* combine(mrp_State* L, int n) {
     for (i = 0; i < n; i++) strip(L, f->p[i]);
 }
 
-int luadec(char* filename) {
+int luadec(mrp_State* L, char* filename, char* outputFile) {
     Proto* f;
-    mrp_State* L = mrp_open();
+    // mrp_State* L = mrp_open();
     mr_B_opentests(L);
 
     // 此处可以load多个
@@ -75,8 +74,10 @@ int luadec(char* filename) {
 
     f = combine(L, 1);  // 只有一个文件
     if (functions)
-        luaU_decompileFunctions(f, debugging);
+        luaU_decompileFunctions(f, debugging, outputFile);
     else
-        luaU_decompile(f, debugging);
+        luaU_decompile(f, debugging, outputFile);
+    // mrp_close(L);
+    mr_printf("luadec done: %s -> %s", filename, outputFile);
     return 0;
 }

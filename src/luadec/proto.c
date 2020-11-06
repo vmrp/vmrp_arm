@@ -9,7 +9,7 @@ char *DecompileString(const Proto * f, int n)
     int i;
     const unsigned char *s = (void*)svalue(&f->k[n]);
     int len = tsvalue(&f->k[n])->tsv.len;
-    char *ret = mr_mallocExt(strlen2((void*)s) * 4 + 3);
+    char *ret = mr_mallocExt0(strlen2((void*)s) * 4 + 3);
     int p = 0;
     ret[p++] = '"';
     for (i = 0; i < len; i++, s++) {
@@ -72,7 +72,7 @@ char *DecompileConstant(const Proto * f, int i)
     switch (ttype(o)) {
     case MRP_TNUMBER:
         {
-            char *ret = mr_mallocExt(100);
+            char *ret = mr_mallocExt0(100);
             sprintf_(ret, MRP_NUMBER_FMT, nvalue(o));
             return ret;
         }
@@ -80,13 +80,13 @@ char *DecompileConstant(const Proto * f, int i)
         return DecompileString(f, i);
     case MRP_TNIL:
         {
-            char *ret = mr_mallocExt(4);
+            char *ret = mr_mallocExt0(4);
             strcpy2(ret, "nil");
             return ret;
         }
     default:                   /* cannot happen */
         {
-            char *ret = mr_mallocExt(4);
+            char *ret = mr_mallocExt0(4);
             strcpy2(ret, "nil");
             return ret;
         }

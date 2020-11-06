@@ -47,7 +47,7 @@ static char* error;
 static int errorCode;
 
 Statement *NewStatement(char *code, int line, int indent) {
-   Statement *self = mr_mallocExt(sizeof(Statement));
+   Statement *self = mr_mallocExt0(sizeof(Statement));
    cast(ListItem*, self)->next = NULL;
    self->code = code;
    self->line = line;
@@ -70,7 +70,7 @@ void PrintStatement(Statement * self, void* F_) {
 }
 
 LogicExp* MakeExpNode(BoolOp* boolOp) {
-   LogicExp* node = cast(LogicExp*, mr_mallocExt(sizeof(LogicExp)));
+   LogicExp* node = cast(LogicExp*, mr_mallocExt0(sizeof(LogicExp)));
    node->parent = NULL;
    node->subexp = NULL;
    node->next = NULL;
@@ -85,7 +85,7 @@ LogicExp* MakeExpNode(BoolOp* boolOp) {
 }
 
 LogicExp* MakeExpChain(int dest) {
-   LogicExp* node = cast(LogicExp*, mr_mallocExt(sizeof(LogicExp)));
+   LogicExp* node = cast(LogicExp*, mr_mallocExt0(sizeof(LogicExp)));
    node->parent = NULL;
    node->subexp = NULL;
    node->next = NULL;
@@ -333,7 +333,7 @@ mr_printf("\n");
    for (i = last+1; i < F->nextBool; i++)
       F->bools[i-last-1] = F->bools[i];
    if (!F->bools[0])
-      F->bools[0] = mr_mallocExt(sizeof(BoolOp));
+      F->bools[0] = mr_mallocExt0(sizeof(BoolOp));
    F->nextBool -= last + 1;
    if (endif)
       if (*endif == 0) {
@@ -377,7 +377,7 @@ char* OutputBoolean(Function* F, int* endif, int test) {
 void StoreEndifAddr(Function * F, int addr) {
    Endif* at = F->nextEndif;
    Endif* prev = NULL;
-   Endif* newEndif = mr_mallocExt(sizeof(Endif));
+   Endif* newEndif = mr_mallocExt0(sizeof(Endif));
    newEndif->addr = addr;
    while (at && at->addr < addr) {
       prev = at;
@@ -470,7 +470,7 @@ void RawAddStatement(Function * F, StringBuffer * str)
          while (stmt) {
             if (!added) {
                if (stmt->line >= lpc) {
-                  Statement *newst = NewStatement(strdup("do"), lpc, stmt->indent);
+                  Statement *newst = NewStatement(strdup2("do"), lpc, stmt->indent);
                   if (prev) {
                      prev->super.next = cast(ListItem*, newst);
                      newst->super.next = cast(ListItem*, stmt);
@@ -487,7 +487,7 @@ void RawAddStatement(Function * F, StringBuffer * str)
             prev = stmt;
             stmt = cast(Statement*, stmt->super.next);
          }
-         newst = NewStatement(strdup("end"), F->pc, F->indent);
+         newst = NewStatement(strdup2("end"), F->pc, F->indent);
          AddToList(&(F->statements), cast(ListItem*, newst));
       }
    }
@@ -582,12 +582,12 @@ void FlushElse(Function* F) {
 
 DecTableItem *NewTableItem(char *value, int num, char *key)
 {
-   DecTableItem *self = mr_mallocExt(sizeof(DecTableItem));
+   DecTableItem *self = mr_mallocExt0(sizeof(DecTableItem));
    ((ListItem *) self)->next = NULL;
-   self->value = strdup(value);
+   self->value = strdup2(value);
    self->numeric = num;
    if (key)
-      self->key = strdup(key);
+      self->key = strdup2(key);
    else
       self->key = NULL;
    return self;
@@ -599,7 +599,7 @@ DecTableItem *NewTableItem(char *value, int num, char *key)
 
 void Assign(Function * F, char* dest, char* src, int reg, int prio, int mayTest)
 {
-   char* nsrc = src ? strdup(src) : NULL;
+   char* nsrc = src ? strdup2(src) : NULL;
 
    if (PENDING(reg)) {
       SET_ERROR("overwrote pending register!");
@@ -639,7 +639,7 @@ if (debug) { mr_printf("SET_CTR(Tpend) = %d \n", SET_CTR(F->tpend)); }
       REGISTER(reg) = nsrc;
       AddToSet(F->tpend, reg);
    } else {
-      char* ndest = strdup(dest);
+      char* ndest = strdup2(dest);
       AddToVarStack(F->vpend, ndest, nsrc, reg);
    }
 }
@@ -725,7 +725,7 @@ char *PrintTable(Function * F, int r, int returnCopy)
 
 DecTable *NewTable(int r, Function * F, int b, int c)
 {
-   DecTable *self = mr_mallocExt(sizeof(DecTable));
+   DecTable *self = mr_mallocExt0(sizeof(DecTable));
    ((ListItem *) self)->next = NULL;
    InitList(&(self->numeric));
    InitList(&(self->keyed));
@@ -833,21 +833,21 @@ Function *NewFunction(const Proto * f)
 {
    Function *self;
    /*
-    * mr_mallocExt, to ensure all parameters are 0/NULL 
+    * mr_mallocExt0, to ensure all parameters are 0/NULL 
     */
-   self = mr_mallocExt(sizeof(Function));
+   self = mr_mallocExt0(sizeof(Function));
    InitList(&(self->statements));
    self->f = f;
-   self->vpend = mr_mallocExt(sizeof(VarStack));
-   self->tpend = mr_mallocExt(sizeof(IntSet));
-   self->whiles = mr_mallocExt(sizeof(IntSet));
-   self->repeats = mr_mallocExt(sizeof(IntSet));
+   self->vpend = mr_mallocExt0(sizeof(VarStack));
+   self->tpend = mr_mallocExt0(sizeof(IntSet));
+   self->whiles = mr_mallocExt0(sizeof(IntSet));
+   self->repeats = mr_mallocExt0(sizeof(IntSet));
    self->repeats->mayRepeat = 1;
-   self->untils = mr_mallocExt(sizeof(IntSet));
-   self->do_opens = mr_mallocExt(sizeof(IntSet));
-   self->do_closes = mr_mallocExt(sizeof(IntSet));
+   self->untils = mr_mallocExt0(sizeof(IntSet));
+   self->do_opens = mr_mallocExt0(sizeof(IntSet));
+   self->do_closes = mr_mallocExt0(sizeof(IntSet));
    self->decompiledCode = StringBuffer_new(NULL);
-   self->bools[0] = mr_mallocExt(sizeof(BoolOp));
+   self->bools[0] = mr_mallocExt0(sizeof(BoolOp));
    return self;
 }
 
@@ -889,7 +889,7 @@ void DeclareVariable(Function * F, const char *name, int reg)
    F->Rvar[reg] = 1;
    if (F->R[reg])
       mr_freeExt(F->R[reg]);
-   F->R[reg] = strdup(name);
+   F->R[reg] = strdup2(name);
    F->Rprio[reg] = 0;
    UnsetPending(F, reg);
    if (error) return;
@@ -1059,7 +1059,7 @@ char *RegisterOrConstant(Function * F, int r)
       char *reg = GetR(F, r);
       if (error)
          return NULL;
-      copy = mr_mallocExt(strlen2(reg) + 1);
+      copy = mr_mallocExt0(strlen2(reg) + 1);
       strcpy2(copy, reg);
       return copy;
    }
@@ -1072,11 +1072,11 @@ void MakeIndex(Function * F, StringBuffer * str, char* rstr, int self)
     * see if index can be expressed without quotes 
     */
    if (rstr[0] == '\"') {
-      if (isalpha(rstr[1]) || rstr[1] == '_') {
+      if (mr_isalpha(rstr[1]) || rstr[1] == '_') {
          char *at = rstr + 1;
          dot = 1;
          while (*at != '"') {
-            if (!isalnum(*at) && *at != '_') {
+            if (!mr_isalnum(*at) && *at != '_') {
                dot = 0;
                break;
             }
@@ -1461,7 +1461,7 @@ char* ProcessCode(const Proto * f, int indent)
             TRY(cstr = RegisterOrConstant(F, c));
             TRY(bstr = GetR(F, b));
             
-            bstr = strdup(bstr);
+            bstr = strdup2(bstr);
 
             TRY(Assign(F, REGISTER(a+1), bstr, a+1, PRIORITY(b), 0));
 
@@ -1544,7 +1544,7 @@ char* ProcessCode(const Proto * f, int indent)
                boolpending = 0;
                F->bools[F->nextBool]->dest = dest;
                F->nextBool++;
-               F->bools[F->nextBool] = mr_mallocExt(sizeof(BoolOp));
+               F->bools[F->nextBool] = mr_mallocExt0(sizeof(BoolOp));
                if (F->testpending) {
                   F->testjump = dest;
                }
@@ -1585,7 +1585,7 @@ char* ProcessCode(const Proto * f, int indent)
                   }
                }
                TRY(initial = GetR(F, a));
-               initial = strdup(initial);
+               initial = strdup2(initial);
                step = atoi2(REGISTER(a + 2));
                stepLen = strlen2(REGISTER(a + 2));
                findSign = strrchr2(initial, '-');
@@ -1635,8 +1635,8 @@ char* ProcessCode(const Proto * f, int indent)
                int boola = GETARG_A(code[pc+1]);
                char* test;
                /* skip */
-               char* ra = strdup(REGISTER(boola));
-               char* rb = strdup(ra);
+               char* ra = strdup2(REGISTER(boola));
+               char* rb = strdup2(ra);
                F->bools[F->nextBool]->op1 = ra;
                F->bools[F->nextBool]->op2 = rb;
                F->bools[F->nextBool]->op = OP_TEST;
@@ -1645,7 +1645,7 @@ char* ProcessCode(const Proto * f, int indent)
                F->testpending = a+1;
                F->bools[F->nextBool]->dest = dest;
                F->nextBool++;
-               F->bools[F->nextBool] = mr_mallocExt(sizeof(BoolOp));
+               F->bools[F->nextBool] = mr_mallocExt0(sizeof(BoolOp));
                F->testjump = dest;
                TRY(test = OutputBoolean(F, NULL, 1));
                StringBuffer_printf(str, "%s", test);
@@ -1712,17 +1712,17 @@ char* ProcessCode(const Proto * f, int indent)
          {
             char *ra, *rb;
             if (!IS_VARIABLE(a)) {
-               ra = strdup(REGISTER(a));
+               ra = strdup2(REGISTER(a));
                TRY(rb = GetR(F, b));
-               rb = strdup(rb);
+               rb = strdup2(rb);
                PENDING(a) = 0;
             } else {
                TRY(ra = GetR(F, a));
                if (a != b) {
                   TRY(rb = GetR(F, b));
-                  rb = strdup(rb);
+                  rb = strdup2(rb);
                } else
-                  rb = strdup(ra);
+                  rb = strdup2(ra);
             }
             F->bools[F->nextBool]->op1 = ra;
             F->bools[F->nextBool]->op2 = rb;
@@ -1760,7 +1760,7 @@ char* ProcessCode(const Proto * f, int indent)
             
             {
                char* at = astr + strlen2(astr) - 1;
-               while (at > astr && (isalpha(*at) || *at == '_')) {
+               while (at > astr && (mr_isalpha(*at) || *at == '_')) {
                   at--;
                }
                if (*at == ':')
@@ -1961,24 +1961,33 @@ errorHandler:
    return output;
 }
 
-void luaU_decompile(const Proto * f, int dflag)
+void luaU_decompile(const Proto * f, int dflag, char* outputFile)
 {
    char* code;
+
    debug = dflag;
    code = ProcessCode(f, 0);
-   mr_printf("%s\n", code);
+   writeFile(outputFile, code, strlen2(code));
    mr_freeExt(code);
 }
 
-void luaU_decompileFunctions(const Proto* f, int dflag)
+void luaU_decompileFunctions(const Proto* f, int dflag, char* outputFile)
 {
  int i,n=f->sizep;
  char* code;
  debug = dflag;
+ int32 outf = mr_open(outputFile, MR_FILE_WRONLY | MR_FILE_CREATE);
+
  for (i=0; i<n; i++) {
-    mr_printf("-----\nfunction");
+    code = "-----\nfunction";
+    mr_write(outf, code, strlen2(code));
+
     code = ProcessCode(f->p[i], 0);
-    mr_printf("%send\n", code);
+    mr_write(outf, code, strlen2(code));
     mr_freeExt(code);
+
+    code = "end\n";
+    mr_write(outf, code, strlen2(code));
  }
+ mr_close(outf);
 }

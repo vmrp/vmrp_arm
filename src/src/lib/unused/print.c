@@ -2,10 +2,6 @@
 
 // #define DEBUG_PRINT
 
-#ifndef MRP_OPNAMES
-#define MRP_OPNAMES
-#endif
-
 #include "mr_debug.h"
 #include "mr_object.h"
 #include "mr_opcodes.h"

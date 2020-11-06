@@ -2,6 +2,7 @@
 #define PRINT_H
 
 #include "structs.h"
+#include "StringBuffer.h"
 
 typedef struct BoolOp_ BoolOp;
 
@@ -147,5 +148,7 @@ StringBuffer* PrintLogicItem(StringBuffer* str, LogicExp* exp, int inv, int rev)
 StringBuffer* PrintLogicExp(StringBuffer* str, int dest, LogicExp* exp, int inv_, int rev_);
 void AddStatement(Function * F, StringBuffer * str);
 void ShowState(Function * F);
+void luaU_decompile(const Proto* f, int lflag, char* outputFile);
+void luaU_decompileFunctions(const Proto* f, int lflag, char* outputFile);
 
 #endif

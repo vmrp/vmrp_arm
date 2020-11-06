@@ -1,4 +1,5 @@
 #include "./include/other.h"
+#include "./include/mrporting.h"
 
 int wstrlen(char* txt) {
     int i = 0;
@@ -23,6 +24,15 @@ long atol2(const char* s) {
         ret += d;
     }
     return neg ? -ret : ret;
+}
+
+void writeFile(char* filename, void* p, uint32 l) {
+    int32 f = mr_open(filename, MR_FILE_WRONLY | MR_FILE_CREATE);
+
+    if (mr_write(f, (void*)p, l) != (int32)l) {
+        mr_printf("writeFile err");
+    }
+    mr_close(f);
 }
 
 ///////////////////////////////////////////////////////////////////////////

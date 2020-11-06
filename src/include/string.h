@@ -19,6 +19,8 @@ char *strstr2(const char *s1, const char *s2);
 char *strchr2(const char *s, int c);
 size_t strcspn2(const char *s, const char *reject);
 char *strpbrk2(const char *cs, const char *ct);
+char *strrchr2(const char *s, int c);
+char *strdup2(const char *s);
 
 
 

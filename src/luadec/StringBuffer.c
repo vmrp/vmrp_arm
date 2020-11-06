@@ -19,16 +19,16 @@ typedef struct StringBuffer_ {
 }*/
 
 StringBuffer* StringBuffer_new(char* data) {
-   StringBuffer* this = (StringBuffer*) mr_mallocExt(sizeof(StringBuffer));
+   StringBuffer* this = (StringBuffer*) mr_mallocExt0(sizeof(StringBuffer));
    if (data != NULL) {
       int len = strlen2(data);
       this->bufferSize = MAX(STRINGBUFFER_BLOCK, len+1);
-      this->buffer = mr_mallocExt(this->bufferSize);
+      this->buffer = mr_mallocExt0(this->bufferSize);
       this->usedSize = len;
       strncpy2(this->buffer, data, len+1);
    } else {
       this->bufferSize = STRINGBUFFER_BLOCK;
-      this->buffer = mr_mallocExt(this->bufferSize);
+      this->buffer = mr_mallocExt0(this->bufferSize);
       this->usedSize = 0;
    }
    return this;
@@ -44,7 +44,7 @@ void StringBuffer_makeRoom(StringBuffer* this, int neededSize) {
       int newSize = this->bufferSize * 2;
       if (newSize < neededSize)
          newSize += neededSize;
-      this->buffer = realloc(this->buffer, newSize + 1);
+      this->buffer = mr_reallocExt(this->buffer, newSize + 1);
       this->bufferSize = newSize;
    }
 }
@@ -130,7 +130,7 @@ void StringBuffer_addPrintf(StringBuffer* this, char* format, ...) {
 }
 
 char* StringBuffer_getCopy(StringBuffer* this) {
-   char* result = mr_mallocExt(this->bufferSize+1);
+   char* result = mr_mallocExt0(this->bufferSize+1);
    strncpy2(result, this->buffer, this->usedSize);
    result[this->usedSize] = '\0';
    return result;
@@ -143,7 +143,7 @@ char* StringBuffer_getRef(StringBuffer* this) {
 char* StringBuffer_getBuffer(StringBuffer* this) {
    char* result = this->buffer;
    this->bufferSize = STRINGBUFFER_BLOCK;
-   this->buffer = mr_mallocExt(this->bufferSize);
+   this->buffer = mr_mallocExt0(this->bufferSize);
    this->usedSize = 0;
    return result;
 }

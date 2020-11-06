@@ -161,28 +161,50 @@ void* mr_realloc(void* p, uint32 oldlen, uint32 len) {
     return newblock;
 }
 
-void *mr_mallocExt(uint32 len) {
-    uint32 *p = mr_malloc(len + sizeof(uint32));
+void* mr_mallocExt(uint32 len) {
+    uint32* p;
+    if (len == 0) {
+        return NULL;
+    }
+    p = mr_malloc(len + sizeof(uint32));
     if (p) {
         *p = len;
-        return (void *)(p + 1);
+        return (void*)(p + 1);
     }
     return p;
 }
 
-void *mr_mallocExt0(uint32 len) {
-    uint32 newLen = len + sizeof(uint32);
-    uint32 *p = mr_malloc(newLen);
+void* mr_mallocExt0(uint32 len) {
+    uint32* p = mr_mallocExt(len);
     if (p) {
-        memset2(p, 0, newLen);
-        *p = len;
-        return (void *)(p + 1);
+        memset2(p, 0, len);
+        return p;
     }
     return p;
 }
 
+void mr_freeExt(void* p) {
+    if (p) {
+        uint32* t = (uint32*)p - 1;
+        mr_free(t, *t + sizeof(uint32));
+    }
+}
 
-void mr_freeExt(void *p) {
-    uint32 *t = (uint32 *)p - 1;
-    mr_free(t, *t + sizeof(uint32));
+void* mr_reallocExt(void* p, uint32 newLen) {
+    if (p == NULL) {
+        return mr_mallocExt(newLen);
+    } else if (newLen == 0) {
+        mr_freeExt(p);
+        return NULL;
+    } else {
+        uint32 oldlen = *((uint32*)p - 1) + sizeof(uint32);
+        uint32 minsize = (oldlen < newLen) ? oldlen : newLen;
+        void* newblock = mr_mallocExt(newLen);
+        if (newblock == NULL) {
+            return newblock;
+        }
+        MEMMOVE(newblock, p, minsize);
+        mr_freeExt(p);
+        return newblock;
+    }
 }

@@ -630,12 +630,14 @@ int main(int argc, char *args[]) {
     funcs->getLen = br_getLen;
     funcs->drawBitmap = br_drawBitmap;
 
-    mythroad = dsm_init(funcs);
 
     if (pthread_mutex_init(&mutex, NULL) != 0) {
         perror("mutex init fail");
         exit(EXIT_FAILURE);
     }
+
+    mythroad = dsm_init(funcs);
+
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
         printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return -1;
