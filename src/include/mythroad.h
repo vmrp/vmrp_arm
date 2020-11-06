@@ -208,9 +208,6 @@ typedef int32 (*MR_RESUMEAPP_FUNCTION)(void);
 
 typedef void (*mrc_timerCB)(int32 data);
 
-#ifdef MR_C_TEST
-extern int32 mr_c_function_load(int32 code);
-#endif
 
 
 /*下面是当不能取得屏幕缓冲指针时使用的接口 (不完全)   */

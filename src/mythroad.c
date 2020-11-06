@@ -1861,86 +1861,6 @@ static int MRF_DrawText(mrp_State* L) {
     int is_unicode = to_mr_toboolean(L, 7, FALSE);
     uint16 font = (uint16)mr_L_optlong(L, 8, MR_FONT_MEDIUM);
     return _DrawText(pcText, x, y, r, g, b, is_unicode, font);
-    /*
-   char* pcText = ((char*)  to_mr_tostring(L,1,0));
-   int16 x = ((int16)  to_mr_tonumber(L,2,0));
-   int16 y = ((int16)  to_mr_tonumber(L,3,0));
-   uint8 r = ((uint8)  to_mr_tonumber(L,4,0));
-   uint8 g = ((uint8)  to_mr_tonumber(L,5,0));
-   uint8 b = ((uint8)  to_mr_tonumber(L,6,0));
-   int is_unicode = to_mr_toboolean(L, 7, FALSE);
-//#ifdef MR_DRAW_TXT_AUTO_UNICODE
-   int TextSize;
-//#endif
-   uint16 *tempBuf;
-   int tempret=0;
-
-#ifdef MYTHROAD_DEBUG
-   if (!pcText)
-   {
-      mrp_pushfstring(L, "DrawText x=%d: txt is nil!",x);
-      mrp_error(L);
-      return 0;
-   }
-#endif
-
-//#ifdef MR_DRAW_TXT_AUTO_UNICODE
-   if (!is_unicode){
-      //tempBuf = c2u((const char*)pcText, &tempret, &TextSize); 
-      tempBuf = c2u((const char*)pcText, NULL, &TextSize); 
-      if (!tempBuf)
-      {
-         mrp_pushfstring(L, "DrawText x=%d:c2u err!",x);
-         mrp_error(L);
-         return 0;
-      }
-   }else{
-//#else
-      tempBuf = (uint16 *)pcText;
-   }
-//#endif
-
-   //mr_drawText((char *)tempBuf+1, x, y, MAKERGB(r, g, b)); 
-#ifdef MR_SCREEN_CACHE
-   {
-      uint16 ch;
-      int width, height;
-      const char *current_bitmap;
-      uint8  *p=(uint8*)tempBuf;
-      int i,j;
-      uint16 a_,b_;
-      uint16 chx=x,chy=y,color=MAKERGB(r, g, b);
-      ch = (uint16) ((*p<<8)+*(p+1));
-       while(ch)
-       {
-         current_bitmap = mr_getCharBitmap(ch, MR_FONT_MEDIUM, &width, &height);
-         if(current_bitmap)
-         {
-            for (i = 0; i < height; i++)
-              for (j = 0; j < width; j++)
-              {
-                  a_= (j&(0x07));
-                  b_= i*((width+7)>>3)+((j&0xF8)>>3);
-                  //scrTxtPoint(chx+j,chy+i, ((uint16)~(current_bitmap[b]))&(0x80>>a));  //zhangzg Eastcom 0703/2002
-                  if(((uint16)(current_bitmap[b_]))&(0x80>>a_))
-                     _DrawPoint((int16)(chx+j),(int16)(chy+i), color);
-              };
-         };
-         p+=2;
-         chx = chx + width;
-         ch = (uint16) ((*p<<8)+*(p+1));
-      };
-   }
-#else
-   mr_drawText((char *)tempBuf, x, y, MAKERGB(r, g, b)); 
-#endif
-//#ifdef MR_DRAW_TXT_AUTO_UNICODE
-   if (!is_unicode){
-      MR_FREE((void *)tempBuf, TextSize);
-   }
-//#endif
-   return 0;
-   */
 }
 
 static int MRF_DrawTextEx(mrp_State* L) {
@@ -3662,6 +3582,7 @@ int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len) {
     return MR_SUCCESS;
 }
 
+// _strCom(int,str)
 int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
     int ret = 0;
 
@@ -3704,31 +3625,6 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             //1948 add exception set
 
         case 9:
-            // extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
-            // clean_arm9_dcache((uint32)input1, len);
-
-#ifdef MR_VIA_MOD
-        {
-            extern void CacheClean(void);
-            extern void HwdMsDelay(uint16);
-#ifdef MR_VIA_DELAY
-            HwdMsDelay(MR_VIA_DELAY);
-#endif
-        }
-#endif
-
-            //extern void sys_Invalidate_data_cache(void);
-            //           sys_Invalidate_data_cache();
-            // mr_cacheSync((void*)input1, len);
-
-            //extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
-            //extern int32 invalidate_arm9_icache(int32 addr, int32 len);
-
-            //clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)),
-            //                                          ((len+0x0000001F*3)&(~0x0000001F)));
-            //invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)),
-            //                                          ((len+0x0000001F*3)&(~0x0000001F)));
-
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
             return 0;
 
@@ -3858,17 +3754,10 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
         } break;
 
         case 601: {
-            char* filebuf;
-            filebuf = _mr_readFile((const char*)input1, &ret, 0);
-            //MRDBGPRINTF("1base=%d,end=%d",  (int32)LG_mem_base, (int32)LG_mem_end);
-            //MRDBGPRINTF( "filebuf  =%d", filebuf);
+            char* filebuf = _mr_readFile((const char*)input1, &ret, 0);
             if (filebuf) {
                 mrp_pushlstring(L, filebuf, ret);
-                //MRDBGPRINTF( "filebuf  =%d", filebuf);
-                //MRDBGPRINTF( "filelen  =%d", ret);
                 MR_FREE(filebuf, ret);
-                //MRDBGPRINTF("100base=%d,end=%d",  (int32)LG_mem_base, (int32)LG_mem_end);
-                //MRDBGPRINTF( "601 free ok");
             } else {
                 mrp_pushnil(L);
             }
@@ -3906,9 +3795,6 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             break;
         }
 #ifdef SDK_MOD
-#ifndef MTK_MOD
-
-#ifdef MR_C_TEST
         case 800: {
             int32 input_len, output_len, ret;
             int code = ((int)mr_L_optint(L, 3, 0));
@@ -3939,13 +3825,8 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             mrp_pushnumber(L, ret);
             return 2;
         } break;
-#endif
-
-#endif
 #else
         case 800: {
-            // int32 input_len,output_len;
-            int32 ret;
             int code = ((int)mr_L_optint(L, 3, 0));
             mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1 + 8);
             *((void**)(input1)) = (void*)_mr_c_function_table;
@@ -3957,45 +3838,21 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             mr_check_code_point = (int32)input1;
             mr_check_code_len = len;
 #endif
-
-            //extern void sys_Invalidate_data_cache(void);
-            //           sys_Invalidate_data_cache();
-            // mr_cacheSync((void*)input1, len);
-
-            //extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
-            //extern int32 invalidate_arm9_icache(int32 addr, int32 len);
-
-            //clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)),
-            //                                          ((len+0x0000001F*3)&(~0x0000001F)));
-            //invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)),
-            //                                          ((len+0x0000001F*3)&(~0x0000001F)));
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
-
-#ifdef MR_VIA_MOD
-            //mr_sleep(1000);
-            MRDBGPRINTF("before mr_load_c_function");
-            {
-                extern void CacheClean(void);
-                extern void HwdMsDelay(uint16);
-#ifdef MR_VIA_DELAY
-                HwdMsDelay(MR_VIA_DELAY);
-#endif
-            }
-#endif
-            // extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
-            // clean_arm9_dcache((uint32)input1, len);
+            fixR9_saveMythroad();
             ret = mr_load_c_function(code);
             mrp_pushnumber(L, ret);
             return 1;
         } break;
         case 801: {
-            // int32 input_len;
             int32 output_len, ret;
             int code = ((int)to_mr_tonumber(L, 3, 0));
-            //uint8* input = (uint8*)mr_L_checklstring(L,4,(size_t*)&input_len);
+            // int32 input_len;
+            // uint8* input = (uint8*)mr_L_checklstring(L,4,(size_t*)&input_len);
             uint8* output = NULL;
             output_len = 0;
 
+            fixR9_saveMythroad();
             ret = mr_c_function(mr_c_function_P, code, (uint8*)input1, len, (uint8**)&output, &output_len);
 
             if (output && output_len) {
@@ -4003,7 +3860,6 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             } else {
                 mrp_pushstring(L, "");
             }
-
             mrp_pushnumber(L, ret);
             return 2;
         } break;
@@ -4014,17 +3870,8 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             mr_c_function_fix_p = ((int32*)mr_L_optint(L, 4, 0));
             mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1 + 8);
             *((void**)(mr_c_function_fix_p)) = (void*)_mr_c_function_table;
-            //extern void sys_Invalidate_data_cache(void);
-            //         sys_Invalidate_data_cache();
-            // mr_cacheSync((void*)input1, len);
-            //extern int32 clean_arm9_dcache(uint32 addr, uint32 len);
-            //extern int32 invalidate_arm9_icache(int32 addr, int32 len);
-
-            //clean_arm9_dcache((uint32)((uint32)(input1)&(~0x0000001F)),
-            //                                          ((len+0x0000001F*3)&(~0x0000001F)));
-            //invalidate_arm9_icache((uint32)((uint32)(input1)&(~0x0000001F)),
-            //                                          ((len+0x0000001F*3)&(~0x0000001F)));
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
+            fixR9_saveMythroad();
             ret = mr_load_c_function(code);
             mrp_pushnumber(L, ret);
             return 1;
