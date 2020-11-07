@@ -1843,7 +1843,7 @@ static int MRF_TextWidth(mrp_State* L) {
         if (!is_unicode) {
             tempBuf = c2u((const char*)pcText, NULL, &TextSize);
             if (!tempBuf) {
-                mrp_pushfstring(vm_state, "TextWidth:c2u err!");
+                mrp_pushfstring(vm_state, "TextWidth:c2u err! 1");
                 mrp_error(vm_state);
                 return 0;
             }
@@ -1889,7 +1889,7 @@ static int MRF_TextWidth(mrp_State* L) {
                 temp[3] = 0;
                 tempBuf = c2u((const char*)temp, NULL, &TextSize);
                 if (!tempBuf) {
-                    mrp_pushfstring(vm_state, "TextWidth:c2u err!");
+                    mrp_pushfstring(vm_state, "TextWidth:c2u err! 2");
                     mrp_error(vm_state);
                     return 0;
                 }

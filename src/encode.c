@@ -94,7 +94,8 @@ uint16 *GBStrToUCS2BEStr(uint8 *gbCode, uint32 *outMemLen) {
     uint32 i = 0, j = 0, len;
     uint16 *unicode;
 
-    if (!gbCode || !gbCode[0]) return NULL;
+    // 原c2u允许""空字符串转换
+    if (!gbCode) return NULL;
 
     while (gbCode[i]) {
         if (gbCode[i] < 0x80) {
