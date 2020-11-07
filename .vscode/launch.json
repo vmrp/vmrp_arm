@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/vmrp",
-            "args": ["asm.mrp"],
+            "args": ["datetime.mrp"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

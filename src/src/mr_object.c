@@ -114,6 +114,7 @@ int mr_O_str2d (const char *s, mrp_Number *result) {
 
 
 static void pushstr (mrp_State *L, const char *str) {
+  mr_printf("----------------------pushstr:%s", str);
   setsvalue2s(L->top, mr_S_new(L, str));
   incr_top(L);
 }
