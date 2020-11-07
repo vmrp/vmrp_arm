@@ -214,9 +214,7 @@ int32 mr_timerStop(void) {
 }
 
 uint32 mr_getTime(void) {
-    uint32 s = dsmInFuncs->get_uptime_ms() - dsmStartTime;
-    LOGI("mr_getTime():%d", s);
-    return s;
+    return dsmInFuncs->get_uptime_ms() - dsmStartTime;
 }
 
 int32 mr_getDatetime(mr_datetime *datetime) {
@@ -373,9 +371,6 @@ int32 mr_close(int32 f) {
 }
 
 int32 mr_read(int32 f, void *p, uint32 l) {
-    if (f != font_sky16_f) {
-        LOGI("mr_read %d,%p,%d", f, p, l);
-    }
     return dsmInFuncs->read(f, p, l);
 }
 

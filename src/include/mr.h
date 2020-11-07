@@ -66,7 +66,8 @@ extern int32 mr_state;
 //////////////////////////////////////////////
 
 #define MRDBGPRINTF mr_printf
-#define LUADBGPRINTF mr_printf
+// #define LUADBGPRINTF mr_printf
+#define LUADBGPRINTF(...)
 
 #define STRCSPN strcspn2
 #define STRNCAT strncat2
