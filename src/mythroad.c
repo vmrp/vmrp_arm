@@ -3790,10 +3790,10 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             uint8* output = NULL;
             output_len = 0;
 
-            mr_printf("before mr_c_function----------");
+            // mr_printf("before mr_c_function------r9:%p  r10:%p code:%d %p---",  getR9(),getR10(), code, input1);
             fixR9_saveMythroad();
             ret = mr_c_function(mr_c_function_P, code, (uint8*)input1, len, (uint8**)&output, &output_len);
-            mr_printf("after mr_c_function----------");
+            // mr_printf("after mr_c_function------r9:%p r10:%p---",  getR9(),getR10());
 
             if (output && output_len) {
                 mrp_pushlstring(L, (const char*)output, output_len);
