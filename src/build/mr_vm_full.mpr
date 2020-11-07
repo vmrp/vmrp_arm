@@ -68,9 +68,9 @@ file41=..\asm\r9r10.s
 file42=..\md5.c
 file43=..\mem.c
 
-file306=..\tomr\tomr_event.c 
-file307=..\tomr\tomr_is.c   
-file308=..\tomr\tomr_map.c        
+#file306=..\tomr\tomr_event.c 
+#file307=..\tomr\tomr_is.c   
+#file308=..\tomr\tomr_map.c        
 file309=..\tomr\tomr_push.c     
 file400=..\tomr\tomr_to.c
 
