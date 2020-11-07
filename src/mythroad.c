@@ -1285,14 +1285,12 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
     char* mr_m0_file;
     int is_rom_file = FALSE;
 
-    if ((pack_filename[0] == '*') || (pack_filename[0] == '$')) /*m0 file or ram file?*/
-    {                                                           /*read file from m0*/
+    if ((pack_filename[0] == '*') || (pack_filename[0] == '$')){ /*m0 file or ram file?*/
         uint32 pos = 0;
         uint32 m0file_len;
 
         if (pack_filename[0] == '*') {                                 /*m0 file?*/
-            mr_m0_file = (char*)mr_m0_files[pack_filename[1] - 0x41];  //这里定义文件名为*A即是第一个m0文件
-                                                                       //*B是第二个.........
+            mr_m0_file = (char*)mr_m0_files[pack_filename[1] - 0x41];  //这里定义文件名为*A即是第一个m0文件 *B是第二个.........
         } else {
             mr_m0_file = mr_ram_file;
         }
@@ -1370,29 +1368,7 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
         }
         filebuf = &mr_m0_file[pos];
         is_rom_file = TRUE;
-        /*  这里不需要分配空间
-      filebuf = MR_MALLOC((uint32)*filelen);
-      if(filebuf == NULL)
-      {
-         MRDBGPRINTF("_mr_readFile  \"%s\" Not memory!", filename);
-         return 0;
-      }
-   
-      MEMCPY(filebuf, &mr_m0_file[pos], len);
-*/
-
-    } else /*read file from efs , EFS 中的文件*/
-    {
-#if 0
-      ret = mr_info(pack_filename);
-      if((ret != MR_IS_FILE))
-      {
-         //MRDBGPRINTF("file \"%s\" not found!", filename);
-         _mr_readFileShowInfo(pack_filename, 2001);
-         return 0;
-      }
-#endif  //   这里为了展迅，去掉
-
+    } else { /*read file from efs , EFS 中的文件*/
         f = mr_open(pack_filename, MR_FILE_RDONLY);
         if (f == 0) {
             _mr_readFileShowInfo(filename, 2002);
@@ -1402,7 +1378,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
         // 从这里开始是新版的mrp处理
         {
             uint32 headbuf[4];
-            MEMSET(headbuf, 0, sizeof(headbuf));
             nTmp = mr_read(f, &headbuf, sizeof(headbuf));
             if ((nTmp != 16) || (headbuf[0] != 1196446285)) {
                 mr_close(f);
@@ -1517,13 +1492,12 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                       _mr_readFileShowInfo(pack_filename, 2014);
                       return 0;
                   }
-*/
+                */
 
                 //mr_read1(filename, filebuf, *filelen);
                 mr_close(f);
 
             } else {  //旧版mrp
-
                 nTmp = mr_seek(f, headbuf[1] - 8, 1);
                 if (nTmp < 0) {
                     mr_close(f);
@@ -1605,42 +1579,6 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
                 mr_close(f);
             }  //旧版mrp
         }
-        // 新版的mrp处理
-        /*
-      nTmp = mr_read(f, &len, 4);
-      
-      if (nTmp != 4)
-      {
-          mr_close(f);
-          //MRDBGPRINTF( "read file  \"%s\" err code=1!", filename);
-          _mr_readFileShowInfo(filename, 2003);
-          return 0;
-      }
-      if(len != 1196446285)
-      {
-         mr_close(f);
-         //MRDBGPRINTF( "file \"%s\" is not a mrp file!", filename);
-         _mr_readFileShowInfo(pack_filename, 2004);
-         return 0;
-      }
-      nTmp = mr_read(f, &len, 4);
-      
-      if ((nTmp != 4)||(len<1)||(len>MR_MAX_FILE_SIZE))
-      {
-          mr_close(f);
-          //MRDBGPRINTF( "read file  \"%s\" err 2!", filename);
-          _mr_readFileShowInfo(pack_filename, 2005);
-          return 0;
-      }
-      nTmp = mr_seek(f, len, 1);
-      if (nTmp < 0)
-      {
-         mr_close(f);
-         //MRDBGPRINTF( "_mr_readFile:err 12 at \"%s\"!",filename);
-         _mr_readFileShowInfo(pack_filename, 2006);
-         return 0;
-      }
-*/
     } /*efs file*/
 
     mr_gzInBuf = filebuf;
@@ -1652,10 +1590,7 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
         return filebuf;
     }
 
-    reallen = (uint32)(((uch*)filebuf)[*filelen - 4]);
-    reallen |= (uint32)(((uch*)filebuf)[*filelen - 3]) << 8;
-    reallen |= (uint32)(((uch*)filebuf)[*filelen - 2]) << 16;
-    reallen |= (uint32)(((uch*)filebuf)[*filelen - 1]) << 24;
+    reallen = *(uint32*)((uint8*)filebuf + *filelen - sizeof(uint32));
 
     //MRDBGPRINTF("Debug:_mr_readFile:filelen = %d",reallen);
     //MRDBGPRINTF("Debug:_mr_readFile:mem left = %d",LG_mem_left);
@@ -3570,6 +3505,7 @@ int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len) {
     mr_c_function_P_len = len;
     MEMSET(mr_c_function_P, 0, mr_c_function_P_len);
     mr_c_function = f;
+    mr_printf("_mr_c_function_new(%p, %d)  mr_c_function_P:%p", f, len, mr_c_function_P);
 #ifdef SDK_MOD
     *((void**)(sdk_mr_c_function_table)-1) = mr_c_function_P;
 #else
@@ -3839,8 +3775,10 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             mr_check_code_len = len;
 #endif
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
+            mr_printf("800 before mr_load_c_function----------");
             fixR9_saveMythroad();
             ret = mr_load_c_function(code);
+            mr_printf("800 after mr_load_c_function----------");
             mrp_pushnumber(L, ret);
             return 1;
         } break;
@@ -3852,8 +3790,10 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             uint8* output = NULL;
             output_len = 0;
 
+            mr_printf("before mr_c_function----------");
             fixR9_saveMythroad();
             ret = mr_c_function(mr_c_function_P, code, (uint8*)input1, len, (uint8**)&output, &output_len);
+            mr_printf("after mr_c_function----------");
 
             if (output && output_len) {
                 mrp_pushlstring(L, (const char*)output, output_len);
@@ -3871,8 +3811,10 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1 + 8);
             *((void**)(mr_c_function_fix_p)) = (void*)_mr_c_function_table;
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
+            mr_printf("802 before mr_load_c_function----------");
             fixR9_saveMythroad();
             ret = mr_load_c_function(code);
+            mr_printf("802 after mr_load_c_function----------");
             mrp_pushnumber(L, ret);
             return 1;
         } break;
@@ -3953,11 +3895,7 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
 
     mr_exception_str = NULL;
 
-#ifdef SDK_MOD
-
     MRDBGPRINTF("Total memory:%d", LG_mem_len);
-
-#endif
 
 #ifdef MR_SCREEN_CACHE
 #ifdef MR_SCREEN_CACHE_BITMAP
@@ -4040,16 +3978,6 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     mr_bitmap[BITMAPMAX].h = mr_screen_h;
     mr_bitmap[BITMAPMAX].w = mr_screen_w;
 
-    //char *buf;
-    /*
-   _mr_mem_init();
-
-#ifdef MR_SCREEN_CACHE
-   mr_screenBuf = (uint16*)MR_MALLOC(MR_SCREEN_MAX_W*MR_SCREEN_H*2);
-#else
-   mr_screenBuf = (uint16*)mr_getScreenBuf();
-#endif
-*/
     LUADBGPRINTF("mr_intra_start entry");
     vm_state = NULL;
     mr_timer_state = MR_TIMER_STATE_IDLE;
@@ -4255,10 +4183,10 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     //这里需要完善
     if (ret != 0) {
         /*
-      mrp_close(vm_state);
-      mr_mem_free(LG_mem_base, LG_mem_len);
-      mr_state = MR_STATE_IDLE;
-   */
+        mrp_close(vm_state);
+        mr_mem_free(LG_mem_base, LG_mem_len);
+        mr_state = MR_STATE_IDLE;
+        */
         MRDBGPRINTF(mrp_tostring(vm_state, -1));
         mrp_pop(vm_state, 1); /* remove error message*/
         mr_stop();
@@ -4270,11 +4198,8 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     //MRDBGPRINTF("before gc %d", mr_getTime());
     //mrp_setgcthreshold(vm_state, 0);
     //MRDBGPRINTF("after gc %d", mr_getTime());
-#ifdef SDK_MOD
 
-    //MRDBGPRINTF("After app init, memory left:%d", LG_mem_left);
-
-#endif
+    MRDBGPRINTF("After app init, memory left:%d", LG_mem_left);
     LUADBGPRINTF("After VM do file");
     return MR_SUCCESS;
 }
