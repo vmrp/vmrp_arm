@@ -10,3 +10,7 @@
 
 mr应该是lua5.0.2，但有更新部分代码到5.0.3
 
+
+# License
+
+GNU General Public License v3.0
