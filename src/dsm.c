@@ -618,6 +618,8 @@ int32 mr_plat(int32 code, int32 param) {
     return ret;
 }
 
+static T_DSM_FREE_SAPCE dsm_free_sapce;
+
 /*增强的平台扩展接口*/
 int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32 *output_len, MR_PLAT_EX_CB *cb) {
     int32 ret = MR_IGNORE;
@@ -670,6 +672,44 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
         case 1224:  //小区信息ID
         case 1307:  //获取SIM卡个数，非多卡多待直接返回 MR_INGORE
             break;
+
+        case MR_GET_FREE_SPACE: {  // 1305 获得指定盘符的剩余空间大小
+            // 真机数据, 可以看出内存地址是一样的，因此返回的内存不需要释放
+            // mrc_sprintf(buf, "%s %p %d Info:totalSpace=%d/%d, freeSpace=%d/%d\n", disk, getInfo, len, getInfo->total, getInfo->tunit, getInfo->account, getInfo->unit);
+            // A 0834b690 16 Info:totalSpace=1722/1024, freeSpace=1271/1024
+            // B 0834b690 16 Info:totalSpace=95/1024, freeSpace=77/1024
+            // C 0834b690 16 Info:totalSpace=1874/1048576, freeSpace=1873/1048576
+            switch (*input) {
+                case 'A':
+                case 'a':
+                    *output_len = sizeof(T_DSM_FREE_SAPCE);
+                    *output = (void *)&dsm_free_sapce;
+                    dsm_free_sapce.total = 1722;
+                    dsm_free_sapce.tunit = 1024;
+                    dsm_free_sapce.account = 1271;
+                    dsm_free_sapce.unit = 1024;
+                    return MR_SUCCESS;
+                case 'B':
+                case 'b':
+                    *output_len = sizeof(T_DSM_FREE_SAPCE);
+                    *output = (void *)&dsm_free_sapce;
+                    dsm_free_sapce.total = 95;
+                    dsm_free_sapce.tunit = 1024;
+                    dsm_free_sapce.account = 77;
+                    dsm_free_sapce.unit = 1024;
+                    return MR_SUCCESS;
+                case 'C':
+                case 'c':
+                    *output_len = sizeof(T_DSM_FREE_SAPCE);
+                    *output = (void *)&dsm_free_sapce;
+                    dsm_free_sapce.total = 1874;
+                    dsm_free_sapce.tunit = 1024 * 1024;
+                    dsm_free_sapce.account = 1873;
+                    dsm_free_sapce.unit = 1024 * 1024;
+                    return MR_SUCCESS;
+            }
+            return MR_IGNORE;
+        }
 
         case 1017: {  //获得信号强度。
             static T_RX rx = {3, 5, 5, 1};
