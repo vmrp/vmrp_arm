@@ -22,14 +22,6 @@
 #define MR_EXIT_RELEASE_ALL
 
 // #define MR_SECOND_BUF
-#define MR_SCREEN_CACHE
-
-///*使用m0文件*/
-//#define MR_M0_FILE
-
-/*默认的启动文件*/
-// #define MR_DEFAULT_PACK_NAME "*A"
-#define MR_DEFAULT_PACK_NAME "dsm_gm.mrp"
 
 /*支持短信*/
 #define MR_SM_SURPORT
@@ -71,18 +63,8 @@ typedef struct {
 } mr_cycleSt;
 
 
-/*下面的MAKERGB是MR平台内部的*/
-#ifdef MR_SCREEN_CACHE_BITMAP
-#define MAKERGB(r, g, b) (uint16)(((uint32)(r >> 3) << 10) + ((uint32)(g >> 3) << 5) + ((uint32)(b >> 3)))
-#else
 #define MAKERGB(r, g, b) (uint16)(((uint32)(r >> 3) << 11) + ((uint32)(g >> 2) << 5) + ((uint32)(b >> 3)))
-#endif
-
-#ifdef MR_SCREEN_CACHE_BITMAP
-#define MR_SCREEN_CACHE_POINT(x, y) (mr_screenBuf + (MR_SCREEN_H - y) * MR_SCREEN_MAX_W + x)
-#else
 #define MR_SCREEN_CACHE_POINT(x, y) (mr_screenBuf + y * MR_SCREEN_MAX_W + x)
-#endif
 
 
 #ifndef FALSE

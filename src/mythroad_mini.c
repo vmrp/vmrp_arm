@@ -30,9 +30,6 @@ mini_mr_c_event_st c_event_st;
 mrp_State* vm_state;
 
 static uint16* mr_screenBuf;
-#ifdef MR_SCREEN_CACHE_BITMAP
-static uint8* mr_screenBMP;
-#endif
 static mr_bitmapSt mr_bitmap[BITMAPMAX + 1];
 static mr_tileSt mr_tile[TILEMAX];
 static int16* mr_map[TILEMAX];
@@ -132,7 +129,6 @@ mrc_appInfoSt_st mrc_appInfo_st;
 //int32 _mr_decode(unsigned char *in, unsigned int len, unsigned char *out);
 
 int32 _mr_smsSetBytes(int32 pos, char* p, int32 len);
-int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h);
 void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, uint16 transcoler, int16 sx, int16 sy, int16 mw);
 int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, int16 perb);
 int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, mr_colourSt colorst, int flag, uint16 font);
@@ -505,15 +501,9 @@ void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, ui
                                 if (*srcp != transcoler) {
                                     uint32 color_old = *srcp;
                                     uint32 r, g, b;
-#ifdef MR_SCREEN_CACHE_BITMAP
-                                    r = ((color_old & 0x7c00) >> 10);
-                                    g = ((color_old & 0x3e0) >> 5);
-                                    b = ((color_old & 0x1f));
-#else
                                     r = ((color_old & 0xf800) >> 11);
                                     g = ((color_old & 0x7e0) >> 6);
                                     b = ((color_old & 0x1f));
-#endif
                                     r = (r * 60 + g * 118 + b * 22) / 25;
                                     *dstp = MAKERGB(r, r, r);
                                 }
@@ -670,7 +660,6 @@ int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int i
         tempBuf = (uint16*)pcText;
     }
 
-#ifdef MR_SCREEN_CACHE
     {
         uint16 ch;
         int width, height;
@@ -779,9 +768,6 @@ int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int i
             ch = (uint16)((*p << 8) + *(p + 1));
         };
     }
-#else
-    mr_drawText((char*)tempBuf, x, y, MAKERGB(r, g, b));
-#endif
     if (!is_unicode) {
         MR_FREE((void*)tempBuf, TextSize);
     }
@@ -1047,15 +1033,9 @@ int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, in
         dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
         for (dx = MinX; dx < MaxX; dx++) {
             color_old = *dstp;
-#ifdef MR_SCREEN_CACHE_BITMAP
-            coloer_new = (((color_old & 0x7c00) * perr) >> 8) & 0x7c00;
-            coloer_new |= (((color_old & 0x3e0) * perg) >> 8) & 0x3e0;
-            coloer_new |= (((color_old & 0x1f) * perb) >> 8) & 0x1f;
-#else
             coloer_new = (((color_old & 0xf800) * perr) >> 8) & 0xf800;
             coloer_new |= (((color_old & 0x7e0) * perg) >> 8) & 0x7e0;
             coloer_new |= (((color_old & 0x1f) * perb) >> 8) & 0x1f;
-#endif
             *dstp = (uint16)coloer_new;
             dstp++;
         }
@@ -1075,7 +1055,6 @@ void _mr_showErrorInfo(const char* errstr) {
         MEMSET(buf, 0, sizeof(buf));
         MEMCPY(buf, errstr + i, ((len - i) > 12) ? 12 : (len - i));
         _DrawText(buf, (int16)0, (int16)((i / 12) * 18), 0, 0, 0, (int)FALSE, MR_FONT_MEDIUM);
-        //_DispUpEx(0,0,(uint16)MR_SCREEN_W,(uint16)MR_SCREEN_H);
     }
 
     mr_drawBitmap(mr_screenBuf, 0, 0, (uint16)MR_SCREEN_W, (uint16)MR_SCREEN_H);
@@ -1345,21 +1324,9 @@ ret1:
 }
 
 int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h) {
-    if (!(mr_state == MR_STATE_RUN)) {
-        goto end;
+    if (mr_state == MR_STATE_RUN) {
+        mr_drawBitmap(mr_screenBuf, x, y, (uint16)w, (uint16)h);
     }
-#ifdef MR_SCREEN_CACHE
-    //mr_drawBitmap(mr_screenBuf,0,0,MR_SCREEN_W,MR_SCREEN_H);
-#ifdef MR_SCREEN_CACHE_BITMAP
-    //mr_drawBitmap((uint16*)mr_screenBMP,x, y, w, h);
-    mr_drawBitmap((uint16*)mr_screenBMP, 0, 0, (uint16)MR_SCREEN_W, (uint16)MR_SCREEN_H);
-#else
-    mr_drawBitmap(mr_screenBuf, x, y, (uint16)w, (uint16)h);
-#endif
-#else
-    mr_bufToScreen(x, y, w, h);
-#endif
-end:
     return 0;
 }
 
@@ -1949,7 +1916,6 @@ int32 mr_start_dsm(char* filename, char* ext, char* entry) {
         STRCPY(pack_filename, filename + 2);
     } else {
         STRCPY(pack_filename, filename);
-        // STRCPY(pack_filename, MR_DEFAULT_PACK_NAME);
     }
     MRDBGPRINTF(pack_filename);
     MEMSET(old_pack_filename, 0, sizeof(old_pack_filename));
@@ -1978,56 +1944,13 @@ int32 mr_stop_ex(int16 freemem) {
     mr_timer_run_without_pause = FALSE;
 
     if (freemem) {
-#ifdef MR_SCREEN_CACHE
-#ifdef MR_SCREEN_CACHE_BITMAP
-        //MR_FREE(mr_screenBMP, MR_SCREEN_W * MR_SCREEN_H * 2 + MR_BMP_FILE_HEADER_LEN);
-        mr_screenBMP = NULL;
-#else
         if (mr_bitmap[BITMAPMAX].type == MR_SCREEN_FIRST_BUF) {
             //MR_FREE(mr_screenBuf, mr_bitmap[BITMAPMAX].buflen);
         } else if (mr_bitmap[BITMAPMAX].type == MR_SCREEN_SECOND_BUF) {
             mr_platEx(1002, (uint8*)mr_screenBuf, mr_bitmap[BITMAPMAX].buflen, (uint8**)NULL, NULL, NULL);
         }
-#endif
-#else
-        //MR_FREE(mr_screenBuf, MR_SCREEN_W * MR_SCREEN_H * 2);
-#endif
         mr_screenBuf = NULL;
     }
-
-#if 0
-	for(i=0;i<BITMAPMAX;i++)
-	{
-		if(mr_bitmap[i].p)
-		{
-			MR_FREE(mr_bitmap[i].p, mr_bitmap[i].buflen);
-			mr_bitmap[i].p = NULL;
-		}
-	}
-
-	for(i=0;i<TILEMAX;i++)
-	{
-		if(mr_map[i])
-		{
-			MR_FREE(mr_map[i], mr_tile[i].w*mr_tile[i].h*2);
-			mr_map[i] = NULL;
-		}
-	}
-
-	for(i=0;i<SOUNDMAX;i++)
-	{
-		if(mr_sound[i].p)
-		{
-			MR_FREE(mr_sound[i].p, mr_sound[i].buflen);
-			mr_sound[i].p = NULL;
-		}
-	}
-
-	if(mr_ram_file){
-		MR_FREE(mr_ram_file, mr_ram_file_len);
-		mr_ram_file = NULL;
-	}
-#endif
 
     if (freemem) {
         mr_mem_free(Origin_LG_mem_base, Origin_LG_mem_len);
