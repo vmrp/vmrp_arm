@@ -2139,14 +2139,6 @@ int32 mr_timer(void) {
         MRDBGPRINTF("mr_timer 2");
         mr_stop();  //1943 修改为mr_stop
         //mr_stop_ex(TRUE);      //1943
-        /* 不重新初始化内存
-		_mr_mem_init();
-		#ifdef MR_SCREEN_CACHE
-		mr_screenBuf = (uint16*)MR_MALLOC(MR_SCREEN_MAX_W*MR_SCREEN_H*2);
-		#else
-		mr_screenBuf = (uint16*)mr_getScreenBuf();
-		#endif
-		*/
         _mr_intra_start(start_filename, NULL);
         return MR_SUCCESS;
     }

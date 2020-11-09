@@ -433,18 +433,6 @@ extern void mr_drawBitmap(uint16* bmp, int16 x, int16 y, uint16 w, uint16 h);
 个字节开始才表示下一行的点阵数据*/
 extern const char* mr_getCharBitmap(uint16 ch, uint16 fontSize, int* width, int* height);
 
-#if 0
-/*******************************************************************/
-/*当使用厂商屏幕缓冲时使用的接口*/
-/*显示字符串于屏幕，绘制左上角为x,y。color是RGB颜色*/
-extern void mr_drawText(char * pcText, int16 x, int16 y, uint32 color);
-/*从显示缓冲区到显示设备的图象更新操作。更新范围左上角为x,y，
-宽高为w,h*/
-extern void mr_bufToScreen(int16 x, int16 y, uint16 w, uint16 h);
-/*取得屏幕缓冲区指针*/
-extern void* mr_getScreenBuf(void);
-/*******************************************************************/
-#endif
 
 /*显示字符于屏幕，绘制左上角为x,y。color是565的RGB颜色 ch为字符unicode码*/
 extern void mr_platDrawChar(uint16 ch, int32 x, int32 y, uint32 color);

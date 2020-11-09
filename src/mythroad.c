@@ -776,7 +776,6 @@ int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int i
         tempBuf = (uint16*)pcText;
     }
 
-#ifdef MR_SCREEN_CACHE
     {
         uint16 ch;
         int width, height;
@@ -888,14 +887,9 @@ int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int i
             ch = (uint16)((*p << 8) + *(p + 1));
         };
     }
-#else
-    mr_drawText((char*)tempBuf, x, y, MAKERGB(r, g, b));
-#endif
-    //#ifdef MR_DRAW_TXT_AUTO_UNICODE
     if (!is_unicode) {
         MR_FREE((void*)tempBuf, TextSize);
     }
-    //#endif
     return 0;
 }
 
@@ -1285,7 +1279,7 @@ void* _mr_readFile(const char* filename, int* filelen, int lookfor) {
     char* mr_m0_file;
     int is_rom_file = FALSE;
 
-    if ((pack_filename[0] == '*') || (pack_filename[0] == '$')){ /*m0 file or ram file?*/
+    if ((pack_filename[0] == '*') || (pack_filename[0] == '$')) { /*m0 file or ram file?*/
         uint32 pos = 0;
         uint32 m0file_len;
 
@@ -1702,22 +1696,16 @@ int32 mr_checkMrp(char* mrp_name) {
     return nTmp;
 }
 
-//display
 int32 _DispUpEx(int16 x, int16 y, uint16 w, uint16 h) {
     if (!(mr_state == MR_STATE_RUN)) {
         return 0;
     }
-#ifdef MR_SCREEN_CACHE
-    //mr_drawBitmap(mr_screenBuf,0,0,MR_SCREEN_W,MR_SCREEN_H);
 #ifdef MR_SCREEN_CACHE_BITMAP
     //mr_drawBitmap((uint16*)mr_screenBMP,x, y, w, h);
     mr_drawBitmap((uint16*)mr_screenBMP, 0, 0, (uint16)MR_SCREEN_W, (uint16)MR_SCREEN_H);
 #else
     //mr_drawBitmap(mr_screenBuf,0, 0, (uint16)MR_SCREEN_W,(uint16)MR_SCREEN_H);
     mr_drawBitmap(mr_screenBuf, x, y, (uint16)w, (uint16)h);
-#endif
-#else
-    mr_bufToScreen(x, y, w, h);
 #endif
     return 0;
 }
@@ -1729,23 +1717,6 @@ static int MRF_DispUpEx(mrp_State* L) {
     uint16 h = ((uint16)mrp_tonumber(L, 4));
 
     return _DispUpEx(x, y, w, h);
-    /*
-   if (!(mr_state == MR_STATE_RUN))
-   {
-      return 0;
-   }
-#ifdef MR_SCREEN_CACHE
-   //mr_drawBitmap(mr_screenBuf,0,0,MR_SCREEN_W,MR_SCREEN_H);
-#ifdef MR_SCREEN_CACHE_BITMAP
-   mr_drawBitmap((uint16*)mr_screenBMP,x, y, w, h);
-#else
-   mr_drawBitmap(mr_screenBuf,x, y, w, h);
-#endif
-#else
-   mr_bufToScreen(x, y, w, h);
-#endif
-   return 0;
-*/
 }
 
 static int MRF_DispUp(mrp_State* L) {
@@ -1760,9 +1731,6 @@ static int MRF_DispUp(mrp_State* L) {
     return 0;
 }
 
-//display
-
-//timer
 static int MRF_TimerStart(mrp_State* L) {
     // int n = ((int)  to_mr_tonumber(L,1,0));
     uint16 thistime = ((uint16)to_mr_tonumber(L, 2, 0));
@@ -1783,9 +1751,7 @@ static int MRF_TimerStop(mrp_State* L) {
     //mr_timer_state = MR_TIMER_STATE_IDLE;
     return 0;
 }
-//timer
 
-//draw
 static int MRF_DrawText(mrp_State* L) {
     char* pcText = ((char*)to_mr_tostring(L, 1, 0));
     int16 x = ((int16)to_mr_tonumber(L, 2, 0));
@@ -3897,7 +3863,6 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
 
     MRDBGPRINTF("Total memory:%d", LG_mem_len);
 
-#ifdef MR_SCREEN_CACHE
 #ifdef MR_SCREEN_CACHE_BITMAP
     bmsize = MR_SCREEN_MAX_W * MR_SCREEN_H * 2 + MR_BMP_FILE_HEADER_LEN;  // bmp的头长度   //sizeof(mr_bitmap_file_header);
     mr_screenBMP = (uint8*)MR_MALLOC(bmsize);
@@ -3969,9 +3934,6 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     mr_bitmap[BITMAPMAX].buflen = MR_SCREEN_MAX_W * MR_SCREEN_H * MR_SCREEN_DEEP;
 #endif
 
-#endif
-#else
-    mr_screenBuf = (uint16*)mr_getScreenBuf();
 #endif
 
     mr_bitmap[BITMAPMAX].p = mr_screenBuf;
@@ -4248,7 +4210,6 @@ int32 mr_start_dsm(char* filename, char* ext, char* entry) {
 }
 
 int32 mr_stop_ex(int16 freemem) {
-    // int i;
     if (mr_state == MR_STATE_IDLE) {
         return MR_IGNORE;
     }
@@ -4270,7 +4231,6 @@ int32 mr_stop_ex(int16 freemem) {
     mr_timer_run_without_pause = FALSE;
 
     if (freemem) {
-#ifdef MR_SCREEN_CACHE
 #ifdef MR_SCREEN_CACHE_BITMAP
         //MR_FREE(mr_screenBMP, MR_SCREEN_W * MR_SCREEN_H * 2 + MR_BMP_FILE_HEADER_LEN);
         mr_screenBMP = NULL;
@@ -4281,45 +4241,8 @@ int32 mr_stop_ex(int16 freemem) {
             mr_platEx(1002, (uint8*)mr_screenBuf, mr_bitmap[BITMAPMAX].buflen, (uint8**)NULL, NULL, NULL);
         }
 #endif
-#else
-        //MR_FREE(mr_screenBuf, MR_SCREEN_W * MR_SCREEN_H * 2);
-#endif
         mr_screenBuf = NULL;
     }
-
-#if 0
-      for(i=0;i<BITMAPMAX;i++)
-      {
-         if(mr_bitmap[i].p)
-         {
-            MR_FREE(mr_bitmap[i].p, mr_bitmap[i].buflen);
-            mr_bitmap[i].p = NULL;
-         }
-      }
-   
-      for(i=0;i<TILEMAX;i++)
-      {
-         if(mr_map[i])
-         {
-            MR_FREE(mr_map[i], mr_tile[i].w*mr_tile[i].h*2);
-            mr_map[i] = NULL;
-         }
-      }
-      
-      for(i=0;i<SOUNDMAX;i++)
-      {
-         if(mr_sound[i].p)
-         {
-            MR_FREE(mr_sound[i].p, mr_sound[i].buflen);
-            mr_sound[i].p = NULL;
-         }
-      }
-   
-      if(mr_ram_file){
-         MR_FREE(mr_ram_file, mr_ram_file_len);
-         mr_ram_file = NULL;
-      }
-#endif
 
 #ifdef MR_EXIT_RELEASE_ALL
     if (!(bi & MR_FLAGS_RI)) {
@@ -4523,14 +4446,6 @@ int32 mr_timer(void) {
     } else if (mr_state == MR_STATE_RESTART) {
         mr_stop();  //1943 修改为mr_stop
         //mr_stop_ex(TRUE);      //1943
-        /* 不重新初始化内存
-      _mr_mem_init();
-#ifdef MR_SCREEN_CACHE
-            mr_screenBuf = (uint16*)MR_MALLOC(MR_SCREEN_MAX_W*MR_SCREEN_H*2);
-#else
-            mr_screenBuf = (uint16*)mr_getScreenBuf();
-#endif
-*/
         _mr_intra_start(start_filename, NULL);
         return MR_SUCCESS;
     } else {
@@ -5592,7 +5507,6 @@ int32 _mr_getMetaMemLimit() {
     {
         f = mr_open(this_packname, MR_FILE_RDONLY);
 
-        MEMSET(headbuf, 0, sizeof(headbuf));
         nTmp = mr_read(f, &headbuf, sizeof(headbuf));
 
         headbuf[0] = mr_ltoh((char*)&headbuf[0]);

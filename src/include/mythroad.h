@@ -22,13 +22,7 @@
 #define MR_EXIT_RELEASE_ALL
 
 // #define MR_SECOND_BUF
-
-/*MR_SCREEN_CACHE，使用虚拟机本地缓存*/
-#ifdef WIN32
 #define MR_SCREEN_CACHE
-#else
-#define MR_SCREEN_CACHE
-#endif
 
 ///*使用m0文件*/
 //#define MR_M0_FILE
@@ -77,7 +71,6 @@ typedef struct {
 } mr_cycleSt;
 
 
-#ifdef MR_SCREEN_CACHE
 /*下面的MAKERGB是MR平台内部的*/
 #ifdef MR_SCREEN_CACHE_BITMAP
 #define MAKERGB(r, g, b) (uint16)(((uint32)(r >> 3) << 10) + ((uint32)(g >> 3) << 5) + ((uint32)(b >> 3)))
@@ -91,10 +84,6 @@ typedef struct {
 #define MR_SCREEN_CACHE_POINT(x, y) (mr_screenBuf + y * MR_SCREEN_MAX_W + x)
 #endif
 
-#else
-/*下面的MAKERGB是For TI平台的*/
-#define MAKERGB(r, g, b) (uint32)(((uint32)(r) << 16) + ((uint32)(g) << 8) + ((uint32)(b)))
-#endif
 
 #ifndef FALSE
 #define FALSE 0
