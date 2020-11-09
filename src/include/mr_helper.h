@@ -629,15 +629,6 @@ typedef struct _mrcMpsFpEventParamsSt {
 } mrcMpsFpEventParamsSt;
 #endif
 
-#ifdef SDK_MOD
-extern void* sdk_mr_c_function_table;
-typedef int32 (*mrc_init_t)(void);
-typedef int32 (*mrc_event_t)(int32 code, int32 param0, int32 param1);
-typedef int32 (*mrc_pause_t)(void);
-typedef int32 (*mrc_resume_t)(void);
-typedef int32 (*mrc_exitApp_t)(void);
-#endif
-
 typedef struct _mrc_extChunk_st mrc_extChunk_st;
 
 typedef struct _mr_c_function_st {
@@ -668,11 +659,11 @@ typedef struct _mrc_extChunk_st {
 
     int32 isPause; /*1: pause 状态0:正常状态*/
 #ifdef SDK_MOD
-    mrc_init_t init_f;
-    mrc_event_t event_f;
-    mrc_pause_t pause_f;
-    mrc_resume_t resume_f;
-    mrc_exitApp_t exitApp_f;
+    int32 (*mrc_init_t)(void);
+    int32 (*mrc_event_t)(int32 code, int32 param0, int32 param1);
+    int32 (*mrc_pause_t)(void);
+    int32 (*mrc_resume_t)(void);
+    int32 (*mrc_exitApp_t)(void);
 #endif
 } mrc_extChunk_st;
 

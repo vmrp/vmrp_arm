@@ -23,10 +23,6 @@
 
 const unsigned char* mr_m0_files[50];
 
-#ifdef COMPATIBILITY01
-//#define MR_DRAW_TXT_AUTO_UNICODE   //向下兼容，过渡期后取消
-#endif
-
 #define MRDBGPRINTF mr_printf
 
 mrp_State* vm_state;
@@ -262,13 +258,7 @@ static void _mr_c_internal_table_init() {
 }
 
 static void* _mr_c_port_table[4];
-
-#ifdef SDK_MOD
-void* sdk_mr_c_function_table;
-const void* _mr_c_function_table[150];
-#else
 static const void* _mr_c_function_table[150];
-#endif
 
 static void _mr_c_function_table_init() {
     _mr_c_function_table[0] = (void*)asm_mr_malloc;
@@ -2661,9 +2651,7 @@ static int MRF_BgMusicStop(mrp_State* L) {
     mr_stopSound(mr_sound[0].type);
     return 0;
 }
-//music
 
-//common
 static int MRF_Exit(mrp_State* L) {
     /*这里调用内存释放，内存的内容不能被
    清空，不然虚拟机会崩溃。如果内存会被
@@ -2695,9 +2683,7 @@ static int MRF_Exit(mrp_State* L) {
 
     return 0;
 }
-//common
 
-//save
 static int bufwriter(mrp_State* L, const void* p, size_t sz, void* ud) {
     SaveF* wi = (SaveF*)ud;
 
@@ -2722,16 +2708,13 @@ static int SaveTable(mrp_State* L) {
     /* perms rootobj */
 
     wi.f = mr_open(filename, MR_FILE_WRONLY | MR_FILE_CREATE);
-
     if (wi.f == 0) {
         //mrp_pushfstring(L, "SaveTable:mr_open \"%s\" failed",filename);
         //mrp_error(L);
         MRDBGPRINTF("SaveTable:mr_open \"%s\" failed", filename);
         return 0;
     }
-
     mr_store_persist(L, bufwriter, &wi);
-
     mrp_settop(L, 0);
     mr_close(wi.f);
     mrp_pushnumber(L, MR_SUCCESS);
@@ -2768,9 +2751,7 @@ static int LoadTable(mrp_State* L) {
     mr_close(lf.f);
     return 1;
 }
-//save
 
-//other
 static void setfield(mrp_State* L, const char* key, int value) {
     mrp_pushstring(L, key);
     mrp_pushnumber(L, value);
@@ -2845,14 +2826,11 @@ int _mr_GetSysInfo(mrp_State* L) {
         setstrfield(L, "IMSI", "00");
         setfield(L, "hsver", 0);
     }
-
     return 1;
 }
 
 int _mr_GetDatetime(mrp_State* L) {
-    //int width, height;
     mr_datetime datetime;
-
     if (MR_SUCCESS == mr_getDatetime(&datetime)) {
         mrp_newtable(L);
         setfield(L, "year", datetime.year);
@@ -2869,10 +2847,8 @@ int _mr_GetDatetime(mrp_State* L) {
 
 static int Call(mrp_State* L) {
     char* number = ((char*)to_mr_tostring(L, 1, 0));
-
     mrp_settop(L, 1);
     mr_call(number);
-
     return 0;
 }
 
@@ -3356,55 +3332,6 @@ int _mr_pcall(int nargs, int nresults) {
     return 0;
 }
 
-static int LoadFile2Ram(char* filename) {
-#if 0
-    int32 ret;
-    int32 nTmp;
-    int32 f;
-    if (filename[0] == '*') {
-        if (mr_ram_file) {
-            MR_FREE(mr_ram_file, mr_ram_file_len);
-            mr_ram_file = NULL;
-        }
-        return MR_FAILED;
-    }
-    ret = mr_info(filename);
-    if ((ret != MR_IS_FILE)) {
-        return MR_FAILED;
-    }
-
-    if (mr_ram_file) {
-        MR_FREE(mr_ram_file, mr_ram_file_len);
-        mr_ram_file = NULL;
-    }
-
-    mr_ram_file_len = mr_getLen(filename);
-    if (mr_ram_file_len <= 0) {
-        return MR_FAILED;
-    }
-
-    f = mr_open(filename, MR_FILE_RDONLY);
-    if (f == 0) {
-        return MR_FAILED;
-    }
-
-    mr_ram_file = MR_MALLOC(mr_ram_file_len);
-    if (mr_ram_file == NULL) {
-        mr_close(f);
-        return MR_FAILED;
-    }
-
-    nTmp = mr_read(f, mr_ram_file,mr_ram_file_len);
-    if (nTmp != mr_ram_file_len) {
-        mr_close(f);
-        return MR_FAILED;
-    }
-    return MR_SUCCESS;
-#else
-    return MR_SUCCESS;
-#endif
-}
-
 #ifdef MR_SOCKET_SUPPORT
 
 static int32 mr_get_host_cb(int32 ip) {
@@ -3447,15 +3374,11 @@ int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len) {
     MEMSET(mr_c_function_P, 0, mr_c_function_P_len);
     mr_c_function = f;
     mr_printf("_mr_c_function_new(%p, %d)  mr_c_function_P:%p", f, len, mr_c_function_P);
-#ifdef SDK_MOD
-    *((void**)(sdk_mr_c_function_table)-1) = mr_c_function_P;
-#else
     if (mr_c_function_fix_p) {
         *((void**)(mr_c_function_fix_p) + 1) = mr_c_function_P;
     } else {
         *((void**)(mr_load_c_function)-1) = mr_c_function_P;
     }
-#endif
     return MR_SUCCESS;
 }
 
@@ -3464,9 +3387,6 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
     int ret = 0;
 
     switch (input0) {
-        case 1:
-            ret = LoadFile2Ram(input1);
-            break;
         case 2:
             if (mr_ram_file) {
                 MR_FREE(mr_ram_file, mr_ram_file_len);
@@ -3671,38 +3591,6 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             ret = mr_smsIndiaction((uint8*)input1, len, pNum, type);
             break;
         }
-#ifdef SDK_MOD
-        case 800: {
-            int32 input_len, output_len, ret;
-            int code = ((int)mr_L_optint(L, 3, 0));
-            mr_load_c_function = mr_c_function_load;
-            *((void**)(input1)) = _mr_c_function_table;
-            sdk_mr_c_function_table = input1 + 8;
-
-            ret = mr_load_c_function(code);
-
-            mrp_pushnumber(L, ret);
-            return 1;
-        } break;
-        case 801: {
-            int32 input_len, output_len, ret;
-            int code = ((int)to_mr_tonumber(L, 3, 0));
-            //uint8* input = (uint8*)mr_L_checklstring(L,4,(size_t*)&input_len);
-            uint8* output = NULL;
-            output_len = 0;
-
-            ret = mr_c_function(mr_c_function_P, code, input1, len, &output, &output_len);
-
-            if (output && output_len) {
-                mrp_pushlstring(L, (const char*)output, output_len);
-            } else {
-                mrp_pushstring(L, "");
-            }
-
-            mrp_pushnumber(L, ret);
-            return 2;
-        } break;
-#else
         case 800: {
             int code = ((int)mr_L_optint(L, 3, 0));
             mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1 + 8);
@@ -3716,10 +3604,8 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             mr_check_code_len = len;
 #endif
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
-            mr_printf("800 before mr_load_c_function----------");
             fixR9_saveMythroad();
             ret = mr_load_c_function(code);
-            mr_printf("800 after mr_load_c_function----------");
             mrp_pushnumber(L, ret);
             return 1;
         } break;
@@ -3752,20 +3638,16 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1 + 8);
             *((void**)(mr_c_function_fix_p)) = (void*)_mr_c_function_table;
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
-            mr_printf("802 before mr_load_c_function----------");
             fixR9_saveMythroad();
             ret = mr_load_c_function(code);
-            mr_printf("802 after mr_load_c_function----------");
             mrp_pushnumber(L, ret);
             return 1;
         } break;
-#endif
 
 #ifdef MR_CHECK_CODE
         case 803:
             return mr_checkCode();
 #endif
-
         case 900:
             ret = mr_platEx(200001, (uint8*)_mr_c_port_table, sizeof(_mr_c_port_table), NULL, NULL, NULL);
             break;
@@ -3798,9 +3680,6 @@ int32 mr_checkCode(void) {
 }
 #endif
 
-//other
-
-//main
 
 static mr_L_reg phonelib[5];
 
@@ -3981,14 +3860,6 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     mrp_register(vm_state, "_dispUp", MRF_DispUp);
     mrp_register(vm_state, "_textWidth", MRF_TextWidth);
 
-    //mrp_register(vm_state, "BgMusicSet", MRF_BgMusicSet);
-    //mrp_register(vm_state, "BgMusicStart", MRF_BgMusicStart);
-    //mrp_register(vm_state, "BgMusicStop", MRF_BgMusicStop);
-
-    //mrp_register(vm_state, "SoundSet", MRF_SoundSet);
-    //mrp_register(vm_state, "SoundPlay", MRF_SoundPlay);
-    //mrp_register(vm_state, "SoundStop", MRF_SoundStop);
-
     mrp_register(vm_state, "_bmpLoad", MRF_BitmapLoad);
     mrp_register(vm_state, "_bmpShow", MRF_BitmapShow);
     mrp_register(vm_state, "_bmpShowEx", MRF_BitmapShowEx);
@@ -4009,18 +3880,7 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     mrp_register(vm_state, "_timerStart", MRF_TimerStart);
     mrp_register(vm_state, "_timerStop", MRF_TimerStop);
 
-    //mrp_register(vm_state, "SpriteSet", MRF_SpriteSet);
-    //mrp_register(vm_state, "SpriteDraw", MRF_SpriteDraw);
-    //mrp_register(vm_state, "SpriteDrawEx", MRF_SpriteDrawEx);
-    //mrp_register(vm_state, "SpriteCheck", MRF_SpriteCheck);
 
-    //mrp_register(vm_state, "TileSet", MRF_TileSet);
-    //mrp_register(vm_state, "TileSetRect", MRF_TileSetRect);
-    //mrp_register(vm_state, "TileDraw", MRF_TileDraw);
-    //mrp_register(vm_state, "GetTile", MRF_GetTile);
-    //mrp_register(vm_state, "SetTile", MRF_SetTile);
-    //mrp_register(vm_state, "TileShift", MRF_TileShift);
-    //mrp_register(vm_state, "TileLoad", MRF_TileLoad);
 #ifdef MR_TRACE
     {
         char temp_pack_filename[MR_MAX_FILENAME_SIZE];
@@ -4290,11 +4150,6 @@ int32 mr_resumeApp(void) {
 
 int32 mr_event(int16 type, int32 param1, int32 param2) {
     //MRDBGPRINTF("mr_event %d %d %d", type, param1, param2);
-#ifdef SDK_MOD
-    int use_time;
-    use_time = mr_getTime();
-
-#endif
 
     if ((mr_state == MR_STATE_RUN) || ((mr_timer_run_without_pause) && (mr_state == MR_STATE_PAUSE))) {
         if (mr_event_function) {
@@ -4331,12 +4186,6 @@ int32 mr_event(int16 type, int32 param1, int32 param2) {
         //mrp_setgcthreshold(vm_state, 0);
 
         //MRDBGPRINTF("type = %d", mrp_type(vm_state, -1));
-
-#ifdef SDK_MOD
-        //MRDBGPRINTF("event used : %d", mr_getTime() - use_time);
-
-#endif
-
         return MR_SUCCESS;  //deal
     }
     return MR_IGNORE;  //didnot deal
