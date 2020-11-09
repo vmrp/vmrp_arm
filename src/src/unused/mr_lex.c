@@ -34,6 +34,17 @@ static const char *const token2string [] = {
     "*number", "*string", "<eof>"
 };
 
+// /* ORDER RESERVED */
+// static const char *const token2string [] = {
+//     "and", "break", "do", "else", "elseif",
+//     "end", "false", "for", "function", "if",
+//     "in", "local", "nil", "not", "or", "repeat",
+//     "return", "then", "true", "until", "while", "*name",
+//     "..", "...", "==", ">=", "<=", "~=",
+//     "*number", "*string", "<eof>"
+// };
+
+
 
 void mr_X_init (mrp_State *L) {
   int i;

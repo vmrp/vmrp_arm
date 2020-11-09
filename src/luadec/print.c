@@ -34,7 +34,7 @@
 #define SET_IS_EMPTY(s) (s->ctr == 0)
 
 #define opstr(o) ((o)==OP_EQ?"==":(o)==OP_LE?"<=":(o)==OP_LT?"<":(o)==OP_TEST?NULL:"?")
-#define invopstr(o) ((o)==OP_EQ?"~=":(o)==OP_LE?">":(o)==OP_LT?">=":(o)==OP_TEST?"not":"?")
+#define invopstr(o) ((o)==OP_EQ?"!=":(o)==OP_LE?">":(o)==OP_LT?">=":(o)==OP_TEST?"!":"?")
 
 #define IsMain(f)	(f->lineDefined==0)
 #define fb2int(x)	(((x) & 7) << ((x) >> 3))
@@ -133,7 +133,7 @@ StringBuffer* PrintLogicExp(StringBuffer* str, int dest, LogicExp* exp, int inv_
       exp = exp->next;
       if (inv_) cond = !cond;
       if (rev) cond = !cond;
-      op = cond ? "and" : "or";
+      op = cond ? "&&" : "||";
       StringBuffer_addPrintf(str, " %s ", op);
    }
    return PrintLogicItem(str, exp, inv_, rev);
@@ -556,7 +556,7 @@ void FlushElse(Function* F) {
          test = WriteBoolean(exp, &thenaddr, &endif, 0);
          if (error) return;
          StoreEndifAddr(F, endif);
-         StringBuffer_addPrintf(str, "elseif %s then", test);
+         StringBuffer_addPrintf(str, "elif %s then", test);
          F->elseWritten = 0;
          RawAddStatement(F, str);
          F->indent++;
@@ -622,7 +622,7 @@ if (debug) { mr_printf("SET_CTR(Tpend) = %d \n", SET_CTR(F->tpend)); }
          return;
       }
       if (endif >= F->pc) {
-         StringBuffer_printf(str, "%s or %s", test, src);
+         StringBuffer_printf(str, "%s || %s", test, src);
          mr_freeExt(nsrc);
          nsrc = StringBuffer_getBuffer(str);
          mr_freeExt(test);
@@ -1044,7 +1044,7 @@ char* PrintFunction(Function * F)
 
 static char *operators[20] =
     { " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ",
-   "+", "-", "*", "/", "^", "-", "not ", ".."
+   "+", "-", "*", "/", "^", "-", "! ", ".."
 };
 
 static int priorities[20] =
@@ -1890,7 +1890,7 @@ char* ProcessCode(const Proto * f, int indent)
             /*
              * Function. 
              */
-            StringBuffer_set(str, "function");
+            StringBuffer_set(str, "def");
             StringBuffer_add(str, ProcessCode(f->p[c], F->indent));
             for (i = 0; i < F->indent; i++) {
                StringBuffer_add(str, "   ");
