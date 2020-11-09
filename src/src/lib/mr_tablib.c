@@ -323,5 +323,6 @@ void mr_tablib_init(void) {
 
 MRPLIB_API int mrp_open_table(mrp_State *L) {
     mr_L_openlib(L, MRP_TABLIBNAME, tab_funcs, 0);
+    LUADBGPRINTF("table lib");
     return 1;
 }

@@ -129,13 +129,6 @@ MR_RESUMEAPP_FUNCTION mr_resumeApp_function = NULL;
 static mrc_timerCB mr_exit_cb = NULL;
 static int32 mr_exit_cb_data;
 
-#ifdef MR_CHECK_CODE
-int32 mr_check_code_val;
-int32 mr_check_code_point = NULL;
-int32 mr_check_code_len;
-int32 mr_checkCode(void);
-#endif
-
 int32 _mr_smsSetBytes(int32 pos, char* p, int32 len);
 int32 _mr_smsAddNum(int32 index, char* pNum);
 int32 _mr_load_sms_cfg(void);
@@ -461,7 +454,6 @@ void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, ui
         switch (BitmapRop) {
             case BM_TRANSPARENT:
                 for (dy = MinY; dy < MaxY; dy++) {
-                    //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
                     dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
                     srcp = p + (dy - y) * w + (MinX - x);
                     for (dx = MinX; dx < MaxX; dx++) {
@@ -477,24 +469,22 @@ void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, ui
                     case MR_ROTATE_0:
                         if (MaxX > MinX) {
                             for (dy = MinY; dy < MaxY; dy++) {
-                                //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
                                 dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
                                 srcp = BitmapFlip ? p + (h - 1 - (dy - y)) * w + (MinX - x) : p + (dy - y) * w + (MinX - x);
                                 MEMCPY(dstp, srcp, (MaxX - MinX) << 1);
                                 /*
-                         for (dx = MinX; dx < MaxX; dx++)
-                          {
-                             *dstp = *srcp;
-                             dstp++;
-                             srcp++;
-                          }
-                       */
+                                    for (dx = MinX; dx < MaxX; dx++)
+                                    {
+                                        *dstp = *srcp;
+                                        dstp++;
+                                        srcp++;
+                                    }
+                                */
                             }
                         }
                         break;
                     case MR_ROTATE_90:
                         for (dy = MinY; dy < MaxY; dy++) {
-                            //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
                             dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
                             srcp = BitmapFlip ? p + (h - 1 - (MinX - x)) * w + (w - 1 - (dy - y)) : p + (MinX - x) * w + (w - 1 - (dy - y));
                             for (dx = MinX; dx < MaxX; dx++) {
@@ -506,7 +496,6 @@ void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, ui
                         break;
                     case MR_ROTATE_180:
                         for (dy = MinY; dy < MaxY; dy++) {
-                            //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
                             dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
                             srcp = BitmapFlip ? p + (dy - y) * w + (w - 1 - (MinX - x)) : p + (h - 1 - (dy - y)) * w + (w - 1 - (MinX - x));
                             for (dx = MinX; dx < MaxX; dx++) {
@@ -518,7 +507,6 @@ void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, ui
                         break;
                     case MR_ROTATE_270:
                         for (dy = MinY; dy < MaxY; dy++) {
-                            //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
                             dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
                             srcp = BitmapFlip ? p + (MinX - x) * w + (dy - y) : p + (h - 1 - (MinX - x)) * w + (dy - y);
                             for (dx = MinX; dx < MaxX; dx++) {
@@ -534,7 +522,6 @@ void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, ui
         switch (rop) {
             case BM_TRANSPARENT:
                 for (dy = MinY; dy < MaxY; dy++) {
-                    //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
                     dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
                     srcp = p + (dy - y + sy) * mw + (MinX - x + sx);
                     for (dx = MinX; dx < MaxX; dx++) {
@@ -548,18 +535,17 @@ void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, ui
             case BM_COPY:
                 if (MaxX > MinX) {
                     for (dy = MinY; dy < MaxY; dy++) {
-                        //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
                         dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
                         srcp = p + (dy - y + sy) * mw + (MinX - x + sx);
                         MEMCPY(dstp, srcp, (MaxX - MinX) << 1);
                         /*
-                 for (dx = MinX; dx < MaxX; dx++)
-                  {
-                     *dstp = *srcp;
-                     dstp++;
-                     srcp++;
-                  }
-               */
+                            for (dx = MinX; dx < MaxX; dx++)
+                            {
+                                *dstp = *srcp;
+                                dstp++;
+                                srcp++;
+                            }
+                        */
                     }
                 }
                 break;
@@ -572,7 +558,6 @@ void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, ui
             case BM_AND:
             case BM_REVERSE:
                 for (dy = MinY; dy < MaxY; dy++) {
-                    //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
                     dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
                     srcp = p + (dy - y + sy) * mw + (MinX - x + sx);
                     for (dx = MinX; dx < MaxX; dx++) {
@@ -621,7 +606,6 @@ void _DrawBitmap(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 rop, ui
     }
 }
 
-//static void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b)
 void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b) {
     //   mr_drawRect(x,y,w,h,MAKERGB(r, g, b));
     uint16 *dstp, *srcp;
@@ -632,11 +616,6 @@ void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b) {
     uint16 dx, dy;
     uint16 nativecolor;
 
-    /*
-    nativecolor = (r/8)<<11;
-    nativecolor |=(g/4)<<5;
-    nativecolor |=(b/8);          
-    */
     nativecolor = MAKERGB(r, g, b);
 
     if ((MaxY > MinY) && (MaxX > MinX)) {
@@ -684,7 +663,6 @@ void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b) {
       }
 
 #else
-        //dstp = mr_screenBuf + MinY * MR_SCREEN_MAX_W + MinX;
         dstp = MR_SCREEN_CACHE_POINT(MinX, MinY);
         srcp = dstp;
         for (dx = MinX; dx < MaxX; dx++) {
@@ -696,32 +674,30 @@ void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b) {
             //srcp = ((srcp+1) & 0xfffffffc);
             srcp++;
             for (dy = MinY + 1; dy < MaxY; dy++) {
-                //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
                 dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
                 *dstp = nativecolor;
                 //dstp = ((dstp+1) & 0xfffffffc);
                 dstp++;
                 MEMCPY(dstp, srcp, (MaxX - MinX - 1) << 1);
                 /*
-            for (dx = MinX; dx < MaxX; dx++)
-            {
-               *dstp = nativecolor;
-               dstp++;
-            }
-            */
+                for (dx = MinX; dx < MaxX; dx++)
+                {
+                *dstp = nativecolor;
+                dstp++;
+                }
+                */
             }
         } else {
             for (dy = MinY + 1; dy < MaxY; dy++) {
-                //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
                 dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
                 MEMCPY(dstp, srcp, (MaxX - MinX) << 1);
                 /*
-            for (dx = MinX; dx < MaxX; dx++)
-            {
-               *dstp = nativecolor;
-               dstp++;
-            }
-            */
+                for (dx = MinX; dx < MaxX; dx++)
+                {
+                *dstp = nativecolor;
+                dstp++;
+                }
+                */
             }
         }
 #endif
@@ -731,7 +707,6 @@ void DrawRect(int16 x, int16 y, int16 w, int16 h, uint8 r, uint8 g, uint8 b) {
 
 int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int is_unicode, uint16 font) {
     int TextSize;
-    //#endif
     uint16* tempBuf;
     // int tempret=0;
 
@@ -1100,7 +1075,6 @@ int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transco
     int nResult = 0;
 
     for (dy = MinY; dy < MaxY; dy++) {
-        //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
         dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
         srcp = p + (dy - y) * w + (MinX - x);
         for (dx = MinX; dx < MaxX; dx++) {
@@ -1113,7 +1087,6 @@ int _BitmapCheck(uint16* p, int16 x, int16 y, uint16 w, uint16 h, uint16 transco
             srcp++;
         }
     }
-
     return nResult;
 }
 
@@ -1164,7 +1137,6 @@ int _mr_EffSetCon(int16 x, int16 y, int16 w, int16 h, int16 perr, int16 perg, in
     uint16 dx, dy;
 
     for (dy = MinY; dy < MaxY; dy++) {
-        //dstp = mr_screenBuf + dy * MR_SCREEN_MAX_W + MinX;
         dstp = MR_SCREEN_CACHE_POINT(MinX, dy);
         for (dx = MinX; dx < MaxX; dx++) {
             color_old = *dstp;
@@ -1922,9 +1894,7 @@ static int MRF_DrawLine(mrp_State* L) {
     }
     return 0;
 }
-//draw
 
-//bitmap
 static int MRF_BitmapLoad(mrp_State* L) {
     uint16 i = ((uint16)to_mr_tonumber(L, 1, 0));
     char* filename = ((char*)to_mr_tostring(L, 2, 0));
@@ -2143,9 +2113,7 @@ static int MRF_BitmapInfo(mrp_State* L) {
     mrp_pushnumber(L, mr_bitmap[i].type);
     return 5;
 }
-//bitmap
 
-//sprite
 static int MRF_SpriteSet(mrp_State* L) {
     uint16 i = ((uint16)to_mr_tonumber(L, 1, 0));
     uint16 h = ((uint16)to_mr_tonumber(L, 2, 0));
@@ -2179,7 +2147,7 @@ static int MRF_SpriteDraw(mrp_State* L) {
     /*
    mr_drawBitmap(mr_bitmap[i].p + spriteindex*mr_bitmap[i].w*mr_sprite[i].h,
       x, y, mr_bitmap[i].w, mr_sprite[i].h, BM_TRANSPARENT, *(mr_bitmap[i].p));
-*/
+    */
     _DrawBitmap(mr_bitmap[i].p + spriteindex * mr_bitmap[i].w * mr_sprite[i].h,
                 x, y, mr_bitmap[i].w, mr_sprite[i].h, mod, *(mr_bitmap[i].p), 0, 0, mr_bitmap[i].w);
     return 0;
@@ -2227,9 +2195,6 @@ static int MRF_SpriteDrawEx(mrp_State* L) {
     return 0;
 }
 
-//sprite
-
-//tile
 static int MRF_TileSet(mrp_State* L) {
     uint16 i = ((uint16)to_mr_tonumber(L, 1, 0));
     int16 x = ((int16)to_mr_tonumber(L, 2, 0));
@@ -2478,9 +2443,7 @@ static int MRF_SetTile(mrp_State* L) {
     mr_map[i][mr_tile[i].w * y + x] = v;
     return 0;
 }
-//tile
 
-//Screen
 static int MRF_ClearScreen(mrp_State* L) {
     int r = ((int)mrp_tonumber(L, 1));
     int g = ((int)mrp_tonumber(L, 2));
@@ -2488,9 +2451,7 @@ static int MRF_ClearScreen(mrp_State* L) {
     DrawRect(0, 0, (int16)MR_SCREEN_W, (int16)MR_SCREEN_H, (uint8)r, (uint8)g, (uint8)b);
     return 0;
 }
-//Screen
 
-//effect
 static int MRF_EffSetCon(mrp_State* L) {
     int16 x = ((int16)to_mr_tonumber(L, 1, 0));
     int16 y = ((int16)to_mr_tonumber(L, 2, 0));
@@ -2501,9 +2462,7 @@ static int MRF_EffSetCon(mrp_State* L) {
     int16 perb = ((int16)to_mr_tonumber(L, 7, 0));
     return _mr_EffSetCon(x, y, w, h, perr, perg, perb);
 }
-//effect
 
-//math
 static int MRF_GetRand(mrp_State* L) {
     int32 n = ((int32)mrp_tonumber(L, 1));
     {
@@ -2561,9 +2520,7 @@ static int MRF_xor(mrp_State* L) {
     }
     return 1;
 }
-//math
 
-//music
 static void SoundSet(mrp_State* L, uint16 i, char* filename, int32 type) {
     void* filebuf;
     int filelen;
@@ -2776,19 +2733,13 @@ int _mr_GetSysInfo(mrp_State* L) {
     uint16 font = (uint16)mr_L_optlong(L, 1, MR_FONT_MEDIUM);
 
     mrp_newtable(L);
-
-    //mrp_pushliteral(L, "_vmver", );
-    //mrp_pushnumber(L, MR_VERSION);
-    //mrp_rawset(L, -3);
     setfield(L, "vmver", MR_VERSION);
-
 #ifdef COMPATIBILITY01
     setfield(L, "ScreenW", MR_SCREEN_W);
     setfield(L, "ScreenH", MR_SCREEN_H);
 #endif
     setfield(L, "scrw", MR_SCREEN_W);
     setfield(L, "scrh", MR_SCREEN_H);
-
     mr_getCharBitmap(0x70b9, font, &width, &height);
 #ifdef COMPATIBILITY01
     setfield(L, "ChineseWidth", width);
@@ -2860,8 +2811,7 @@ static int LoadPack(mrp_State* L) {
     int32 f;
     int nTmp;
 
-    //这里还要判断是否是ROM或RAM中的MRP文件，若是则不用进行
-    //鉴权。
+    //这里还要判断是否是ROM或RAM中的MRP文件，若是则不用进行鉴权。
     if (bi & MR_FLAGS_AI) {
         f = mr_open(packname, MR_FILE_RDONLY);
         if (f == 0) {
@@ -3260,6 +3210,7 @@ static int MRF_TestCom(mrp_State* L) {
     int input1 = ((int)to_mr_tonumber(L, 2, 0));
     return _mr_TestCom(L, input0, input1);
 }
+
 int _mr_pcall(int nargs, int nresults) {
     int status;
 
@@ -3528,8 +3479,7 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             if (input1[0] == '*') { /*m0 file?*/
                 int32 index = input1[1] - 0x41;
                 if ((index >= 0) && (index < (sizeof(mr_m0_files) / sizeof(const unsigned char*)))) {
-                    mr_m0_file = (char*)mr_m0_files[index];  //这里定义文件名为*A即是第一个m0文件
-                                                             //*B是第二个.........
+                    mr_m0_file = (char*)mr_m0_files[index];  //这里定义文件名为*A即是第一个m0文件 *B是第二个.........
                 } else {
                     mr_m0_file = NULL;
                 }
@@ -3596,13 +3546,6 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1 + 8);
             *((void**)(input1)) = (void*)_mr_c_function_table;
 
-#ifdef MR_CHECK_CODE
-            mr_updcrc(NULL, 0); /* initialize crc */
-            mr_updcrc((unsigned char*)input1, len);
-            mr_check_code_val = mr_updcrc((unsigned char*)input1, 0);
-            mr_check_code_point = (int32)input1;
-            mr_check_code_len = len;
-#endif
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
             fixR9_saveMythroad();
             ret = mr_load_c_function(code);
@@ -3643,11 +3586,6 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             mrp_pushnumber(L, ret);
             return 1;
         } break;
-
-#ifdef MR_CHECK_CODE
-        case 803:
-            return mr_checkCode();
-#endif
         case 900:
             ret = mr_platEx(200001, (uint8*)_mr_c_port_table, sizeof(_mr_c_port_table), NULL, NULL, NULL);
             break;
@@ -3668,27 +3606,10 @@ static int TestCom1(mrp_State* L) {
     return _mr_TestCom1(L, input0, input1, len);
 }
 
-#ifdef MR_CHECK_CODE
-int32 mr_checkCode(void) {
-    if (mr_check_code_point) {
-        mr_updcrc(NULL, 0); /* initialize crc */
-        mr_updcrc((unsigned char*)mr_check_code_point, mr_check_code_len);
-        return (mr_check_code_val == mr_updcrc((unsigned char*)mr_check_code_point, 0));
-    } else {
-        return TRUE;
-    }
-}
-#endif
-
-
 static mr_L_reg phonelib[5];
 
 static int32 _mr_intra_start(char* appExName, const char* entry) {
     int i, ret;
-
-#ifdef MR_CHECK_CODE
-    mr_check_code_point = NULL;
-#endif
 
     Origin_LG_mem_len = _mr_getMetaMemLimit();
     if (_mr_mem_init(0) != MR_SUCCESS) {
@@ -3763,13 +3684,10 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     }
     LUADBGPRINTF("mr init ok");
     mrp_open_base(vm_state);
-    LUADBGPRINTF("base lib");
     mrp_open_string(vm_state);
-    LUADBGPRINTF("string lib");
     mrp_open_table(vm_state);
-    LUADBGPRINTF("table lib");
     mrp_open_file(vm_state);
-    LUADBGPRINTF("file lib");
+
 #ifdef COMPATIBILITY01
     mr_store_open(vm_state);
     //to_mr_mythroad_open(vm_state);

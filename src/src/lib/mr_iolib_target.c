@@ -760,6 +760,7 @@ MRPLIB_API int mrp_open_file (mrp_State *L) {
    createfilemeta(L);
    mrp_pushvalue(L, -1);
    mr_L_openlib(L, MRP_FILELIBNAME, filelib, 1);
+   LUADBGPRINTF("file lib");
   return 1;
 }
 

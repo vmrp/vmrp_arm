@@ -1359,6 +1359,7 @@ void mr_strlib_init(void){
 */
 MRPLIB_API int mrp_open_string (mrp_State *L) {
   mr_L_openlib(L, MRP_STRLIBNAME, strlib, 0);
+  LUADBGPRINTF("string lib");
   return 1;
 }
 

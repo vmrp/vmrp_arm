@@ -731,6 +731,7 @@ MRPLIB_API int mrp_open_base (mrp_State *L) {
   mr_L_openlib(L, MRP_COLIBNAME, co_funcs, 0);
   mrp_newtable(L);
   mrp_setglobal(L, REQTAB);
+  LUADBGPRINTF("base lib");
   return 0;
 }
 
