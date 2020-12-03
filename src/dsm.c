@@ -589,9 +589,6 @@ int32 mr_rand(void) {
 /*平台扩展接口*/
 int32 mr_plat(int32 code, int32 param) {
     int32 ret = MR_IGNORE;
-
-    LOGI("mr_plat code=%d param=%d", code, param);
-
     switch (code) {
         case MR_CONNECT: {  //1001
             ret = mr_getSocketState(param);
@@ -757,56 +754,56 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int32 mr_initNetwork(MR_INIT_NETWORK_CB cb, const char *mode) {
     LOGI("mr_initNetwork(mod:%s)", mode);
-    return MR_FAILED;
+    return dsmInFuncs->mr_initNetwork(cb, mode);
 }
 
 int32 mr_closeNetwork() {
     LOGI("%s", "mr_closeNetwork");
-    return MR_FAILED;
+    return dsmInFuncs->mr_closeNetwork();
 }
 
 int32 mr_getHostByName(const char *ptr, MR_GET_HOST_CB cb) {
-    return MR_FAILED;
+    return dsmInFuncs->mr_getHostByName(ptr, cb);
 }
 
 int32 mr_socket(int32 type, int32 protocol) {
     LOGI("mr_socket(type:%d, protocol:%d)", type, protocol);
-    return MR_FAILED;
+    return dsmInFuncs->mr_socket(type, protocol);
 }
 
 int32 mr_connect(int32 s, int32 ip, uint16 port, int32 type) {
     LOGI("mr_connect(s:%d, ip:%d, port:%d, type:%d)", s, ip, port, type);
-    return MR_FAILED;
+    return dsmInFuncs->mr_connect(s, ip, port, type);
 }
 
 int32 mr_getSocketState(int32 s) {
     LOGI("getSocketState(%d)", s);
-    return MR_FAILED;
+    return dsmInFuncs->mr_getSocketState(s);
 }
 
 int32 mr_closeSocket(int32 s) {
     LOGI("mr_closeSocket(%d)", s);
-    return MR_FAILED;
+    return dsmInFuncs->mr_closeSocket(s);
 }
 
 int32 mr_recv(int32 s, char *buf, int len) {
     LOGI("mr_recv(%d)", s);
-    return MR_FAILED;
+    return dsmInFuncs->mr_recv(s, buf, len);
 }
 
 int32 mr_send(int32 s, const char *buf, int len) {
     LOGI("mr_send %d %s", s, buf);
-    return MR_FAILED;
+    return dsmInFuncs->mr_send(s, buf, len);
 }
 
 int32 mr_recvfrom(int32 s, char *buf, int len, int32 *ip, uint16 *port) {
     LOGI("mr_recvfrom(%d,%s,%d,%d,%d)", s, buf, len, *ip, *port);
-    return MR_FAILED;
+    return dsmInFuncs->mr_recvfrom(s, buf, len, ip, port);
 }
 
 int32 mr_sendto(int32 s, const char *buf, int len, int32 ip, uint16 port) {
     LOGI("mr_sendto(%d,%s,%d,%d,%d)", s, buf, len, ip, port);
-    return MR_FAILED;
+    return dsmInFuncs->mr_sendto(s, buf, len, ip, port);
 }
 
 // Anti-Apple
