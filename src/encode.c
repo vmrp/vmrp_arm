@@ -66,29 +66,6 @@ uint16 *c2u(const char *cp, int *err, int *size) {
 }
 #else
 
-uint16 GBCharToUCS2BEChar(uint8 *gbCode) {
-    const uint8 *p_map = NULL;
-    int i;
-    if ((*(gbCode + 1) >= 0xa1) && (*(gbCode + 1) <= 0xfe)) {
-        if ((*gbCode >= 0xa1) && (*gbCode <= 0xa9)) {
-            i = ((*gbCode - 0xa1) * 94 + (*(gbCode + 1) - 0xa1)) * 2;
-            if (i < GB2UTABLE_LEN) {
-                p_map = &gb2uTable[i];
-            }
-        } else if ((*gbCode >= 0xb0) && (*gbCode <= 0xf7)) {
-            i = ((*gbCode - 0xb0 + 9) * 94 + (*(gbCode + 1) - 0xa1)) * 2;
-            if (i < GB2UTABLE_LEN) {
-                p_map = &gb2uTable[i];
-            }
-        }
-    }
-    if (p_map == NULL) {
-        return 0xFDFF;  // '�'
-        // return 0x0030;  // 大端全角空格
-    }
-    return (p_map[1]) | (p_map[0] << 8);
-}
-
 // 如果传了outMemLen参数，则必需用带len参数的free释放内存
 uint16 *GBStrToUCS2BEStr(uint8 *gbCode, uint32 *outMemLen) {
     uint32 i = 0, j = 0, len;
@@ -98,12 +75,14 @@ uint16 *GBStrToUCS2BEStr(uint8 *gbCode, uint32 *outMemLen) {
     if (!gbCode) return NULL;
 
     while (gbCode[i]) {
-        if (gbCode[i] < 0x80) {
+        j++;
+        if (gbCode[i] <= 0x80) {
             i += 1;
+        } else if (gbCode[i + 1] == '\0') {
+            break;
         } else {
             i += 2;
         }
-        j++;
     }
     len = (j + 1) * sizeof(uint16);
     if (outMemLen) {
@@ -115,16 +94,38 @@ uint16 *GBStrToUCS2BEStr(uint8 *gbCode, uint32 *outMemLen) {
     if (!unicode) return NULL;
     i = j = 0;
     while (gbCode[i]) {
-        if (gbCode[i] < 0x80) {
+        if (gbCode[i] <= 0x7F) {
             unicode[j] = gbCode[i] << 8;
             i += 1;
+        } else if (gbCode[i] == 0x80) {
+            unicode[j] = 0xAC20;  // '€' 字符
+            i += 1;
         } else {
-            unicode[j] = GBCharToUCS2BEChar(&gbCode[i]);
+            unicode[j] = 0xFDFF;  // '�' 字符
+            if (gbCode[i + 1] != '\0') {
+                uint16 code = gbCode[i] << 8 | gbCode[i + 1];
+                if ((code >= 0x8140) && (code <= 0xFE4F)) {
+                    int First = 0;
+                    int Last = TAB_GB2UCS_8140_FE4F_SIZE - 1;
+                    while (Last >= First) {
+                        int Mid = (First + Last) >> 1;
+                        if (code < tab_gb2ucs_8140_FE4F[Mid].gb) {
+                            Last = Mid - 1;
+                        } else if (code > tab_gb2ucs_8140_FE4F[Mid].gb) {
+                            First = Mid + 1;
+                        } else if (code == tab_gb2ucs_8140_FE4F[Mid].gb) {
+                            uint16 v = tab_gb2ucs_8140_FE4F[Mid].ucs;
+                            unicode[j] = (v << 8) | (v >> 8);
+                            break;
+                        }
+                    }
+                }
+            }
             i += 2;
         }
         j++;
     }
-    unicode[j] = 0;
+    unicode[j] = '\0';
     return unicode;
 }
 
@@ -136,28 +137,23 @@ uint16 *c2u(const char *cp, int *err, int *size) {
 #endif
 
 uint16 UCS2LECharToGBChar(uint16 ucs) {
-    int First = 0;
-    int Last = TAB_SYMUCS2GB_LEN - 1;
-    int Mid, i;
-
     if (ucs >= 0x4E00 && ucs <= 0x9FA5) {
-        i = ucs - 0x4E00;
-        if (i < TAB_UCS2GB_LEN) {
-            return tab_ucs2gb[i];
-        }
+        return ucs2gb_4e00_9fa5[ucs - 0x4E00];
     } else {
+        int First = 0;
+        int Last = UCS2GB_OTHER_SIZE - 1;
         while (Last >= First) {
-            Mid = (First + Last) >> 1;
-            if (ucs < tab_symucs2gb[Mid].ucs) {
+            int Mid = (First + Last) >> 1;
+            if (ucs < ucs2gb_other[Mid].ucs) {
                 Last = Mid - 1;
-            } else if (ucs > tab_symucs2gb[Mid].ucs) {
+            } else if (ucs > ucs2gb_other[Mid].ucs) {
                 First = Mid + 1;
-            } else if (ucs == tab_symucs2gb[Mid].ucs) {
-                return tab_symucs2gb[Mid].gb;
+            } else if (ucs == ucs2gb_other[Mid].ucs) {
+                return ucs2gb_other[Mid].gb;
             }
         }
     }
-    return 0xffff;
+    return 0xA1F4;  // "◆" 字符
 }
 
 // 如果传了outMemLen参数，则必需用带len参数的free释放内存

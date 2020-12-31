@@ -5,8 +5,6 @@
 
 uint16 *c2u(const char *cp, int *err, int *size);
 
-uint16 GBCharToUCS2BEChar(uint8 *gbCode);
-uint16 UCS2LECharToGBChar(uint16 ucs);
 
 // 如果传了outMemLen参数，则释放内存时需要用带len参数的mr_free()释放内存
 // 如果outMemLen传NULL，则用mr_freeExt()释放内存

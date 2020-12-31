@@ -712,8 +712,6 @@ int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int i
 
 #ifdef MYTHROAD_DEBUG
     if (!pcText) {
-        //mrp_pushfstring(vm_state, "DrawText x=%d: txt is nil!",x);
-        //mrp_error(vm_state);
         MRDBGPRINTF("DrawText x=%d: txt is nil!", x);
         return 0;
     }
@@ -722,8 +720,6 @@ int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int i
     if (!is_unicode) {
         tempBuf = c2u((const char*)pcText, NULL, &TextSize);
         if (!tempBuf) {
-            //mrp_pushfstring(vm_state, "DrawText x=%d:c2u err!",x);
-            //mrp_error(vm_state);
             MRDBGPRINTF("DrawText x=%d:c2u err!", x);
             return 0;
         }
@@ -732,7 +728,6 @@ int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int i
     }
 
     {
-        uint16 ch;
         int width, height;
         const char* current_bitmap;
         uint8* p = (uint8*)tempBuf;
@@ -740,7 +735,7 @@ int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int i
         // uint16 a_,b_;
         uint16 chx = x, chy = y;
         // uint16 color=MAKERGB(r, g, b);
-        ch = (uint16)((*p << 8) + *(p + 1));
+        uint16 ch = (uint16)((*p << 8) | *(p + 1));
         while (ch) {
             current_bitmap = mr_getCharBitmap(ch, font, &width, &height);
             if (current_bitmap) {
@@ -839,7 +834,7 @@ int32 _DrawText(char* pcText, int16 x, int16 y, uint8 r, uint8 g, uint8 b, int i
                 chx = chx + width;
             };
             p += 2;
-            ch = (uint16)((*p << 8) + *(p + 1));
+            ch = (uint16)((*p << 8) | *(p + 1));
         };
     }
     if (!is_unicode) {
@@ -852,7 +847,6 @@ int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, mr_colou
     int TextSize, endchar_index;
     uint16* tempBuf;
     // int tempret=0;
-    uint16 ch;
     endchar_index = 0;
 
     if (!pcText) {
@@ -877,7 +871,7 @@ int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, mr_colou
         int32 X1, Y1;
         // uint16 a_,b_;
         uint16 chx = x, chy = y, color = MAKERGB(colorst.r, colorst.g, colorst.b);
-        ch = (uint16)((*p << 8) + *(p + 1));
+        uint16 ch = (uint16)((*p << 8) | *(p + 1));
         mh = 0;
         while (ch) {
             if ((ch == 0x0a) || (ch == 0x0d)) {
@@ -917,7 +911,7 @@ int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, mr_colou
 
                 if ((ch == 0x0a) || (ch == 0x0d)) {
                     p += 2;
-                    ch = (uint16)((*p << 8) + *(p + 1));
+                    ch = (uint16)((*p << 8) | *(p + 1));
                     continue;
                 }
 #ifndef MR_PLAT_DRAWTEXT
@@ -1043,7 +1037,7 @@ int32 _DrawTextEx(char* pcText, int16 x, int16 y, mr_screenRectSt rect, mr_colou
                 chx = chx + width;
             };
             p += 2;
-            ch = (uint16)((*p << 8) + *(p + 1));
+            ch = (uint16)((*p << 8) | *(p + 1));
         };
         if (!ch) {
             if (flag & DRAW_TEXT_EX_IS_AUTO_NEWLINE) {
@@ -3654,7 +3648,6 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     mr_bitmap[BITMAPMAX].buflen = MR_SCREEN_MAX_W * MR_SCREEN_H * MR_SCREEN_DEEP;
 #endif
 
-
     mr_bitmap[BITMAPMAX].p = mr_screenBuf;
     mr_bitmap[BITMAPMAX].h = mr_screen_h;
     mr_bitmap[BITMAPMAX].w = mr_screen_w;
@@ -3797,7 +3790,6 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     mrp_register(vm_state, "_closeNet", MRF_closeNet);
     mrp_register(vm_state, "_timerStart", MRF_TimerStart);
     mrp_register(vm_state, "_timerStop", MRF_TimerStop);
-
 
 #ifdef MR_TRACE
     {
