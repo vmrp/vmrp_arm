@@ -8,6 +8,8 @@
 
 #define DSM_MAX_FILE_LEN 256
 
+#define USE_UTF8
+
 #define MT6235
 
 /*请不要修改这些值*/
@@ -100,22 +102,6 @@ static char *xl_font_sky16_getChar(uint16 id) {
     mr_read(font_sky16_f, font_sky16_bitbuf, 32);
     return font_sky16_bitbuf;
 }
-// function drawChar(img: BMP24, char: number | string, x: number, y: number, color: number) {
-//     if (typeof char === 'string') {
-//         char = char.charCodeAt(0);
-//     }
-//     const offset = char * 32;
-//     const charData = fontBuffer.slice(offset, offset + 32);
-//     for (let iy = 0; iy < CHAR_H; iy++) {
-//         let data = charData.readUInt16BE(iy * 2);
-//         for (let ix = 0; data > 0; ix++) {
-//             if (data & (1 << 16)) {
-//                 img.drawPoint(ix + x, iy + y, color);
-//             }
-//             data <<= 1;
-//         }
-//     }
-// }
 
 static void xl_font_sky16_drawChar(uint16 ch, int x, int y, uint16 color) {
     extern void _DrawPoint(int16 x, int16 y, uint16 nativecolor);
@@ -352,6 +338,15 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
 char *get_filename(char *outputbuf, const char *filename) {
     sprintf_(outputbuf, "%s%s", dsmWorkPath, filename);
     formatPathString(outputbuf, '/');
+#ifdef USE_UTF8
+    {
+        char *us = (char *)GBStrToUCS2BEStr((uint8 *)outputbuf, NULL);
+        char *utf8s = UCS2BEStrToUTF8Str((uint8 *)us, NULL);
+        strcpy2(outputbuf, utf8s);
+        mr_freeExt(us);
+        mr_freeExt(utf8s);
+    }
+#endif
     return outputbuf;
 }
 
@@ -422,7 +417,13 @@ int32 mr_rmDir(const char *name) {
 int32 mr_findGetNext(int32 search_handle, char *buffer, uint32 len) {
     char *d_name = dsmInFuncs->readdir(search_handle);
     if (d_name != NULL) {
+#ifdef USE_UTF8
+        char *gb = UTF8StrToGBStr((uint8 *)d_name, NULL);
+        strncpy2(buffer, gb, len);
+        mr_freeExt(gb);
+#else
         strncpy2(buffer, d_name, len);
+#endif
         LOGI("mr_findGetNext %d %s", search_handle, buffer);
         return MR_SUCCESS;
     }
@@ -812,17 +813,22 @@ int32 mr_sendto(int32 s, const char *buf, int len, int32 ip, uint16 port) {
 #error "I don't like Apple and its products, and I forbid using this code in any Apple product"
 #endif
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-static DSM_EXPORT_FUNCS dsm_export_funcs;
-
-DSM_EXPORT_FUNCS *dsm_init(DSM_REQUIRE_FUNCS *inFuncs) {
-    dsmInFuncs = inFuncs;
-    dsmStartTime = dsmInFuncs->get_uptime_ms();
+void dsm_prepare(void) {
     dsmInFuncs->mkDir(MYTHROAD_PATH);
     dsmInFuncs->mkDir(DSM_HIDE_DRIVE);
     dsmInFuncs->mkDir(DSM_DRIVE_A);
     dsmInFuncs->mkDir(DSM_DRIVE_B);
     dsmInFuncs->mkDir(DSM_DRIVE_X);
+    xl_font_sky16_init();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+static DSM_EXPORT_FUNCS dsm_export_funcs;
+
+DSM_EXPORT_FUNCS *dsm_init(DSM_REQUIRE_FUNCS *inFuncs) {
+    // 注意！这里面只能做一些不涉及malloc()的操作
+    dsmInFuncs = inFuncs;
+    dsmStartTime = dsmInFuncs->get_uptime_ms();
 
 #ifdef DSM_FULL
     mr_tm_init();
@@ -835,7 +841,6 @@ DSM_EXPORT_FUNCS *dsm_init(DSM_REQUIRE_FUNCS *inFuncs) {
     mr_pluto_init();
 #endif
     mythroad_init();
-    xl_font_sky16_init();
 
     dsm_export_funcs.version = VMRP_VER;
     dsm_export_funcs.mr_start_dsm = mr_start_dsm;

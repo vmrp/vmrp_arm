@@ -16,8 +16,7 @@ uint32 LG_mem_left;  // 剩余内存
 #define realLGmemSize(x) (((x) + 7) & (0xfffffff8))
 #define MRDBGPRINTF mr_printf
 
-int32 _mr_mem_init(int32 ram) {
-    MRDBGPRINTF("ask Origin_LG_mem_len:%d", Origin_LG_mem_len);
+int32 _mr_mem_init(void) {
     if (mr_mem_get(&Origin_LG_mem_base, &Origin_LG_mem_len) != MR_SUCCESS) {
         MRDBGPRINTF("mr_mem_get failed!");
         return MR_FAILED;

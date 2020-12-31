@@ -150,7 +150,6 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len);
 int32 mr_stop_ex(int16 freemem);
 static int32 _mr_div(int32 a, int32 b);
 static int32 _mr_mod(int32 a, int32 b);
-static int32 _mr_getMetaMemLimit(void);
 
 static const void* _mr_c_internal_table[78];
 
@@ -3605,10 +3604,11 @@ static mr_L_reg phonelib[5];
 static int32 _mr_intra_start(char* appExName, const char* entry) {
     int i, ret;
 
-    Origin_LG_mem_len = _mr_getMetaMemLimit();
-    if (_mr_mem_init(0) != MR_SUCCESS) {
+    if (_mr_mem_init() != MR_SUCCESS) {
         return MR_FAILED;
     }
+    MRDBGPRINTF("Total memory:%d", LG_mem_len);
+    dsm_prepare();
 
     mr_event_function = NULL;
     mr_timer_function = NULL;
@@ -3620,8 +3620,6 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     mr_c_function_P_len = 0;
     mr_c_function_fix_p = NULL;
     mr_exception_str = NULL;
-
-    MRDBGPRINTF("Total memory:%d", LG_mem_len);
 
 #ifdef MR_SECOND_BUF
     {
@@ -5082,6 +5080,7 @@ uint32 mr_ntohl(char* startAddr) {
     return ((startAddr[0] & 0xff) << 24) | ((startAddr[1] & 0xff) << 16) | ((startAddr[2] & 0xff) << 8) | (startAddr[3] & 0xFF);
 }
 
+#if 0
 #define CFG_FILENAME "#807022#*"
 
 int32 _mr_getMetaMemLimit() {
@@ -5241,6 +5240,8 @@ int32 _mr_getMetaMemLimit() {
     memValue = mr_ntohl((char*)_v);
     return memValue;
 }
+
+#endif
 
 void mythroad_init(void) {
     memset2(_mr_c_port_table, 0, sizeof(_mr_c_port_table));

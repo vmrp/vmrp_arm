@@ -19,7 +19,7 @@ extern uint32 Origin_LG_mem_len;
 extern char* LG_mem_end;
 extern uint32 LG_mem_left;
 
-int32 _mr_mem_init(int32 ram);
+int32 _mr_mem_init(void);
 void* mr_malloc(uint32 len);
 void mr_free(void* p, uint32 len);
 void* mr_realloc(void* p, uint32 oldlen, uint32 len);

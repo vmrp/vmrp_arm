@@ -148,7 +148,6 @@ int32 mr_registerAPP(uint8* p, int32 len, int32 index);
 int32 _mr_c_function_new(MR_C_FUNCTION f, int32 len);
 static int _mr_TestComC(int input0, char* input1, int32 len, int32 code);
 int32 mr_stop_ex(int16 freemem);
-static int32 _mr_getMetaMemLimit(void);
 
 static const unsigned char* mr_m0_files[50];
 static const void* _mr_c_internal_table[17];
@@ -1806,17 +1805,13 @@ int32 mr_doExt(char* extName) {
 
 static int32 _mr_intra_start(char* appExName, const char* entry) {
     int i, ret;
-
-    getAppInfo();
     //ret = mr_plat(1250, mrc_appInfo_st.ram);
-
-    Origin_LG_mem_len = _mr_getMetaMemLimit();
-    MRDBGPRINTF("Origin_LG_mem_len:%d", Origin_LG_mem_len);
-
-    if (_mr_mem_init(mrc_appInfo_st.ram) != MR_SUCCESS) {
+    if (_mr_mem_init() != MR_SUCCESS) {
         return MR_FAILED;
     }
     MRDBGPRINTF("Total memory:%d", LG_mem_len);
+    getAppInfo();
+    dsm_prepare();
 
     mr_event_function = NULL;
     mr_timer_function = NULL;
@@ -2778,6 +2773,7 @@ uint32 mr_ntohl(char* startAddr) {
     return ((startAddr[0] & 0xff) << 24) | ((startAddr[1] & 0xff) << 16) | ((startAddr[2] & 0xff) << 8) | (startAddr[3] & 0xFF);
 }
 
+#if 0
 #define CFG_FILENAME "#807022#*"
 
 int32 _mr_getMetaMemLimit() {
@@ -2917,6 +2913,8 @@ int32 _mr_getMetaMemLimit() {
     memValue = mr_ntohl((char*)_v);
     return memValue;
 }
+
+#endif
 
 void mr_getScrBuf(uint16** buf, int32* width, int32* height) {
     if (buf) *buf = mr_screenBuf;

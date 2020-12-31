@@ -480,6 +480,7 @@ extern int32 mr_findStop(int32 search_handle);
 extern int32 mr_exit(void);
 
 extern void mr_panic(char* msg);
+void dsm_prepare(void);
 
 /*开始手机震动*/
 extern int32 mr_startShake(int32 ms);
