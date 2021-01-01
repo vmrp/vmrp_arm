@@ -41,9 +41,22 @@ const obj = {
     'asm_mr_findStart': 'mr_findStart',
     'asm_mr_getLen': 'mr_getLen',
     'asm_mr_exit': 'mr_exit',
+    'asm_mr_startShake': 'mr_startShake',
+    'asm_mr_stopShake': 'mr_stopShake',
+    'asm_mr_playSound': 'mr_playSound',
+    'asm_mr_stopSound': 'mr_stopSound',
     'asm_mr_sendSms': 'mr_sendSms',
     'asm_mr_call': 'mr_call',
     'asm_mr_connectWAP': 'mr_connectWAP',
+    'asm_mr_dialogCreate': 'mr_dialogCreate',
+    'asm_mr_dialogRelease': 'mr_dialogRelease',
+    'asm_mr_dialogRefresh': 'mr_dialogRefresh',
+    'asm_mr_textCreate': 'mr_textCreate',
+    'asm_mr_textRelease': 'mr_textRelease',
+    'asm_mr_textRefresh': 'mr_textRefresh',
+    'asm_mr_editCreate': 'mr_editCreate',
+    'asm_mr_editRelease': 'mr_editRelease',
+    'asm_mr_editGetText': 'mr_editGetText',
     'asm_mr_initNetwork': 'mr_initNetwork',
     'asm_mr_closeNetwork': 'mr_closeNetwork',
     'asm_mr_socket': 'mr_socket',
@@ -262,7 +275,7 @@ const process = require('process');
 
 function getAsmStr(str) {
     const arr = [];
-    Object.keys(obj).forEach(function (key) {
+    Object.keys(obj).forEach(function(key) {
         arr.push(str.replace(/\{\{asmFuncName\}\}/g, key).replace(/\{\{targetFuncName\}\}/g, obj[key]));
     });
     return arr.join('');
@@ -285,4 +298,3 @@ if (process.argv.length == 4) {
 } else {
     console.log('err: node genR9R10.js isGNU(0|1) isFull(0|1)');
 }
-

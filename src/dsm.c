@@ -424,7 +424,7 @@ int32 mr_findGetNext(int32 search_handle, char *buffer, uint32 len) {
 #else
         strncpy2(buffer, d_name, len);
 #endif
-        LOGI("mr_findGetNext %d %s", search_handle, buffer);
+        LOGI("mr_findGetNext %d %s", search_handle, d_name);
         return MR_SUCCESS;
     }
     LOGI("mr_findGetNext %d (NULL)", search_handle);
@@ -461,7 +461,6 @@ int32 mr_getLen(const char *filename) {
 }
 
 int32 mr_getScreenInfo(mr_screeninfo *s) {
-    LOGI("%s", "mr_getScreenInfo()");
     if (s) {
         s->width = SCREEN_WIDTH;
         s->height = SCREEN_HEIGHT;
@@ -484,19 +483,19 @@ void mr_platDrawChar(uint16 ch, int32 x, int32 y, uint32 color) {
 }
 
 int32 mr_startShake(int32 ms) {
-    return MR_SUCCESS;
+    return dsmInFuncs->mr_startShake(ms);
 }
 
 int32 mr_stopShake() {
-    return MR_SUCCESS;
+    return dsmInFuncs->mr_stopShake();
 }
 
 int32 mr_playSound(int type, const void *data, uint32 dataLen, int32 loop) {
-    return MR_FAILED;
+    return dsmInFuncs->mr_playSound(type, data, dataLen, loop);
 }
 
 int32 mr_stopSound(int type) {
-    return MR_SUCCESS;
+    return dsmInFuncs->mr_stopSound(type);
 }
 
 int32 mr_sendSms(char *pNumber, char *pContent, int32 encode) {
@@ -540,39 +539,39 @@ int32 mr_menuRefresh(int32 menu) {
 }
 
 int32 mr_dialogCreate(const char *title, const char *text, int32 type) {
-    return MR_IGNORE;
+    return dsmInFuncs->mr_dialogCreate(title, text, type);
 }
 
 int32 mr_dialogRelease(int32 dialog) {
-    return MR_IGNORE;
+    return dsmInFuncs->mr_dialogRelease(dialog);
 }
 
 int32 mr_dialogRefresh(int32 dialog, const char *title, const char *text, int32 type) {
-    return MR_FAILED;
+    return dsmInFuncs->mr_dialogRefresh(dialog, title, text, type);
 }
 
 int32 mr_textCreate(const char *title, const char *text, int32 type) {
-    return MR_IGNORE;
+    return dsmInFuncs->mr_textCreate(title, text, type);
 }
 
 int32 mr_textRelease(int32 text) {
-    return MR_IGNORE;
+    return dsmInFuncs->mr_textRelease(text);
 }
 
 int32 mr_textRefresh(int32 handle, const char *title, const char *text) {
-    return MR_IGNORE;
+    return dsmInFuncs->mr_textRefresh(handle, title, text);
 }
 
 int32 mr_editCreate(const char *title, const char *text, int32 type, int32 max_size) {
-    return MR_FAILED;
+    return dsmInFuncs->mr_editCreate(title, text, type, max_size);
 }
 
 int32 mr_editRelease(int32 edit) {
-    return MR_SUCCESS;
+    return dsmInFuncs->mr_editRelease(edit);
 }
 
 const char *mr_editGetText(int32 edit) {
-    return NULL;
+    return dsmInFuncs->mr_editGetText(edit);
 }
 
 int32 mr_winCreate(void) {

@@ -314,10 +314,10 @@ static void _mr_c_function_table_init() {
     _mr_c_function_table[53] = (void*)asm_mr_findStop;  //54
 
     _mr_c_function_table[54] = (void*)asm_mr_exit;
-    _mr_c_function_table[55] = (void*)mr_startShake;
-    _mr_c_function_table[56] = (void*)mr_stopShake;
-    _mr_c_function_table[57] = (void*)mr_playSound;
-    _mr_c_function_table[58] = (void*)mr_stopSound;  //59
+    _mr_c_function_table[55] = (void*)asm_mr_startShake;
+    _mr_c_function_table[56] = (void*)asm_mr_stopShake;
+    _mr_c_function_table[57] = (void*)asm_mr_playSound;
+    _mr_c_function_table[58] = (void*)asm_mr_stopSound;  //59
 
     _mr_c_function_table[59] = (void*)asm_mr_sendSms;
     _mr_c_function_table[60] = (void*)asm_mr_call;
@@ -330,15 +330,15 @@ static void _mr_c_function_table_init() {
     _mr_c_function_table[66] = (void*)NULL;  //mr_menuSetFocus,
     _mr_c_function_table[67] = (void*)mr_menuRelease;
     _mr_c_function_table[68] = (void*)mr_menuRefresh;
-    _mr_c_function_table[69] = (void*)mr_dialogCreate;
-    _mr_c_function_table[70] = (void*)mr_dialogRelease;
-    _mr_c_function_table[71] = (void*)mr_dialogRefresh;
-    _mr_c_function_table[72] = (void*)mr_textCreate;
-    _mr_c_function_table[73] = (void*)mr_textRelease;
-    _mr_c_function_table[74] = (void*)mr_textRefresh;
-    _mr_c_function_table[75] = (void*)mr_editCreate;
-    _mr_c_function_table[76] = (void*)mr_editRelease;
-    _mr_c_function_table[77] = (void*)mr_editGetText;
+    _mr_c_function_table[69] = (void*)asm_mr_dialogCreate;
+    _mr_c_function_table[70] = (void*)asm_mr_dialogRelease;
+    _mr_c_function_table[71] = (void*)asm_mr_dialogRefresh;
+    _mr_c_function_table[72] = (void*)asm_mr_textCreate;
+    _mr_c_function_table[73] = (void*)asm_mr_textRelease;
+    _mr_c_function_table[74] = (void*)asm_mr_textRefresh;
+    _mr_c_function_table[75] = (void*)asm_mr_editCreate;
+    _mr_c_function_table[76] = (void*)asm_mr_editRelease;
+    _mr_c_function_table[77] = (void*)asm_mr_editGetText;
     _mr_c_function_table[78] = (void*)mr_winCreate;
     _mr_c_function_table[79] = (void*)mr_winRelease;
 
