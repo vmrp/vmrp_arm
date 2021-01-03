@@ -3,7 +3,9 @@
 
 int wstrlen(char* txt) {
     int i = 0;
-    while (txt[i] || txt[i + 1]) i += 2;
+    if (txt) {
+        while (txt[i] || txt[i + 1]) i += 2;
+    }
     return i;
 }
 
