@@ -352,8 +352,7 @@ char *get_filename(char *outputbuf, const char *filename) {
 
 int32 mr_open(const char *filename, uint32 mode) {
     char fullpathname[DSM_MAX_FILE_LEN] = {0};
-    int32 ret;
-    ret = dsmInFuncs->open(get_filename(fullpathname, filename), mode);
+    int32 ret = dsmInFuncs->open(get_filename(fullpathname, filename), mode);
     LOGI("mr_open(%s,%d) fd is: %d", fullpathname, mode, ret);
     return ret;
 }
@@ -716,9 +715,15 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
             break;
         }
         case MR_UCS2GB: {  // 1207
-            char *gbstr = UCS2BEStrToGBStr((uint16 *)input, NULL);
-            strncpy2((char *)*output, gbstr, *output_len);
-            mr_freeExt(gbstr);
+            if (*output) {
+                char *gbstr = UCS2BEStrToGBStr((uint16 *)input, NULL);
+                strcpy2((char *)*output, gbstr);
+                // strncpy2((char *)*output, gbstr, *output_len); // qq浏览器*output_len传的是0导致无法保存设置
+                mr_freeExt(gbstr);
+            } else {
+                *output = (uint8 *)UCS2BEStrToGBStr((uint16 *)input, (uint32 *)output_len);
+            }
+            // LOGI("gbstr:%s %d", (char *)*output, *output_len);
             return MR_SUCCESS;
         }
 
