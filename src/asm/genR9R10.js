@@ -59,6 +59,7 @@ const obj = {
     'asm_mr_editGetText': 'mr_editGetText',
     'asm_mr_initNetwork': 'mr_initNetwork',
     'asm_mr_closeNetwork': 'mr_closeNetwork',
+    'asm_mr_getHostByName': 'mr_getHostByName',
     'asm_mr_socket': 'mr_socket',
     'asm_mr_connect': 'mr_connect',
     'asm_mr_closeSocket': 'mr_closeSocket',

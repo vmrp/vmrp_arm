@@ -346,7 +346,7 @@ static void _mr_c_function_table_init() {
 
     _mr_c_function_table[81] = (void*)asm_mr_initNetwork;
     _mr_c_function_table[82] = (void*)asm_mr_closeNetwork;
-    _mr_c_function_table[83] = (void*)mr_getHostByName;
+    _mr_c_function_table[83] = (void*)asm_mr_getHostByName;
     _mr_c_function_table[84] = (void*)asm_mr_socket;
     _mr_c_function_table[85] = (void*)asm_mr_connect;
     _mr_c_function_table[86] = (void*)asm_mr_closeSocket;

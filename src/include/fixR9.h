@@ -76,6 +76,7 @@ extern int32 asm_mr_editRelease(int32 edit);
 extern const char *asm_mr_editGetText(int32 edit);
 extern int32 asm_mr_initNetwork(MR_INIT_NETWORK_CB cb, const char *mode);
 extern int32 asm_mr_closeNetwork(void);
+extern int32 asm_mr_getHostByName(const char* name, MR_GET_HOST_CB cb);
 extern int32 asm_mr_socket(int32 type, int32 protocol);
 extern int32 asm_mr_connect(int32 s, int32 ip, uint16 port, int32 type);
 extern int32 asm_mr_closeSocket(int32 s);
