@@ -20,6 +20,7 @@
 #include "./include/string.h"
 #include "./tomr/tomr.h"
 #include "./luadec/luadec.h"
+#include "./include/ui_plat.h"
 
 const unsigned char* mr_m0_files[50];
 
@@ -4057,9 +4058,10 @@ int32 mr_resumeApp(void) {
 }
 
 int32 mr_event(int16 type, int32 param1, int32 param2) {
-    //MRDBGPRINTF("mr_event %d %d %d", type, param1, param2);
+    
 
     if ((mr_state == MR_STATE_RUN) || ((mr_timer_run_without_pause) && (mr_state == MR_STATE_PAUSE))) {
+        MRDBGPRINTF("mr_event %d %d %d", type, param1, param2);
         if (mr_event_function) {
             int status = mr_event_function(type, param1, param2);
             if (status != MR_IGNORE)
@@ -4095,6 +4097,9 @@ int32 mr_event(int16 type, int32 param1, int32 param2) {
 
         //MRDBGPRINTF("type = %d", mrp_type(vm_state, -1));
         return MR_SUCCESS;  //deal
+    }
+    else if(mr_state == MR_STATE_UI){
+        ui_event(type,param1,param2);
     }
     return MR_IGNORE;  //didnot deal
 }

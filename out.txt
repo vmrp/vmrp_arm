@@ -1,0 +1,1465 @@
+
+        .arch armv5te
+        .arm
+
+        .global getR9
+getR9:
+        MOV      r0,r9
+        BX       lr
+
+        .global setR9
+setR9:
+        MOV      r9,r0
+        BX       lr
+
+        .global getR10
+        .thumb
+getR10:
+        MOV      r0,r10
+        BX       lr
+        .arm
+
+        .global setR10
+setR10:
+        MOV      r10,r0
+        BX       lr
+
+        .global setR9R10
+setR9R10:
+        MOV      r9,r0
+        MOV      r10,r1
+        BX       lr
+
+
+        .global asm_mr_malloc
+asm_mr_malloc:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_malloc(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_free
+asm_mr_free:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_free(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_realloc
+asm_mr_realloc:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_realloc(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_getDatetime
+asm_mr_getDatetime:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_getDatetime(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_sleep
+asm_mr_sleep:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_sleep(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_DrawRect
+asm_DrawRect:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       DrawRect(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_drawBitmap
+asm_mr_drawBitmap:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_drawBitmap(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_DrawText
+asm_DrawText:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _DrawText(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_getScreenInfo
+asm_mr_getScreenInfo:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_getScreenInfo(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_smsSetBytes
+asm_mr_smsSetBytes:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _mr_smsSetBytes(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_smsAddNum
+asm_mr_smsAddNum:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _mr_smsAddNum(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_newSIMInd
+asm_mr_newSIMInd:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _mr_newSIMInd(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_isMr
+asm_mr_isMr:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _mr_isMr(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_rand
+asm_mr_rand:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_rand(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_stop_ex
+asm_mr_stop_ex:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+
+       sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_stop_ex(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_printf
+asm_mr_printf:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_printf(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_mem_get
+asm_mr_mem_get:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_mem_get(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_mem_free
+asm_mr_mem_free:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_mem_free(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_getCharBitmap
+asm_mr_getCharBitmap:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_getCharBitmap(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_timerStart
+asm_mr_timerStart:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_timerStart(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_timerStop
+asm_mr_timerStop:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_timerStop(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_getTime
+asm_mr_getTime:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_getTime(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_getUserInfo
+asm_mr_getUserInfo:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_getUserInfo(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_plat
+asm_mr_plat:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_plat(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_platEx
+asm_mr_platEx:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_platEx(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_open
+asm_mr_open:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_open(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_close
+asm_mr_close:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_close(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_read
+asm_mr_read:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_read(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_write
+asm_mr_write:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_write(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_seek
+asm_mr_seek:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_seek(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_info
+asm_mr_info:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_info(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_remove
+asm_mr_remove:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_remove(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_rename
+asm_mr_rename:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_rename(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_mkDir
+asm_mr_mkDir:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_mkDir(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_rmDir
+asm_mr_rmDir:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_rmDir(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_findGetNext
+asm_mr_findGetNext:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_findGetNext(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_findStop
+asm_mr_findStop:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_findStop(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_findStart
+asm_mr_findStart:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_findStart(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_getLen
+asm_mr_getLen:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_getLen(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_exit
+asm_mr_exit:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_exit(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_startShake
+asm_mr_startShake:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_startShake(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_stopShake
+asm_mr_stopShake:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_stopShake(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_playSound
+asm_mr_playSound:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_playSound(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_stopSound
+asm_mr_stopSound:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_stopSound(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_sendSms
+asm_mr_sendSms:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_sendSms(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_call
+asm_mr_call:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_call(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_connectWAP
+asm_mr_connectWAP:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_connectWAP(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_dialogCreate
+asm_mr_dialogCreate:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_dialogCreate(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_dialogRelease
+asm_mr_dialogRelease:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_dialogRelease(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_dialogRefresh
+asm_mr_dialogRefresh:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_dialogRefresh(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_textCreate
+asm_mr_textCreate:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_textCreate(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_textRelease
+asm_mr_textRelease:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_textRelease(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_textRefresh
+asm_mr_textRefresh:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_textRefresh(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_editCreate
+asm_mr_editCreate:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_editCreate(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_editRelease
+asm_mr_editRelease:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_editRelease(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_editGetText
+asm_mr_editGetText:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_editGetText(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_initNetwork
+asm_mr_initNetwork:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_initNetwork(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_closeNetwork
+asm_mr_closeNetwork:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_closeNetwork(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_socket
+asm_mr_socket:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_socket(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_connect
+asm_mr_connect:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_connect(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_closeSocket
+asm_mr_closeSocket:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_closeSocket(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_recv
+asm_mr_recv:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_recv(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_recvfrom
+asm_mr_recvfrom:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_recvfrom(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_send
+asm_mr_send:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_send(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_sendto
+asm_mr_sendto:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_sendto(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_load_sms_cfg
+asm_mr_load_sms_cfg:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _mr_load_sms_cfg(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_save_sms_cfg
+asm_mr_save_sms_cfg:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _mr_save_sms_cfg(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_DispUpEx
+asm_DispUpEx:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _DispUpEx(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_DrawPoint
+asm_DrawPoint:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _DrawPoint(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_DrawBitmap
+asm_DrawBitmap:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _DrawBitmap(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_DrawBitmapEx
+asm_DrawBitmapEx:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _DrawBitmapEx(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_BitmapCheck
+asm_BitmapCheck:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _BitmapCheck(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_readFile
+asm_mr_readFile:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _mr_readFile(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_registerAPP
+asm_mr_registerAPP:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_registerAPP(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_DrawTextEx
+asm_DrawTextEx:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _DrawTextEx(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_EffSetCon
+asm_mr_EffSetCon:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _mr_EffSetCon(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_TestCom
+asm_mr_TestCom:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _mr_TestCom(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_TestCom1
+asm_mr_TestCom1:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       _mr_TestCom1(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_c2u
+asm_c2u:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       c2u(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_updcrc
+asm_mr_updcrc:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_updcrc(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_unzip
+asm_mr_unzip:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_unzip(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_transbitmapDraw
+asm_mr_transbitmapDraw:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_transbitmapDraw(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_drawRegion
+asm_mr_drawRegion:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_drawRegion(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+        .global asm_mr_platDrawChar
+asm_mr_platDrawChar:
+        stmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鍥犱负涓嶇‘瀹歠ixR9_xxx鐨刢鍑芥暟缂栬瘧鍚庝細浣跨敤鍝簺瀵勫瓨鍣紝鎵€浠ュ共鑴嗗叏閮ㄤ繚瀛
+        sub      sp,sp,#52      @ r0-r8, r11, r12, sp, lr 涓€鍏?3涓瘎瀛樺櫒 13*4=52
+        mov      r0,r9
+        mov      r1,r10
+        mov      r2,lr
+        bl       fixR9_begin
+        ldmfd    sp,{ r0-r8, r11, r12, sp, lr } @ 鐜板湪瀹屽叏鎭㈠璋冪敤鍙傛暟
+        bl       mr_platDrawChar(PLT)      @ 璋冪敤鐩爣鍑芥暟
+        stmfd    sp,{ r0-r8, r11, r12, sp } @ 娉ㄦ剰杩欓噷娌℃湁淇濆瓨lr锛屽洜涓簂r鐨勫€煎凡缁忓湪璋冪敤鐩爣鍑芥暟鍚 庣牬鍧
+        sub      sp,sp,#48      @ 12涓瘎瀛樺櫒
+        bl       fixR9_end
+        mov      lr,r0
+        ldmfd    sp,{ r0-r8, r11, r12, sp }
+        bx       lr
+
+
+
+

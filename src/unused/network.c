@@ -53,7 +53,7 @@ int32 mr_initNetwork(MR_INIT_NETWORK_CB cb, const char *mode) {
     DsmSocketInit();
     mr_soc.callBack = (void *)cb;
 
-    if (0 == strcmp(mode, "cmwap"))
+    if (0 == STRCMP(mode, "cmwap"))
         return MR_FAILED;
 
     return MR_SUCCESS;

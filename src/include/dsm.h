@@ -75,5 +75,10 @@ typedef struct {
 } DSM_EXPORT_FUNCS;
 
 DSM_EXPORT_FUNCS *dsm_init(DSM_REQUIRE_FUNCS *inFuncs);
+void mr_printf(const char *format, ...);
+#define LOGI(fmt, ...) mr_printf("[INFO]" fmt, ##__VA_ARGS__)
+#define LOGW(fmt, ...) mr_printf("[WARN]" fmt, ##__VA_ARGS__)
+#define LOGE(fmt, ...) mr_printf("[ERROR]" fmt, ##__VA_ARGS__)
+#define LOGD(fmt, ...) mr_printf("[DEBUG]" fmt, ##__VA_ARGS__)
 
 #endif

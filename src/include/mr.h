@@ -59,7 +59,8 @@ enum {
     MR_STATE_PAUSE,
     MR_STATE_RESTART,
     MR_STATE_STOP,
-    MR_STATE_ERROR
+    MR_STATE_ERROR,
+    MR_STATE_UI
 };
 
 extern int32 mr_state;
