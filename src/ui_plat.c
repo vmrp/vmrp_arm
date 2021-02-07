@@ -1,4 +1,7 @@
-// 实现平台UI
+/*
+ 实现平台UI
+ 风的影子
+*/
 
 #include "./include/encode.h"
 #include "./include/fixR9.h"
