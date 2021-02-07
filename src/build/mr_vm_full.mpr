@@ -16,7 +16,7 @@ config=mtk240
 [config_mtk240]
 optimiza=2
 define=TARGET_MOD,MTK_MOD,MR_VERSION=1968,MR_PLAT_DRAWTEXT,DSM_FULL
-output=.\vmrp.mrp
+output=..\..\..\vmrp-master\bin\vmrp.mrp
 bmp_mode=normal
 plat=mtk
 
@@ -67,6 +67,7 @@ file40=..\fixR9.c
 file41=..\asm\r9r10.s
 file42=..\md5.c
 file43=..\mem.c
+file44=..\ui_plat.c
 
 #file306=..\tomr\tomr_event.c 
 #file307=..\tomr\tomr_is.c   

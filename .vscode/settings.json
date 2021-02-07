@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "mr_table.h": "c",
+        "encode.h": "c",
+        "tables.h": "c",
+        "mem.h": "c"
+    }
+}

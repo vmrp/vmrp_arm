@@ -1,4 +1,4 @@
-// node getR9R10.js
+// node genR9R10.js
 
 const obj = {
     'asm_mr_malloc': 'mr_malloc',

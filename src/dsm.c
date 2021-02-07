@@ -8,7 +8,7 @@
 
 #define DSM_MAX_FILE_LEN 256
 
-#define USE_UTF8
+// #define USE_UTF8 //文件系统使用UTF-8编码
 
 #define MT6235
 
@@ -62,10 +62,6 @@ void mr_printf(const char *format, ...) {
     dsmInFuncs->log(printfBuf);
 }
 
-#define LOGI(fmt, ...) mr_printf("[INFO]" fmt, ##__VA_ARGS__)
-#define LOGW(fmt, ...) mr_printf("[WARN]" fmt, ##__VA_ARGS__)
-#define LOGE(fmt, ...) mr_printf("[ERROR]" fmt, ##__VA_ARGS__)
-#define LOGD(fmt, ...) mr_printf("[DEBUG]" fmt, ##__VA_ARGS__)
 
 static void panic(char *msg) {
     LOGE("panic: %s", msg);
@@ -154,8 +150,12 @@ int32 mr_getUserInfo(mr_userinfo *info) {
     memset2(info, 0, sizeof(mr_userinfo));
     strcpy2((char *)info->IMEI, "864086040622841");
     strcpy2((char *)info->IMSI, "460019707327302");
-    strncpy2(info->manufactory, "vmrp", 7);
-    strncpy2(info->type, "vmrp", 7);
+
+    strcpy2((char *)info->IMEI, "654955820144768");
+    strcpy2((char *)info->IMSI, "467776540700064");
+
+    strncpy2(info->manufactory, "aux", 7);
+    strncpy2(info->type, "m250", 7);
 
     info->ver = 101000000 + DSM_PLAT_VERSION * 10000 + DSM_FAE_VERSION;
     //	info->ver = 116000000 + DSM_PLAT_VERSION * 10000 + DSM_FAE_VERSION; //SPLE
@@ -537,17 +537,17 @@ int32 mr_menuRefresh(int32 menu) {
     return MR_IGNORE;
 }
 
-int32 mr_dialogCreate(const char *title, const char *text, int32 type) {
-    return dsmInFuncs->mr_dialogCreate(title, text, type);
-}
+// int32 mr_dialogCreate(const char *title, const char *text, int32 type) {
+//     return dsmInFuncs->mr_dialogCreate(title, text, type);
+// }
 
-int32 mr_dialogRelease(int32 dialog) {
-    return dsmInFuncs->mr_dialogRelease(dialog);
-}
+// int32 mr_dialogRelease(int32 dialog) {
+//     return dsmInFuncs->mr_dialogRelease(dialog);
+// }
 
-int32 mr_dialogRefresh(int32 dialog, const char *title, const char *text, int32 type) {
-    return dsmInFuncs->mr_dialogRefresh(dialog, title, text, type);
-}
+// int32 mr_dialogRefresh(int32 dialog, const char *title, const char *text, int32 type) {
+//     return dsmInFuncs->mr_dialogRefresh(dialog, title, text, type);
+// }
 
 int32 mr_textCreate(const char *title, const char *text, int32 type) {
     return dsmInFuncs->mr_textCreate(title, text, type);
@@ -561,17 +561,17 @@ int32 mr_textRefresh(int32 handle, const char *title, const char *text) {
     return dsmInFuncs->mr_textRefresh(handle, title, text);
 }
 
-int32 mr_editCreate(const char *title, const char *text, int32 type, int32 max_size) {
-    return dsmInFuncs->mr_editCreate(title, text, type, max_size);
-}
+// int32 mr_editCreate(const char *title, const char *text, int32 type, int32 max_size) {
+//     return dsmInFuncs->mr_editCreate(title, text, type, max_size);
+// }
 
-int32 mr_editRelease(int32 edit) {
-    return dsmInFuncs->mr_editRelease(edit);
-}
+// int32 mr_editRelease(int32 edit) {
+//     return dsmInFuncs->mr_editRelease(edit);
+// }
 
-const char *mr_editGetText(int32 edit) {
-    return dsmInFuncs->mr_editGetText(edit);
-}
+// const char *mr_editGetText(int32 edit) {
+//     return dsmInFuncs->mr_editGetText(edit);
+// }
 
 int32 mr_winCreate(void) {
     return MR_IGNORE;
