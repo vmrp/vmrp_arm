@@ -4,7 +4,15 @@
 目的是整理出所有系统函数调用简化vmrp的开发
 
 # 编译方法
-需要在arm cpu的linux环境下编译，并且安装libSDL2
+
+## 编译vmrp使用的vmrp.elf
+
+需要安装 arm-none-eabi-gcc ，我这里用的是"gcc version 9.3.1 20200408 (release) (GNU Arm Embedded Toolchain 9-2020-q2-update)"
+
+## 在arm linux上运行
+
+ 需要在arm cpu的linux环境下编译，并且安装libSDL2
+# 其它
 
 很多功能被我关闭了，例如网络通信和定时器
 

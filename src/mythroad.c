@@ -62,8 +62,6 @@ int32 mr_timer_run_without_pause = FALSE;
 
 static char* mr_exception_str = NULL;
 
-extern int32 mr_cacheSync(void* addr, int32 len);
-
 #ifdef MR_CFG_USE_A_DISK
 static char temp_current_path[MR_MAX_FILENAME_SIZE];
 #endif
@@ -115,7 +113,7 @@ static int32 mr_sms_return_val;
 
 MR_LOAD_C_FUNCTION mr_load_c_function;
 MR_C_FUNCTION mr_c_function;
-void* mr_c_function_P;
+mr_c_function_st* mr_c_function_P;
 int32 mr_c_function_P_len;
 
 static int32* mr_c_function_fix_p;
@@ -2755,7 +2753,6 @@ int _mr_GetSysInfo(mrp_State* L) {
     setstrfield(L, "packname", pack_filename);
 
     if (mr_getUserInfo(&info) == MR_SUCCESS) {
-        MRDBGPRINTF("mr_getUserInfo ok!");
         setstrfield(L, "hsman", info.manufactory);
         setstrfield(L, "hstype", info.type);
         setlstrfield(L, "IMEI", (const char*)info.IMEI, 16);
@@ -2763,7 +2760,6 @@ int _mr_GetSysInfo(mrp_State* L) {
         setfield(L, "hsver", info.ver);
 
     } else {
-        MRDBGPRINTF("mr_getUserInfo failed!");
         setstrfield(L, "hsman", "none");
         setstrfield(L, "hstype", "none");
         setstrfield(L, "IMEI", "00");
@@ -3541,11 +3537,12 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
 
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
             fixR9_saveMythroad();
+            // mr_printf("800 mr_load_c_function");
             ret = mr_load_c_function(code);
             mrp_pushnumber(L, ret);
             return 1;
         } break;
-        case 801: {
+        case 801: { // 发送事件给ext
             int32 output_len, ret;
             int code = ((int)to_mr_tonumber(L, 3, 0));
             // int32 input_len;
@@ -3555,6 +3552,7 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
 
             // mr_printf("before mr_c_function------r9:%p  r10:%p code:%d %p---",  getR9(),getR10(), code, input1);
             fixR9_saveMythroad();
+            // mr_printf("801 mr_c_function");
             ret = mr_c_function(mr_c_function_P, code, (uint8*)input1, len, (uint8**)&output, &output_len);
             // mr_printf("after mr_c_function------r9:%p r10:%p---",  getR9(),getR10());
 
@@ -3568,13 +3566,13 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
         } break;
         case 802: {
             int32 ret;
-            // int32 input_len, output_len;
             int code = ((int)mr_L_optint(L, 3, 0));
             mr_c_function_fix_p = ((int32*)mr_L_optint(L, 4, 0));
             mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1 + 8);
             *((void**)(mr_c_function_fix_p)) = (void*)_mr_c_function_table;
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
             fixR9_saveMythroad();
+            // mr_printf("802 mr_load_c_function");
             ret = mr_load_c_function(code);
             mrp_pushnumber(L, ret);
             return 1;

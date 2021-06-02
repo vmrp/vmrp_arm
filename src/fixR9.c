@@ -49,45 +49,56 @@ ext调用mythroad时在mythroad空间通过r9 恢复 r9 r10
 
 20201021上面的方案证实在非插件化的mrp中有效，但是插件化mrp因为又套了一层ext，所以r9r10又失效了，mmp
 套娃的ext我们不知道它在何时设置mr_c_function_P.start_of_ER_RW，也没办法在它设置之后实施上面的方案，如果它又套一层呢？
-因为mr_c_function_P.start_of_ER_RW也是用malloc获取的内存，因此在所有malloc上都加上我们的数据，效率可能会低，没办法了
 
 */
 
 #include "./include/fixR9.h"
-
 #include "./include/mr.h"
-
-#ifndef __GNUC__
-extern int32 mr_c_function_load(int32 code);
-#define C_FUNCTION_P() (*(((void **)mr_c_function_load) - 1))
-
-static void *r9Ext;
-static void *r10Ext;
-#endif
 
 static void *lr;
 static void *r10Mythroad;
+static void *r9Ext;
+static void *r10Ext;
 
+#ifdef __GNUC__
+/*
+ 实现原理是在代码中存储一个**固定内存地址**的变量，在mythroad与ext空间调用都能在同一位置访问到
+ 缺点是在linux中由于代码段是只读的，会由于非法指令导致程序崩溃，但是在模拟器中代码段是可读写的
+ 当v=NULL时则获取值，否则设置值，其它参数只是占位符，传NULL
+ */
+extern void *globalValue(void *v, void *a, void *b);
+#else
+extern int32 mr_c_function_load(int32 code);
+#define C_FUNCTION_P() (*(((void **)mr_c_function_load) - 1))
+#endif
+
+// 在进入ext空间前，保存mythroad层的数据
 void fixR9_saveMythroad() {
     r10Mythroad = getR10();
+#ifdef __GNUC__
+    globalValue(getR9(), NULL, NULL);
+#endif
 }
 
+// 由ext空间调用mythroad函数之前调用，用于切换回mythroad层的r9r10
 void fixR9_begin(void *oldR9v, void *oldR10v, void *oldLR) {
-#ifndef __GNUC__
+#ifdef __GNUC__
+    setR9(globalValue(NULL, NULL, NULL));
+#else
     mr_c_function_st *p = C_FUNCTION_P();
     setR9(p->start_of_ER_RW);
-    // 设置r9后回到mythroad，此时才可以访问全局变量
+#endif
+
+    // 设置r9后回到mythroad空间，此时才可以访问mythroad层的全局变量
     setR10(r10Mythroad);
     r9Ext = oldR9v;
     r10Ext = oldR10v;
-#endif
     lr = oldLR;
 }
 
+// mythroad切回ext的r9r10
 void *fixR9_end() {
     register void *ret = lr;  // 必需用寄存器先存起来
-#ifndef __GNUC__
     setR9R10(r9Ext, r10Ext);
-#endif
     return ret;
 }

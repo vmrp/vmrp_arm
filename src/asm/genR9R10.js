@@ -153,6 +153,7 @@ const fullObj = {
 }
 
 const asm = `
+        ; armcc asm
         CODE32
         AREA ||.text||, CODE, READONLY
         IMPORT       fixR9_begin
@@ -216,6 +217,7 @@ const tpl = `
 `;
 
 const asm_gnu = `
+        @ gcc asm
 	.arch armv5te
 	.arm
 
@@ -230,11 +232,9 @@ setR9:
         BX       lr
 
         .global	getR10
-        .thumb
 getR10:
-        MOV      r0,r10
+        MOV      r0,r10 @ 注意getR10函数可能无法生成
         BX       lr
-        .arm
 
 	.global	setR10
 setR10:

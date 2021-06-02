@@ -53,7 +53,7 @@ static uint32 dsmStartTime;  //虚拟机初始化时间，用来计算系统运�
 //////////////////////////////////////////////////////////////////
 
 void mr_printf(const char *format, ...) {
-    char printfBuf[512] = {0};
+    char printfBuf[512];
     va_list params;
 
     va_start(params, format);
@@ -149,8 +149,6 @@ int32 mr_getUserInfo(mr_userinfo *info) {
         return MR_FAILED;
     }
 
-    LOGI("%s", "mr_getUserInfo");
-
     memset2(info, 0, sizeof(mr_userinfo));
     strcpy2((char *)info->IMEI, "864086040622841");
     strcpy2((char *)info->IMSI, "460019707327302");
@@ -163,15 +161,6 @@ int32 mr_getUserInfo(mr_userinfo *info) {
 
     memset2(info->spare, 0, sizeof(info->spare));
 
-#if 1
-    LOGI("imei = %s", info->IMEI);
-    LOGI("imsi = %s", info->IMSI);
-    LOGI("factory = %s", info->manufactory);
-    LOGI("type = %s", info->type);
-    LOGI("ver = %d", info->ver);
-#endif
-
-    LOGI("%s", "mr_getUserInfo suc!");
     return MR_SUCCESS;
 }
 
@@ -351,7 +340,7 @@ char *get_filename(char *outputbuf, const char *filename) {
 }
 
 int32 mr_open(const char *filename, uint32 mode) {
-    char fullpathname[DSM_MAX_FILE_LEN] = {0};
+    char fullpathname[DSM_MAX_FILE_LEN];
     int32 ret = dsmInFuncs->open(get_filename(fullpathname, filename), mode);
     LOGI("mr_open(%s,%d) fd is: %d", fullpathname, mode, ret);
     return ret;
@@ -378,12 +367,12 @@ int32 mr_seek(int32 f, int32 pos, int method) {
 }
 
 int32 mr_info(const char *filename) {
-    char fullpathname[DSM_MAX_FILE_LEN] = {0};
+    char fullpathname[DSM_MAX_FILE_LEN];
     return dsmInFuncs->info(get_filename(fullpathname, filename));
 }
 
 int32 mr_remove(const char *filename) {
-    char fullpathname[DSM_MAX_FILE_LEN] = {0};
+    char fullpathname[DSM_MAX_FILE_LEN];
     int32 ret;
     ret = dsmInFuncs->remove(get_filename(fullpathname, filename));
     LOGI("mr_remove(%s) ret:%d", fullpathname, ret);
@@ -391,8 +380,8 @@ int32 mr_remove(const char *filename) {
 }
 
 int32 mr_rename(const char *oldname, const char *newname) {
-    char fullpathname_1[DSM_MAX_FILE_LEN] = {0};
-    char fullpathname_2[DSM_MAX_FILE_LEN] = {0};
+    char fullpathname_1[DSM_MAX_FILE_LEN];
+    char fullpathname_2[DSM_MAX_FILE_LEN];
     get_filename(fullpathname_1, oldname);
     get_filename(fullpathname_2, newname);
     LOGI("mr_rename(%s to %s)", fullpathname_1, fullpathname_2);
@@ -400,14 +389,14 @@ int32 mr_rename(const char *oldname, const char *newname) {
 }
 
 int32 mr_mkDir(const char *name) {
-    char fullpathname[DSM_MAX_FILE_LEN] = {0};
+    char fullpathname[DSM_MAX_FILE_LEN];
     get_filename(fullpathname, name);
     LOGI("mr_mkDir(%s)", fullpathname);
     return dsmInFuncs->mkDir(fullpathname);
 }
 
 int32 mr_rmDir(const char *name) {
-    char fullpathname[DSM_MAX_FILE_LEN] = {0};
+    char fullpathname[DSM_MAX_FILE_LEN];
     get_filename(fullpathname, name);
     LOGI("mr_rmDir(%s)", fullpathname);
     return dsmInFuncs->rmDir(fullpathname);
@@ -436,7 +425,7 @@ int32 mr_findStop(int32 search_handle) {
 
 int32 mr_findStart(const char *name, char *buffer, uint32 len) {
     int32 ret;
-    char fullpathname[DSM_MAX_FILE_LEN] = {0};
+    char fullpathname[DSM_MAX_FILE_LEN];
 
     get_filename(fullpathname, name);
     LOGI("mr_findStart(%s)", fullpathname);
@@ -455,7 +444,7 @@ int32 mr_ferrno(void) {
 }
 
 int32 mr_getLen(const char *filename) {
-    char fullpathname[DSM_MAX_FILE_LEN] = {0};
+    char fullpathname[DSM_MAX_FILE_LEN];
     return dsmInFuncs->getLen(get_filename(fullpathname, filename));
 }
 

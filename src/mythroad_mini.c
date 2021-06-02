@@ -52,8 +52,6 @@ int32 mr_timer_run_without_pause = FALSE;
 
 static char* mr_exception_str = NULL;
 
-extern int32 mr_cacheSync(void* addr, int32 len);
-
 #ifdef MR_CFG_USE_A_DISK
 static char temp_current_path[MR_MAX_FILENAME_SIZE];
 #endif
