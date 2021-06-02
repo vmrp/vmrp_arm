@@ -5,11 +5,24 @@
 
 # 编译方法
 
+编译前需要在src/asm文件夹中生成相应的汇编代码 node genR9R10.js isGNU(0|1) isFull(0|1)
+
+例如gcc编译完整版时：
+```
+node genR9R10.js 1 1
+```
+
 ## 编译vmrp使用的vmrp.elf
 
 需要安装 arm-none-eabi-gcc ，我这里用的是"gcc version 9.3.1 20200408 (release) (GNU Arm Embedded Toolchain 9-2020-q2-update)"
 
-## 在arm linux上运行
+直接在src下make即可
+
+## 编译vmrp使用的vmrp.mrp
+
+需要使用斯凯SDK编译，在src/build文件夹中用build_full.bat编译
+
+## 在arm linux上运行(由于r9寄存器的问题没解决，所以不推荐)
 
  需要在arm cpu的linux环境下编译，并且安装libSDL2
 # 其它
