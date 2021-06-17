@@ -12,15 +12,22 @@
 node genR9R10.js 1 1
 ```
 
-## 编译vmrp使用的vmrp.elf
+例如armcc编译完整版时：
+```
+node genR9R10.js 0 1
+```
+
+## armcc编译vmrp使用的vmrp.mrp(可靠的方式)
+
+需要使用斯凯SDK编译，在src/build文件夹中用build_full.bat编译
+
+## gcc编译vmrp使用的vmrp.elf(不推荐)
 
 需要安装 arm-none-eabi-gcc ，我这里用的是"gcc version 9.3.1 20200408 (release) (GNU Arm Embedded Toolchain 9-2020-q2-update)"
 
 直接在src下make即可
 
-## 编译vmrp使用的vmrp.mrp
-
-需要使用斯凯SDK编译，在src/build文件夹中用build_full.bat编译
+目前还没有找到gcc编译出完全静态的位置无关代码，由于软浮点仍然链接在gcc库中，导致elf中出现GOT表，目前的elfloader过于简单（至少GOT表重定位没有实现），因此gcc编译的方式在实际使用中存在bug
 
 ## 在arm linux上运行(由于r9寄存器的问题没解决，所以不推荐)
 

@@ -22,8 +22,7 @@ plat=mtk
 
 
 [files]
-#file1000 = main.c
-file1000 = main_simple.c
+file1000 = main.c
 
 file00=..\src\mr_api.c 
 file01=..\src\mr_debug.c  

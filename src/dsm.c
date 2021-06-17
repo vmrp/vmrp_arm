@@ -816,9 +816,8 @@ void dsm_prepare(void) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-static DSM_EXPORT_FUNCS dsm_export_funcs;
 
-DSM_EXPORT_FUNCS *dsm_init(DSM_REQUIRE_FUNCS *inFuncs) {
+int32 dsm_init(DSM_REQUIRE_FUNCS *inFuncs) {
     // 注意！这里面只能做一些不涉及malloc()的操作
     dsmInFuncs = inFuncs;
     dsmStartTime = dsmInFuncs->get_uptime_ms();
@@ -834,12 +833,5 @@ DSM_EXPORT_FUNCS *dsm_init(DSM_REQUIRE_FUNCS *inFuncs) {
     mr_pluto_init();
 #endif
     mythroad_init();
-
-    dsm_export_funcs.version = VMRP_VER;
-    dsm_export_funcs.mr_start_dsm = mr_start_dsm;
-    dsm_export_funcs.mr_pauseApp = mr_pauseApp;
-    dsm_export_funcs.mr_resumeApp = mr_resumeApp;
-    dsm_export_funcs.mr_timer = mr_timer;
-    dsm_export_funcs.mr_event = mr_event;
-    return &dsm_export_funcs;
+    return VMRP_VER;
 }

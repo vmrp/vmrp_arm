@@ -85,7 +85,7 @@ void fixR9_begin(void *oldR9v, void *oldR10v, void *oldLR) {
 #ifdef __GNUC__
     setR9(globalValue(NULL, NULL, NULL));
 #else
-    mr_c_function_st *p = C_FUNCTION_P();
+    mr_c_function_st *p = C_FUNCTION_P(); // 由于代码所在ext的mr_c_function_load始终是固定位置，因此能通过这个找回上一级
     setR9(p->start_of_ER_RW);
 #endif
 
