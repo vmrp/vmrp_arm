@@ -1,6 +1,6 @@
 
 
-LOCAL_CFLAGS_FULL := -g -Wall -DDSM_FULL -DTARGET_MOD -DMTK_MOD -DMR_VERSION=1968 -DMR_PLAT_DRAWTEXT
+LOCAL_CFLAGS_FULL := -DDSM_FULL -DTARGET_MOD -DMTK_MOD -DMR_VERSION=1968 -DMR_PLAT_DRAWTEXT
 
 LOCAL_SRC_FILES_FULL := src/mr_api.c \
                   src/mr_debug.c  \
@@ -41,8 +41,10 @@ endif
 
 # node genR9R10.js 1 1
 # arm-none-eabi-gcc -s -o vmrp.elf $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL) -nostdlib -nostartfiles -pie -fPIC -marm -march=armv5te --entry=dsm_init
+.PHONY: vmrp.elf
 vmrp.elf:
-	arm-none-eabi-gcc -s -o vmrp.elf $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL) -nostartfiles -pie -fPIC -marm -march=armv5te --entry=dsm_init
+	arm-none-eabi-gcc -o vmrp.elf $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL) -s -O3 -Wall -nostartfiles -pie -fPIC -marm -march=armv5te -mlong-calls -mthumb-interwork --entry=dsm_init
+
 
 full:
 	gcc -o ../vmrp $(LOCAL_CFLAGS_FULL) $(LOCAL_SRC_FILES_FULL) main.c -lSDL2 -lm -lz

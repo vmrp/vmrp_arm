@@ -8,7 +8,7 @@
 
 #define DSM_MAX_FILE_LEN 256
 
-#define USE_UTF8
+// #define USE_UTF8
 
 #define MT6235
 
@@ -358,7 +358,7 @@ int32 mr_read(int32 f, void *p, uint32 l) {
 }
 
 int32 mr_write(int32 f, void *p, uint32 l) {
-    LOGI("mr_write %d,%p,%d", f, p, l);
+    // LOGI("mr_write %d,%p,%d", f, p, l);
     return dsmInFuncs->write(f, p, l);
 }
 
