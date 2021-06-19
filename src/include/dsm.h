@@ -25,7 +25,6 @@ enum {
 
 // 需要平台实现的函数
 typedef struct {
-    int32 flags;
     void (*test)(void);
     void (*log)(char *msg);  // msg末尾不带\n
     void (*exit)(void);
@@ -78,6 +77,7 @@ typedef struct {
     int32 (*mr_editRelease)(int32 edit);
     const char *(*mr_editGetText)(int32 edit);
 
+    int32 flags;  // 变量放在最后
 } DSM_REQUIRE_FUNCS;
 
 typedef struct event_t {
