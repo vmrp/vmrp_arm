@@ -1,12 +1,16 @@
 #ifndef _DSM_H
 #define _DSM_H
 
+#ifdef VMRP
+#include "types.h"
+#else
 #include "mrporting.h"
+#endif
 
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 320
 
-#define VMRP_VER 20210617
+#define VMRP_VER 20210619
 
 enum {
     DSM_INIT = -100,
@@ -17,8 +21,11 @@ enum {
     MR_EVENT
 };
 
+#define FLAG_USE_UTF8_FS 1
+
 // 需要平台实现的函数
 typedef struct {
+    int32 flags;
     void (*test)(void);
     void (*log)(char *msg);  // msg末尾不带\n
     void (*exit)(void);

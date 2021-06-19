@@ -3534,12 +3534,13 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             int code = ((int)mr_L_optint(L, 3, 0));
             mr_load_c_function = (MR_LOAD_C_FUNCTION)(input1 + 8);
             *((void**)(input1)) = (void*)_mr_c_function_table;
-
             mr_cacheSync((void*)((uint32)(input1) & (~0x0000001F)), ((len + 0x0000001F * 3) & (~0x0000001F)));
+
+            MRDBGPRINTF("--- ext: @%p", input1);
             fixR9_saveMythroad();
-            // mr_printf("800 mr_load_c_function");
             ret = mr_load_c_function(code);
             mrp_pushnumber(L, ret);
+            MRDBGPRINTF("--- r9: mr_c_function_P.start_of_ER_RW = @%p", mr_c_function_P->start_of_ER_RW);
             return 1;
         } break;
         case 801: { // 发送事件给ext

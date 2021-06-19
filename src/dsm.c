@@ -8,8 +8,6 @@
 
 #define DSM_MAX_FILE_LEN 256
 
-// #define USE_UTF8
-
 #define MT6235
 
 /*请不要修改这些值*/
@@ -47,6 +45,7 @@
 #define DSM_FAE_VERSION (182) /*由平台组统一分配版本号，有需求请联系平台组*/
 #endif
 
+static int32 use_utf8_fs;
 static DSM_REQUIRE_FUNCS *dsmInFuncs;
 static uint32 dsmStartTime;  //虚拟机初始化时间，用来计算系统运行时间
 
@@ -312,7 +311,7 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
             if (input_len > 3) {
                 SetDsmWorkPath((char *)(input + 3));
             } else {
-                panic("dsmWorkPath c ERROR!");
+                SetDsmWorkPath("./");
             }
             break;
 
@@ -327,15 +326,13 @@ static int32 dsmSwitchPath(uint8 *input, int32 input_len, uint8 **output, int32 
 char *get_filename(char *outputbuf, const char *filename) {
     sprintf_(outputbuf, "%s%s", dsmWorkPath, filename);
     formatPathString(outputbuf, '/');
-#ifdef USE_UTF8
-    {
+    if (use_utf8_fs) {
         char *us = (char *)GBStrToUCS2BEStr((uint8 *)outputbuf, NULL);
         char *utf8s = UCS2BEStrToUTF8Str((uint8 *)us, NULL);
         strcpy2(outputbuf, utf8s);
         mr_freeExt(us);
         mr_freeExt(utf8s);
     }
-#endif
     return outputbuf;
 }
 
@@ -405,13 +402,13 @@ int32 mr_rmDir(const char *name) {
 int32 mr_findGetNext(int32 search_handle, char *buffer, uint32 len) {
     char *d_name = dsmInFuncs->readdir(search_handle);
     if (d_name != NULL) {
-#ifdef USE_UTF8
-        char *gb = UTF8StrToGBStr((uint8 *)d_name, NULL);
-        strncpy2(buffer, gb, len);
-        mr_freeExt(gb);
-#else
-        strncpy2(buffer, d_name, len);
-#endif
+        if (use_utf8_fs) {
+            char *gb = UTF8StrToGBStr((uint8 *)d_name, NULL);
+            strncpy2(buffer, gb, len);
+            mr_freeExt(gb);
+        } else {
+            strncpy2(buffer, d_name, len);
+        }
         LOGI("mr_findGetNext %d %s", search_handle, d_name);
         return MR_SUCCESS;
     }
@@ -821,6 +818,7 @@ int32 dsm_init(DSM_REQUIRE_FUNCS *inFuncs) {
     // 注意！这里面只能做一些不涉及malloc()的操作
     dsmInFuncs = inFuncs;
     dsmStartTime = dsmInFuncs->get_uptime_ms();
+    use_utf8_fs = inFuncs->flags & FLAG_USE_UTF8_FS;
 
 #ifdef DSM_FULL
     mr_tm_init();
