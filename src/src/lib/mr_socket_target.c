@@ -56,26 +56,9 @@ static int sock_mr_getHost(mrp_State *L) {
 /*-------------------------------------------------------------------------*\
 * Modules and functions
 \*-------------------------------------------------------------------------*/
-static mr_L_reg mod[3];
-
 static mr_L_reg socket_func[3];
 
 void mr_socket_target_init(void) {
-    //  mod[0].name =
-    //  mod[0].func =
-    //    {"auxiliar", aux_open},
-    //    {"except", except_open},
-    //    {"timeout", tm_open},
-    //    {"buffer", buf_open},
-    //    {"inet", inet_open},
-    mod[0].name = "tcp";
-    mod[0].func = mr_tcp_open;
-    mod[1].name = "udp";
-    mod[1].func = mr_udp_open;
-    //    {"select", select_open},
-    mod[2].name = NULL;
-    mod[2].func = NULL;
-
     socket_func[0].name = "__gc";
     socket_func[0].func = global_unload;
     socket_func[1].name = "getHost";
@@ -109,15 +92,6 @@ static int global_unload(mrp_State *L) {
     mr_closeNetwork();
     return 0;
 }
-
-/*
-static int sock_getstate(mrp_State *L)
-{
-   p_tcp tcp = (p_tcp) toptcp(L, 1);
-    mrp_pushnumber(L, tcp->state);
-    return 1;
-}
-*/
 
 static int32 mr_initNetworkCB(int32 result) {
 
@@ -157,8 +131,6 @@ static int32 mr_initNetworkCB(int32 result) {
 \*-------------------------------------------------------------------------*/
 static int base_open(mrp_State *L, const char *mode) {
     int32 ret = mr_initNetwork(mr_initNetworkCB, mode);
-
-
     mr_L_openlib(L, "socket", socket_func, 0);
 #ifdef MRP_SOCKET_DEBUG
     mrp_pushstring(L, "DEBUG");
@@ -205,8 +177,8 @@ static int base_open(mrp_State *L, const char *mode) {
 * Initializes all library modules.
 \*-------------------------------------------------------------------------*/
 MRP_SOCKET_API int mropen_socket(mrp_State *L, const char *mode) {
-    int i;
     base_open(L, mode);
-    for (i = 0; mod[i].name; i++) mod[i].func(L);
+    mr_tcp_open(L);
+    mr_udp_open(L);
     return 1;
 }

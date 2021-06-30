@@ -464,7 +464,6 @@ static int global_udp_create(mrp_State *L)
 void mr_tcp_target_init(void) {
     tcp[0].name = "__gc", tcp[0].func = meth_close;
     tcp[1].name = "__str", tcp[1].func = mr_aux_tostring;
-    //    {"bind",        meth_bind},
     tcp[2].name = "close", tcp[2].func = meth_close;
     tcp[3].name = "connect", tcp[3].func = meth_connect;
     tcp[4].name = "getinfo", tcp[4].func = meth_getinfo;
@@ -473,9 +472,6 @@ void mr_tcp_target_init(void) {
     tcp[7].name = "bind", tcp[7].func = meth_bind;
     tcp[8].name = "receive", tcp[8].func = meth_receive;
     tcp[9].name = "send", tcp[9].func = meth_send;
-    //    {"setfd",       meth_setfd},
-    //    {"setpeername", meth_connect},
-    //    {"setsockname", meth_bind},
     tcp[10].name = NULL, tcp[10].func = NULL;
 
     tcp_func[0].name = "tcp", tcp_func[0].func = global_create;
@@ -493,9 +489,6 @@ void mr_tcp_target_init(void) {
     udp[9].name = "getinfo", udp[9].func = meth_getinfo;
     udp[10].name = "getstate", udp[10].func = meth_getstate;
     udp[11].name = "connect", udp[11].func = meth_connect;
-    //    {"setfd",       meth_setfd},
-    //    {"setpeername", meth_setpeername},
-    //    {"setsockname", meth_setsockname},
     udp[12].name = NULL, udp[12].func = NULL;
 
     udp_func[0].name = "udp", udp_func[0].func = global_udp_create;
