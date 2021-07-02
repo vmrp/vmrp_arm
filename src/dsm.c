@@ -573,72 +573,60 @@ int32 mr_rand(void) {
 //----------------------------------------------------
 /*平台扩展接口*/
 int32 mr_plat(int32 code, int32 param) {
-    int32 ret = MR_IGNORE;
     switch (code) {
-        case MR_CONNECT: {  //1001
-            ret = mr_getSocketState(param);
-            break;
-        }
-        case MR_GET_RAND: {  //1211
+        case MR_CONNECT:  //1001
+            return mr_getSocketState(param);
+        case MR_GET_RAND:  //1211
             dsmInFuncs->srand(mr_getTime());
-            ret = (MR_PLAT_VALUE_BASE + dsmInFuncs->rand() % param);
-            break;
-        }
+            return (MR_PLAT_VALUE_BASE + dsmInFuncs->rand() % param);
         case MR_CHECK_TOUCH:  //1205是否支持触屏
-            ret = MR_TOUCH_SCREEN;
-            break;
+            return MR_TOUCH_SCREEN;
         case MR_GET_HANDSET_LG:  //1206获取语言
-            ret = MR_CHINESE;
-            break;
+            return MR_CHINESE;
         case 1218:  // 查询存储卡的状态
-            ret = MR_MSDC_OK;
-            break;
+            return MR_MSDC_OK;
         default:
             LOGW("mr_plat(code:%d, param:%d) not impl!", code, param);
             break;
     }
-    return ret;
+    return MR_IGNORE;
 }
 
 static T_DSM_FREE_SAPCE dsm_free_sapce;
 
 /*增强的平台扩展接口*/
 int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32 *output_len, MR_PLAT_EX_CB *cb) {
-    int32 ret = MR_IGNORE;
-    LOGI("mr_platEx code=%d in=%p inlen=%d out=%p outlen=%p cb=%p", code, input, input_len, output, output_len, cb);
+    LOGI("mr_platEx code=%d in=@%p inlen=%d out=@%p outlen=@%p cb=@%p", code, input, input_len, output, output_len, cb);
 
     switch (code) {
         case 1012:  //申请内部cache
         case 1013:  //释放内部cache
-            break;
+            return MR_IGNORE;
         case 1014: {  //申请拓展内存
             // *output_len = SCRW * SCRH * 4;
             // *output = malloc(*output_len);
             // LOGI("malloc exRam addr=%p len=%d", output, output_len);
             // ret= MR_SUCCESS;
-            break;
+            return MR_IGNORE;
         }
         case 1015: {  //释放拓展内存
             // LOGI("free exRam");
             // free(input);
             // ret= MR_SUCCESS;
-            break;
+            return MR_IGNORE;
         }
         case MR_TUROFFBACKLIGHT:  //关闭背光常亮
         case MR_TURONBACKLIGHT:   //开启背光常亮
-            ret = MR_SUCCESS;
-            break;
+            return MR_SUCCESS;
         case MR_SWITCHPATH:  //切换跟目录 1204
-            ret = dsmSwitchPath(input, input_len, output, output_len);
-            break;
+            return dsmSwitchPath(input, input_len, output, output_len);
             // case MR_GET_FREE_SPACE:
 
         case MR_CHARACTER_HEIGHT: {  // 1201
             static int32 wordInfo = (CHAR_H << 24) | (EN_CHAR_W << 16) | (CHAR_H << 8) | (CN_CHAR_W);
             *output = (unsigned char *)&wordInfo;
             *output_len = 4;
-            ret = MR_SUCCESS;
-            break;
+            return MR_SUCCESS;
         }
 
         case 1116: {  //获取编译时间
@@ -647,13 +635,12 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
             *output = (uint8 *)buf;  //"2013/3/21 21:36";
             *output_len = l + 1;
             LOGI("build time %s", buf);
-            ret = MR_SUCCESS;
-            break;
+            return MR_SUCCESS;
         }
 
         case 1224:  //小区信息ID
         case 1307:  //获取SIM卡个数，非多卡多待直接返回 MR_INGORE
-            break;
+            return MR_IGNORE;
 
         case MR_GET_FREE_SPACE: {  // 1305 获得指定盘符的剩余空间大小
             // 真机数据, 可以看出内存地址是一样的，因此返回的内存不需要释放
@@ -697,8 +684,7 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
             static T_RX rx = {3, 5, 5, 1};
             *output = (uint8 *)&rx;
             *output_len = sizeof(T_RX);
-            ret = MR_SUCCESS;
-            break;
+            return MR_SUCCESS;
         }
         case MR_UCS2GB: {  // 1207
             if (*output) {
@@ -739,22 +725,89 @@ int32 mr_platEx(int32 code, uint8 *input, int32 input_len, uint8 **output, int32
     //         LOGW("mr_platEx(code=%d, input=%p, il=%d) not impl!", code, (void *)input, input_len);
     //         break;
     // }
-    return ret;
+    return MR_IGNORE;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int32 mr_initNetwork(MR_INIT_NETWORK_CB cb, const char *mode) {
+typedef int32 (*MR_NETWORK_CB)(int32 result);
+typedef struct networkData_st {
+    MR_NETWORK_CB cb;  // MR_GET_HOST_CB和MR_INIT_NETWORK_CB其实是一样的，因此可以用同一个函数签名
+    int isExtCB;
+} networkData_st;
+
+static int32 network_cb(int32 result, void *userData) {
+    networkData_st *data = (networkData_st *)userData;
+
+    register int32 ret = MR_FAILED;
+    register MR_NETWORK_CB cb = data->cb;
+    if (data->isExtCB) {  // ext的回调，需要设置r9
+        extern mr_c_function_st *mr_c_function_P;
+        register void *oldR9 = getR9();
+        fixR9_saveMythroad();
+        setR9(mr_c_function_P->start_of_ER_RW);
+        ret = cb(result);
+        setR9(oldR9);
+    } else {
+        ret = cb(result);
+    }
+    mr_freeExt(data);
+    return ret;
+}
+
+static int32 initNetwork(MR_INIT_NETWORK_CB cb, const char *mode, int isExtCB) {
+    int32 ret;
+    networkData_st *data = mr_mallocExt(sizeof(networkData_st));
+    data->cb = (MR_NETWORK_CB)cb;
+    data->isExtCB = isExtCB;
     LOGI("mr_initNetwork(mod:%s)", mode);
-    return dsmInFuncs->mr_initNetwork(cb, mode);
+    // MR_SUCCESS 同步模式，初始化成功，不再调用cb
+    // MR_FAILED （立即感知的）失败，不再调用cb
+    // MR_WAITING 使用回调函数通知引擎初始化结果
+    ret = dsmInFuncs->initNetwork(network_cb, mode, data);
+    if (ret != MR_WAITING) {
+        mr_freeExt(data);
+    }
+    return ret;
+}
+
+static int32 getHostByName(const char *ptr, MR_GET_HOST_CB cb, int isExtCB) {
+    int32 ret;
+    networkData_st *data = mr_mallocExt(sizeof(networkData_st));
+    data->cb = (MR_NETWORK_CB)cb;
+    data->isExtCB = isExtCB;
+    // MR_FAILED （立即感知的）失败，不再调用cb
+    // MR_WAITING 使用回调函数通知引擎获取IP的结果
+    // 其他值 同步模式，立即返回的IP地址，不再调用cb
+    ret = dsmInFuncs->getHostByName(ptr, network_cb, data);
+    if (ret != MR_WAITING) {
+        mr_freeExt(data);
+    }
+    return ret;
+}
+
+// 此函数只能由mythroad层自身调用
+int32 mythroad_initNetwork(MR_INIT_NETWORK_CB cb, const char *mode) {
+    return initNetwork(cb, mode, 0);
+}
+
+// 此函数由ext调用，需要注意回调函数执行时r9寄存器的问题
+int32 mr_initNetwork(MR_INIT_NETWORK_CB cb, const char *mode) {
+    return initNetwork(cb, mode, 1);
+}
+
+// 此函数只能由mythroad层自身调用
+int32 mythroad_getHostByName(const char *ptr, MR_GET_HOST_CB cb) {
+    return getHostByName(ptr, cb, 0);
+}
+
+// 此函数由ext调用，需要注意回调函数执行时r9寄存器的问题
+int32 mr_getHostByName(const char *ptr, MR_GET_HOST_CB cb) {
+    return getHostByName(ptr, cb, 1);
 }
 
 int32 mr_closeNetwork() {
     LOGI("%s", "mr_closeNetwork");
     return dsmInFuncs->mr_closeNetwork();
-}
-
-int32 mr_getHostByName(const char *ptr, MR_GET_HOST_CB cb) {
-    return dsmInFuncs->mr_getHostByName(ptr, cb);
 }
 
 int32 mr_socket(int32 type, int32 protocol) {

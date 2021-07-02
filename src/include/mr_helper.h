@@ -673,9 +673,6 @@ enum {
     MRC_EXT_MPS_EVENT
 };
 
-//extern int32 mrc_initNetworkCbState;
-extern MR_INIT_NETWORK_CB mrc_initNetworkCbFunc;
-extern MR_GET_HOST_CB mr_getHostByNameCbFunc;
 
 #if 1
 #define MRC_MALLOC(size) mrc_malloc(size)

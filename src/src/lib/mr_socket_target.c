@@ -130,7 +130,7 @@ static int32 mr_initNetworkCB(int32 result) {
 * Setup basic stuff.
 \*-------------------------------------------------------------------------*/
 static int base_open(mrp_State *L, const char *mode) {
-    int32 ret = mr_initNetwork(mr_initNetworkCB, mode);
+    int32 ret = mythroad_initNetwork(mr_initNetworkCB, mode);
     mr_L_openlib(L, "socket", socket_func, 0);
 #ifdef MRP_SOCKET_DEBUG
     mrp_pushstring(L, "DEBUG");

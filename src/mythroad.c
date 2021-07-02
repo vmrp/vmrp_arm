@@ -3291,7 +3291,7 @@ static int32 mr_get_host_cb(int32 ip) {
 
 int32 _mr_getHost(mrp_State* L, char* host) {
     int32 ret;
-    ret = mr_getHostByName(host, mr_get_host_cb);
+    ret = mythroad_getHostByName(host, mr_get_host_cb);
     mrp_getglobal(L, (char*)"socket");
     mrp_pushstring(L, "ip");
     mrp_pushnumber(L, ret);

@@ -407,9 +407,6 @@ extern int32 mr_newSIMInd(int16 type, uint8* old_IMSI);
 /*函数mr_initNetwork使用的回调函数定义*/
 typedef int32 (*MR_INIT_NETWORK_CB)(int32 result);
 
-/*函数mr_initNetwork使用的回调函数定义*/
-typedef int32 (*MR_CONNECT_CB)(int32 result);
-
 /*函数mr_getHostByName使用的回调函数定义*/
 typedef int32 (*MR_GET_HOST_CB)(int32 ip);
 
@@ -529,9 +526,11 @@ extern int32 mr_winCreate(void);
 extern int32 mr_winRelease(int32 win);
 
 /*Socket接口*/
+extern int32 mythroad_initNetwork(MR_INIT_NETWORK_CB cb, const char* mode);
 extern int32 mr_initNetwork(MR_INIT_NETWORK_CB cb, const char* mode);
-extern int32 mr_closeNetwork(void);
+extern int32 mythroad_getHostByName(const char* name, MR_GET_HOST_CB cb);
 extern int32 mr_getHostByName(const char* name, MR_GET_HOST_CB cb);
+extern int32 mr_closeNetwork(void);
 extern int32 mr_socket(int32 type, int32 protocol);
 extern int32 mr_connect(int32 s, int32 ip, uint16 port, int32 type);
 extern int32 mr_closeSocket(int32 s);
