@@ -227,7 +227,8 @@ extern const lu_byte mr_P_opmodes[NUM_OPCODES];
 #define testOpMode(m, b) (mr_P_opmodes[m] & (1 << (b)))
 
 #ifdef MRP_OPNAMES
-extern const char *const mr_P_opnames[]; /* opcode names */
+extern const char *mr_P_opnames[]; /* opcode names */
+void init_mr_opcodes(void);
 #endif
 
 /* number of list items to accumulate before a SETLIST instruction */

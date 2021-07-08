@@ -151,4 +151,6 @@ void ShowState(Function * F);
 void luaU_decompile(const Proto* f, int lflag, char* outputFile);
 void luaU_decompileFunctions(const Proto* f, int lflag, char* outputFile);
 
+void init_print(void);
+
 #endif

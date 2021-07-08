@@ -1,6 +1,7 @@
 
 #include "../include/mr.h"
 #include "../include/mr_auxlib.h"
+#include "../include/mem.h"
 #include "../src/h/mr_func.h"
 #include "../src/h/mr_mem.h"
 #include "../src/h/mr_object.h"
@@ -17,7 +18,6 @@ static int debugging = 0; /* debug decompiler? */
 static int functions = 0; /* dump functions separately? */
 // static int dumping = 1;   /* dump bytecodes? */
 // static int stripping = 0; /* strip debug information? */
-
 
 static Proto* toproto(mrp_State* L, int i) {
     const Closure* c = (const Closure*)mrp_topointer(L, i);
@@ -61,18 +61,62 @@ static Proto* combine(mrp_State* L, int n) {
     for (i = 0; i < n; i++) strip(L, f->p[i]);
 }
 
+static int isMr(char* s) {
+    while (*s) s++;
+    if (*(s - 1) == 'r')
+        if (*(s - 2) == 'm')
+            if (*(s - 3) == '.')
+                return 1;
+    return 0;
+}
+
 int luadec(mrp_State* L, char* filename, char* outputFile) {
+    char* ptr;
+    int32 flStar, flEnd, fnLen, flLen, pos, fd;
+    int32 n;
     Proto* f;
+
+    init_mr_opcodes();
+    init_print();
     // mrp_State* L = mrp_open();
     mr_B_opentests(L);
 
-    // 此处可以load多个
-    if (mr_L_loadfile(L, filename) != 0) {
-        mr_printf("luadec: %s", mrp_tostring(L, -1));
-        return -1;
-    }
+    fd = mr_open(filename, MR_FILE_RDONLY);
 
-    f = combine(L, 1);  // 只有一个文件
+    mr_seek(fd, 12, MR_SEEK_SET);
+    mr_read(fd, &flStar, 4);
+
+    mr_seek(fd, 4, MR_SEEK_SET);
+    mr_read(fd, &flEnd, 4);
+    flEnd += 8;
+
+    flLen = flEnd - flStar;
+    ptr = mr_mallocExt(flLen);
+    mr_seek(fd, flStar, MR_SEEK_SET);
+    mr_read(fd, ptr, flLen);
+    mr_close(fd);
+
+    pos = 0;
+    n = 0;
+    while (pos < flLen) {
+        char* name;
+        memcpy2(&fnLen, &ptr[pos], 4);
+        name = &ptr[pos + 4];
+        if (isMr(name)) {
+            n++;
+            mr_printf("luadec load %s", name);
+            if (mr_L_loadfile(L, name) != 0) {
+                mr_printf("luadec: %s", mrp_tostring(L, -1));
+                mr_freeExt(ptr);
+                return -1;
+            }
+        }
+        pos += fnLen + 4 * 4;  // 文件名长度、文件名、文件偏移、文件长度、int32(0)
+    }
+    mr_freeExt(ptr);
+
+    mr_printf("luadec load done.");
+    f = combine(L, n);
     if (functions)
         luaU_decompileFunctions(f, debugging, outputFile);
     else

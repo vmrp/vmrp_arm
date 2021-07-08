@@ -455,9 +455,12 @@ void RawAddStatement(Function * F, StringBuffer * str)
    if (F->released_local) {
       int i = 0;
       int lpc = F->released_local;
-      char* scopeclose[] = {
-         "end", "else", "until", NULL
-      };
+      char* scopeclose[4];
+      scopeclose[0] = "end";
+      scopeclose[0] = "else";
+      scopeclose[0] = "until";
+      scopeclose[0] = NULL;
+
       F->released_local = 0;
       for (i = 0; scopeclose[i]; i++)
          if (strstr2(copy, scopeclose[i]) == copy)
@@ -1042,13 +1045,18 @@ char* PrintFunction(Function * F)
  * ------------------------------------------------------------------------- 
  */
 
-static char *operators[20] =
-    { " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ",
-   "+", "-", "*", "/", "^", "-", "! ", ".."
-};
+static char *operators[20];
+static int priorities[20];
 
-static int priorities[20] =
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 3, 3, 1, 2, 2, 5 };
+void init_print(void) {
+   operators[0] = " "; operators[1] = " "; operators[2] = " "; operators[3] = " "; operators[4] = " "; operators[5] = " "; operators[6] = " ";
+   operators[7] = " "; operators[8] = " "; operators[9] = " "; operators[10] = " "; operators[11] = " "; operators[12] = "+"; operators[13] = "-";
+   operators[14] = "*"; operators[15] = "/"; operators[16] = "^"; operators[17] = "-"; operators[18] = "! "; operators[19] = "..";
+
+   priorities[0] = 0; priorities[1] = 0; priorities[2] = 0; priorities[3] = 0; priorities[4] = 0; priorities[5] = 0; priorities[6] = 0;
+   priorities[7] = 0; priorities[8] = 0; priorities[9] = 0; priorities[10] = 0; priorities[11] = 0; priorities[12] = 4; priorities[13] = 4;
+   priorities[14] = 3; priorities[15] = 3; priorities[16] = 1; priorities[17] = 2; priorities[18] = 2; priorities[19] = 5 ;
+}
 
 char *RegisterOrConstant(Function * F, int r)
 {
@@ -1565,7 +1573,7 @@ char* ProcessCode(const Proto * f, int indent)
                 */
                int i;
                int step;
-               char *idxname;
+               char *idxname = NULL;
                char *initial;
                char *findSign;
                char *a1str;
@@ -1975,8 +1983,9 @@ void luaU_decompileFunctions(const Proto* f, int dflag, char* outputFile)
 {
  int i,n=f->sizep;
  char* code;
- debug = dflag;
  int32 outf = mr_open(outputFile, MR_FILE_WRONLY | MR_FILE_CREATE);
+
+ debug = dflag;
 
  for (i=0; i<n; i++) {
     code = "-----\nfunction";

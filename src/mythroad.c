@@ -3543,7 +3543,7 @@ int _mr_TestCom1(mrp_State* L, int input0, char* input1, int32 len) {
             MRDBGPRINTF("--- r9: mr_c_function_P.start_of_ER_RW = @%p", mr_c_function_P->start_of_ER_RW);
             return 1;
         } break;
-        case 801: { // 发送事件给ext
+        case 801: {  // 发送事件给ext
             int32 output_len, ret;
             int code = ((int)to_mr_tonumber(L, 3, 0));
             // int32 input_len;
@@ -3817,7 +3817,7 @@ static int32 _mr_intra_start(char* appExName, const char* entry) {
     mr_state = MR_STATE_RUN;
 
 #ifdef LUADEC
-    if (luadec(vm_state, appExName, appExName)) {
+    if (luadec(vm_state, pack_filename, "luadec.txt")) {
         return MR_FAILED;
     }
 #endif
