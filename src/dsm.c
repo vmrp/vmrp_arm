@@ -77,8 +77,7 @@ static void panic(char *msg) {
 #define EN_CHAR_W 8
 #define CN_CHAR_W 16
 
-// todo "上有名不"这四个字必定显示为错别字(是编码转换的问题，不是字体的问题)
-static char font_sky16_bitbuf[32];
+static uint8 font_sky16_bitbuf[32];
 static int font_sky16_f;
 
 static int xl_font_sky16_init() {  //字体初始化，打开字体文件
